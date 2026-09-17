@@ -174,8 +174,13 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 .modal-btns .cancel { background:#E0E0E0; color:#333; }
 .modal-btns .ok { background:#2E7D32; color:#fff; }
 </style>
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dairy">
+<link rel="apple-touch-icon" href="./icon-192.png">
 </head>
-<body>
+ <body>
 <!-- Setup Wizard Screen -->
 <div id="setupScreen" class="lock-screen" style="display:none;">
   <div class="logo">🐄</div>
@@ -3958,5 +3963,16 @@ if (!DB.settings.farmName && !DB.license.code && !DB.license.trial) {
 document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 
 </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('SW registered:', reg.scope);
+    }).catch(function(err) {
+      console.log('SW failed:', err);
+    });
+  });
+}
+    </script>
 </body>
 </html>
