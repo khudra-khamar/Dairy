@@ -14,7 +14,9 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,'Noto Sans Bengali','Noto Sans Devanagari',sans-serif; -webkit-tap-highlight-color:transparent; }
 body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
-.header { background:linear-gradient(135deg,#2E7D32,#1B5E20); color:#fff; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 8px rgba(0,0,0,0.2); position:sticky; top:0; z-index:100; }
+.header { background:linear-gradient(135deg,#2E7D32,#1B5E20); color:#fff; padding:10px 12px; display:flex !important; align-items:center; justify-content:space-between; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,0.2); position:sticky; top:0; z-index:100; flex-wrap:nowrap !important; overflow:hidden; width:100%; }
+.header-left { flex:1 1 auto !important; min-width:0 !important; display:flex; align-items:center; gap:6px; overflow:hidden; }
+.header-icons { flex:0 0 auto !important; display:flex !important; gap:4px !important; align-items:center; }
 .header-left { flex:1; }
 .header h1 { font-size:17px; margin-bottom:2px; }
 .header p { font-size:11px; opacity:0.9; }
@@ -287,7 +289,8 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   </div>
   <input type="text" id="licenseInput" placeholder="Enter license code" style="text-transform:uppercase;">
   <button class="btn-white" onclick="checkLicense()" id="licenseBtn">✅ Enter</button>
-  <div class="contact-btns">
+  <button class="btn-link" onclick="continueWithTrial()" style="display:block;margin:14px auto;padding:12px 24px;background:#FFEB3B;color:#1B5E20;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;">▶️ Continue with Trial</button>
+   <div class="contact-btns">
     <p id="contactMsg">📞 Contact for license code</p>
     <a href="tel:+919800696104" class="btn-call">📞 Call</a>
     <a href="https://wa.me/919800696104?text=I%20want%20Dairy%20Manager%20license%20code" class="btn-wa">📱 WhatsApp</a>
@@ -352,16 +355,22 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <div id="mainApp" style="display:none;">
 
 <!-- HEADER -->
-<div class="header">
-  <div class="header-left">
-    <h1 id="hdrTitle">🐄 Dairy Manager</h1>
-    <p id="greeting">Assalamu Alaikum</p>
-  </div>
-  <div class="header-icons">
-    <button class="header-icon" onclick="showPage('contacts')" title="Contacts">📞</button>
-    <button class="header-icon" onclick="showPage('alerts')" title="Alerts">🔔<span class="header-badge" id="alertBadge" style="display:none;">0</span></button>
-    <button class="header-icon" onclick="toggleMenu()" title="Menu">⋮</button>
-  </div>
+<div class="header" style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:10px 12px;background:linear-gradient(135deg,#2E7D32,#1B5E20);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);position:sticky;top:0;z-index:100;flex-wrap:nowrap;overflow:hidden;">
+
+<div style="display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden;">
+<img src="./farm-photo.jpg" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.6);flex-shrink:0;">
+<div style="min-width:0;overflow:hidden;flex:1;">
+<h1 id="hdrTitle" style="font-size:14px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;font-weight:700;">🐄 Dairy Manager</h1>
+<p id="greeting" style="font-size:10px;margin:0;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">Good Night 🌙</p>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+<button class="header-icon" onclick="showPage('alerts')" style="width:34px;height:34px;font-size:16px;padding:0;position:relative;background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">🔔<span class="header-badge" id="alertBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:#C62828;color:#fff;font-size:10px;font-weight:bold;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #2E7D32;">0</span></button>
+
+<button class="header-icon" onclick="toggleMenu()" style="width:34px;height:34px;font-size:20px;padding:0;background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">⋮</button>
+</div>
+
 </div>
 
 <!-- MENU DROPDOWN -->
@@ -1107,10 +1116,10 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <h2>ℹ️ About</h2>
     </div>
     <div class="summary-box" style="text-align:center;">
-      <div style="font-size:60px;margin-bottom:12px;">🐄</div>
+     <img src="./my-photo.jpg" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #2E7D32;margin-bottom:12px;">
       <h2 style="color:#2E7D32;margin-bottom:4px;">Dairy Manager</h2>
-      <p style="font-size:13px;color:#666;margin-bottom:16px;">Version 3.0</p>
-      <div class="summary-row"><span>Developer</span><span>Khudra Khamar</span></div>
+     <p style="font-size:13px;color:#666;margin-bottom:16px;">Version 3.0</p>
+      <div class="summary-row"><span>Developer</span><span>Matiur Rahaman Shaikh</span></div>
       <div class="summary-row"><span>Contact</span><span>9800696104</span></div>
       <div class="summary-row"><span>License</span><span>Private</span></div>
     </div>
@@ -1130,7 +1139,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     </div>
     <div class="summary-box" style="text-align:center;padding:20px;">
       <p style="font-size:13px;color:#666;">Made with ❤️ in India</p>
-      <p style="font-size:11px;color:#999;margin-top:8px;">© 2026 Khudra Khamar</p>
+      <p style="font-size:11px;color:#999;margin-top:8px;">© 2026 Matiur Rahaman Shaikh</p>
     </div>
   </div>
 
@@ -5293,6 +5302,31 @@ async function verifyLicense(code, deviceId) {
   if (expectedSig.substring(0, 8) !== sigPart) return false;
 
   return { expiry };
+}
+function continueWithTrial() {
+  // If trial already active — just skip license screen
+  if (!DB.license.trial || !DB.license.expiry) {
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    DB.license = { 
+      code: '', 
+      expiry: now.toISOString().split('T')[0], 
+      trial: true 
+    };
+    saveDB();
+  }
+  
+  document.getElementById('licenseScreen').style.display = 'none';
+  
+  if (DB.security.pin) {
+    document.getElementById('pinLoginScreen').style.display = 'flex';
+  } else if (DB.security.skipped) {
+    document.getElementById('mainApp').style.display = 'block';
+    afterLogin();
+  } else {
+    document.getElementById('pinSetupScreen').style.display = 'flex';
+  }
+  toast('✅ Trial চালু হয়েছে');
 }
 
 async function checkLicense() {
