@@ -1736,6 +1736,27 @@ function applyNavVisibility() {
 }
 
 // ========== MENU ==========
+function shareApp() {
+  const url = 'https://khudra-khamar.github.io/Dairy/';
+  const msg = '🐄 Dairy Manager অ্যাপ\n\n📱 এই link এ ক্লিক করুন:\n' + url + '\n\n✅ Chrome এ খুলে:\n⋮ → Install app → Install\n\n🎁 ৭ দিন ফ্রি ট্রায়াল\n📞 AI/Vet সেবা: 9800696104';
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'Dairy Manager',
+      text: msg
+    }).catch(function() {
+      fallbackShare(msg);
+    });
+  } else {
+    fallbackShare(msg);
+  }
+}
+
+function fallbackShare(msg) {
+  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+  toast('📤 WhatsApp খুলছে...');
+}
 function toggleMenu() {
   const menu = document.getElementById('menuDropdown');
   if (!menu) return;
