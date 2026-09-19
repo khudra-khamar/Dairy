@@ -378,6 +378,12 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   <div class="menu-item" onclick="closeMenu(); showPage('manual')">
     <span class="menu-icon">📖</span> Help / User Manual
   </div>
+  <div class="menu-item" onclick="closeMenu(); showPage('calving-history')">
+<span class="menu-icon">📅</span> Calving History
+</div>
+<div class="menu-item" onclick="closeMenu(); showPage('selling-history')">
+<span class="menu-icon">💰</span> Selling History
+</div>
   <div class="menu-item" onclick="closeMenu(); showPage('contacts')">
     <span class="menu-icon">📞</span> Emergency Contacts
   </div>
@@ -759,7 +765,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <div id="milkRangeResult" style="margin-top:14px;"></div>
     </div>
 
-    <button class="btn-primary" data-t="new_milk_entry" onclick="showMilkForm()">➕ New Milk Entry</button>
+    <button class="btn-primary" onclick="showMilkForm()" style="padding:12px;"><div style="font-size:15px;font-weight:700;"><span data-t="new_milk_entry">➕ New Milk Entry</span></div><div style="font-size:10px;font-weight:400;opacity:0.9;margin-top:3px;font-style:italic;">Only for information</div></button>
     <button class="btn-blue" data-t="total_milk_btn" onclick="showTotalMilkForm()">🥛 Total Milk (Day)</button>
 
     <div id="milkForm" style="display:none;background:#fff;padding:14px;border-radius:14px;margin:14px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
@@ -1101,6 +1107,27 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   </div>
 
   <!-- MANUAL PAGE -->
+  <div id="page-selling-history" class="page">
+<div class="page-header">
+<button class="back-icon" onclick="showPage('home')">←</button>
+<h2>💰 Selling History</h2>
+</div>
+<div id="sellingHistoryList"></div>
+</div>
+  <div id="page-calving-history" class="page">
+<div class="page-header">
+<button class="back-icon" onclick="showPage('home')">←</button>
+<h2>📅 Calving History</h2>
+</div>
+<div id="calvingHistoryList"></div>
+</div>
+<div id="page-calf-entry" class="page">
+<div class="page-header">
+<button class="back-icon" onclick="cancelCalfEntry()">←</button>
+<h2>🍼 Calf Entry</h2>
+</div>
+<div id="calfEntryBody"></div>
+</div>
   <div id="page-manual" class="page">
     <div class="page-header">
       <button class="back-icon" onclick="showPage('home')">←</button>
@@ -2249,6 +2276,8 @@ function showPage(p) {
   if (p === 'contacts') renderContacts();
   if (p === 'service') { }
   if (p === 'manual') renderManual();
+  if (p === 'calving-history') renderCalvingHistory();
+if (p === 'selling-history') renderSellingHistory();
   if (p === 'add-cow' && !document.getElementById('cowEditId').value) resetCowForm();
 }
 
@@ -2607,6 +2636,53 @@ function saveCow() {
   showPage('cows');
 }
 // ========== COW PROFILE ==========
+function formatAge(c) {
+  if (c.birthDate) {
+    const days = daysFromToday(c.birthDate);
+    if (days < 0) return '—';
+    if (days === 0) return '0 days';
+    if (days < 30) return days + ' days';
+    if (days < 365) {
+      const months = Math.floor(days / 30);
+      const remDays = days % 30;
+      return months + ' months' + (remDays > 0 ? ' ' + remDays + ' days' : '');
+    }
+    const years = Math.floor(days / 365);
+    const remMonths = Math.floor((days % 365) / 30);
+    return years + ' years' + (remMonths > 0 ? ' ' + remMonths + ' months' : '');
+  }
+  if (c.age) return c.age + ' years';
+  return '—';
+}
+function renderMotherSection(c) {
+  if (!c.motherId) return '';
+  const mother = DB.cows.find(m => m.id === c.motherId);
+  if (!mother) return '';
+  return `<div class="summary-box" style="background:#FFF3E0;border-left:4px solid #E65100;">
+    <h3 style="color:#E65100;">🐄 Mother</h3>
+    <div class="summary-row" style="cursor:pointer;" onclick="openCowProfile('${mother.id}')">
+      <span>${mother.name} (${mother.tag || '—'})</span>
+      <span>${mother.breed || ''}</span>
+    </div>
+    ${c.birthDate ? `<div class="summary-row"><span>📅 Birth Date</span><span>${formatDate(c.birthDate)}</span></div>` : ''}
+    ${c.fatherBullNo ? `<div class="summary-row"><span>🐂 Father (Bull)</span><span>${c.fatherBullNo}</span></div>` : ''}
+    ${c.fatherSemen ? `<div class="summary-row"><span>🔬 Semen</span><span>${c.fatherSemen}</span></div>` : ''}
+  </div>`;
+}
+function renderCowCalvesSection(c) {
+  if (!c.calves || c.calves.length === 0) return '';
+  const rows = c.calves.map(calf => {
+    const icon = calf.gender === 'male' ? '🐂' : '🐄';
+    return `<div class="summary-row" style="cursor:pointer;" onclick="openCowProfile('${calf.id}')">
+      <span>${icon} ${calf.name} (${calf.tag || '—'})</span>
+      <span>${calf.birthDate ? formatDate(calf.birthDate) : '—'}</span>
+    </div>`;
+  }).join('');
+  return `<div class="summary-box" style="background:#F3E5F5;border-left:4px solid #9C27B0;">
+    <h3 style="color:#6A1B9A;">🍼 Calves (${c.calves.length})</h3>
+    ${rows}
+  </div>`;
+}
 function renderPurchaseSection(c) {
   if (!c.purchasePrice || c.purchasePrice <= 0) return '';
   return `<div class="summary-box" style="background:#FFF3E0;border-left:4px solid #E65100;">
@@ -2777,9 +2853,11 @@ function openCowProfile(id) {
     </div>
     <div class="info-grid">
       <div class="info-item"><div class="lbl">${t('weight_lbl')}</div><div class="val">${c.weight ? bn(c.weight) + ' ' + t('kg') : '—'}</div></div>
-      <div class="info-item"><div class="lbl">${t('age_lbl')}</div><div class="val">${c.age ? bn(c.age) + ' ' + t('years') : '—'}</div></div>
+      <div class="info-item"><div class="lbl">${t('age_lbl')}</div><div class="val">${formatAge(c)}</div></div>
     </div>
     ${cowStats}
+    ${renderCowCalvesSection(c)}
+   ${renderMotherSection(c)}
     ${renderPurchaseSection(c)}
     ${renderCowMilkSection(c.id)}
     ${insemHtml}
@@ -2839,13 +2917,137 @@ function deleteCow(id) {
   toast(t('deleted'));
   showPage('cows');
 }
+function openCalfEntry(cowId) {
+  const cow = DB.cows.find(c => c.id === cowId);
+  if (!cow) return;
+  window._calfMotherId = cowId;
+  renderCalfEntryPage();
+  showPage('calf-entry');
+}
+
+function renderCalfEntryPage() {
+  const cow = DB.cows.find(c => c.id === window._calfMotherId);
+  if (!cow) return;
+  const html = `
+    <div class="summary-box" style="background:#E8F5E9;border-left:4px solid #2E7D32;">
+      <h3>🐄 Mother: ${cow.name} (${cow.tag || '—'})</h3>
+      <div class="summary-row"><span>Lactation</span><span>${cow.lactation || '—'}</span></div>
+      <div class="summary-row"><span>Calving Date</span><span>${formatDate(cow.lastCalving || today())}</span></div>
+    </div>
+    <div id="calfRowsContainer"></div>
+    <button class="btn-secondary" onclick="addCalfRow()" style="margin-top:8px;">➕ Add Another Calf (Twin)</button>
+    <button class="btn-primary" onclick="saveCalfEntry()" style="margin-top:12px;">💾 Save Calf</button>
+    <button class="btn-secondary" onclick="skipCalfEntry()" style="margin-top:8px;">Skip (No Calf Registration)</button>
+  `;
+  document.getElementById('calfEntryBody').innerHTML = html;
+  document.getElementById('calfRowsContainer').innerHTML = '';
+  addCalfRow();
+}
+
+function addCalfRow() {
+  const cow = DB.cows.find(c => c.id === window._calfMotherId);
+  const container = document.getElementById('calfRowsContainer');
+  if (!container || !cow) return;
+  const idx = container.querySelectorAll('.calf-row').length;
+  const div = document.createElement('div');
+  div.className = 'calf-row';
+  div.innerHTML = `
+    <div class="summary-box">
+      <h3>🍼 Calf ${idx + 1}</h3>
+      <div class="form-group"><label>Gender *</label>
+        <select class="cf-gender"><option value="female">♀ Female (Heifer)</option><option value="male">♂ Male (Bull Calf)</option></select>
+      </div>
+      <div class="form-group"><label>Tag No *</label><input type="text" class="cf-tag" placeholder="C002"></div>
+      <div class="form-group"><label>Name</label><input type="text" class="cf-name" placeholder="Optional"></div>
+      <div class="form-group"><label>Weight (KG)</label><input type="number" class="cf-weight" placeholder="25"></div>
+      <div class="form-group"><label>Color/Notes</label><input type="text" class="cf-note" placeholder="Brown, white spots..."></div>
+      <div class="summary-row" style="background:#FFF3E0;padding:8px;border-radius:8px;margin-top:8px;"><span>🧬 Father Info (Auto)</span><span></span></div>
+      <div class="summary-row"><span>🐂 Bull No</span><span>${cow.bullNo || '—'}</span></div>
+      <div class="summary-row"><span>🔬 Semen</span><span>${cow.semen || '—'}</span></div>
+      <div class="summary-row"><span>📅 AI Date</span><span>${cow.insemDate ? formatDate(cow.insemDate) : '—'}</span></div>
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+function saveCalfEntry() {
+  const cow = DB.cows.find(c => c.id === window._calfMotherId);
+  if (!cow) return;
+  const rows = document.querySelectorAll('#calfRowsContainer .calf-row');
+  if (rows.length === 0) { toast('❌ No calf entries'); return; }
+  let saved = 0;
+  for (const row of rows) {
+    const gender = row.querySelector('.cf-gender').value;
+    const tag = row.querySelector('.cf-tag').value.trim();
+    const name = row.querySelector('.cf-name').value.trim();
+    const weight = row.querySelector('.cf-weight').value;
+    const note = row.querySelector('.cf-note').value.trim();
+    if (!tag) { toast('❌ Enter Tag No for calf ' + (saved + 1)); return; }
+    const newCalf = {
+      id: uid(),
+      name: name || ('Calf of ' + cow.name),
+      tag: tag,
+      type: gender === 'male' ? 'bull' : 'heifer',
+      breed: cow.breed || 'Cross',
+      age: 0,
+      weight: weight || '',
+      note: note,
+      photo: null,
+      motherId: cow.id,
+      motherName: cow.name,
+      birthDate: cow.lastCalving || today(),
+      fatherBullNo: cow.bullNo || '',
+      fatherSemen: cow.semen || '',
+      createdAt: today(),
+      status: 'active',
+      lactationCycles: [],
+      currentLactation: null
+    };
+    DB.cows.push(newCalf);
+    cow.calves.push({ id: newCalf.id, name: newCalf.name, tag: newCalf.tag, gender: gender, birthDate: newCalf.birthDate });
+    saved++;
+  }
+  saveDB();
+  toast('✅ ' + saved + ' calf saved');
+  window._calfMotherId = null;
+  openCowProfile(cow.id);
+}
+
+function skipCalfEntry() {
+  const cow = DB.cows.find(c => c.id === window._calfMotherId);
+  if (!cow) return;
+  toast('✅ Calving saved (no calf)');
+  window._calfMotherId = null;
+  openCowProfile(cow.id);
+}
+
+function cancelCalfEntry() {
+  const cow = DB.cows.find(c => c.id === window._calfMotherId);
+  if (!cow) { showPage('home'); return; }
+  openCowProfile(cow.id);
+}
 
 function markCalvingDone(id) {
   const c = DB.cows.find(x => x.id === id);
   if (!c) return;
   if (!confirm('🍼 Cow has calved? New lactation cycle will start.')) return;
+    // Lactation increment
+  const currentNum = parseInt((c.lactation || '0th').replace(/\D/g, '')) || 0;
+  const nextNum = currentNum + 1;
+  const suffix = nextNum === 1 ? 'st' : nextNum === 2 ? 'nd' : nextNum === 3 ? 'rd' : 'th';
+  c.lactation = nextNum + suffix;
+  
+  // Save calving history
+  if (!c.calvingHistory) c.calvingHistory = [];
+  c.calvingHistory.push({
+    date: today(),
+    lactation: c.lactation,
+    bullNo: c.bullNo || '',
+    semen: c.semen || '',
+    aiDate: c.insemDate || ''
+  });
+  
   c.lastCalving = today();
-  c.insemDate = '';
   c.inseminated = 'no';
   c.pdDone = false;
   c.pregMarked = false;
@@ -2853,11 +3055,14 @@ function markCalvingDone(id) {
   c.dryDone = false;
   c.heatDone = false;
   c.calving = null;
+  if (!c.calves) c.calves = [];
+  
   saveDB();
-  toast('✅ New lactation cycle started');
-  openCowProfile(id);
+  toast('✅ New lactation cycle — ' + c.lactation);
+  
+  // Open Calf Entry
+  openCalfEntry(id);
 }
-
 function openMedicineFromProfile() {
   const cid = document.getElementById('cowEditId')?.value;
   if (cid) openMedicine(cid);
@@ -4638,6 +4843,70 @@ function updateHomeServiceCard() {
 // ========== CONTACTS ==========
 const CONTACT_TYPES = ['🐄 AI Worker','🩺 Vet Doctor','🚑 First Aid','📦 Feed Supplier','🏪 Milk Buyer','💊 Medicine Shop','🚚 Transport','📝 Other'];
 
+function renderCalvingHistory() {
+  const list = document.getElementById('calvingHistoryList');
+  if (!list) return;
+  const cows = DB.cows.filter(c => (c.type === 'cow' || c.type === 'buffalo') && (c.lastCalving || c.lactation));
+  if (cows.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="icon">📅</div><p>No calving records yet</p></div>';
+    return;
+  }
+  list.innerHTML = cows.map(c => {
+    const daysSince = c.lastCalving ? daysFromToday(c.lastCalving) : '—';
+    const avatar = c.photo ? `<img src="${c.photo}">` : getTypeIcon(c.type);
+    return `<div class="summary-box" style="border-left:4px solid #2E7D32;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div class="cow-avatar" style="width:44px;height:44px;font-size:22px;">${avatar}</div>
+        <div style="flex:1;">
+          <h4 style="font-size:15px;color:#1B5E20;margin:0;">${c.name} <span class="tag-badge">🏷️ ${c.tag || '—'}</span></h4>
+          <p style="font-size:11px;color:#666;margin:2px 0 0;">${getTypeLabel(c.type)}</p>
+        </div>
+      </div>
+      <div class="summary-row"><span>📅 Last Calving</span><span>${c.lastCalving ? formatDate(c.lastCalving) : '—'}</span></div>
+      <div class="summary-row"><span>⏱️ Days Since</span><span>${typeof daysSince === 'number' ? bn(daysSince) + ' days' : '—'}</span></div>
+      <div class="summary-row"><span>🍼 Lactation</span><span>${c.lactation || '—'}</span></div>
+      <div class="summary-row"><span>🧬 Insemination</span><span>${c.insemDate ? formatDate(c.insemDate) : 'Not done'}</span></div>
+      ${c.insemDate ? `<div class="summary-row"><span>💉 AI Type</span><span>${c.insemType || '—'}</span></div>` : ''}
+      ${c.semen ? `<div class="summary-row"><span>🔬 Semen</span><span>${c.semen}</span></div>` : ''}
+      ${c.bullNo ? `<div class="summary-row"><span>🐂 Bull No</span><span>${c.bullNo}</span></div>` : ''}
+      ${c.aiCost ? `<div class="summary-row"><span>💰 AI Cost</span><span>${bn(c.aiCost)} Rs</span></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderSellingHistory() {
+  const list = document.getElementById('sellingHistoryList');
+  if (!list) return;
+  const sold = DB.cows.filter(c => c.status === 'sold');
+  if (sold.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="icon">💰</div><p>No selling records yet</p></div>';
+    return;
+  }
+  const sorted = [...sold].sort((a, b) => (b.saleDate || '').localeCompare(a.saleDate || ''));
+  list.innerHTML = sorted.map(c => {
+    const profit = (c.salePrice || 0) - (c.purchasePrice || 0);
+    const profitColor = profit >= 0 ? '#2E7D32' : '#C62828';
+    const avatar = c.photo ? `<img src="${c.photo}">` : getTypeIcon(c.type);
+    return `<div class="summary-box" style="border-left:4px solid #E65100;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div class="cow-avatar" style="width:44px;height:44px;font-size:22px;background:linear-gradient(135deg,#FFB74D,#E65100);">${avatar}</div>
+        <div style="flex:1;">
+          <h4 style="font-size:15px;color:#E65100;margin:0;">${c.name} <span class="tag-badge">🏷️ ${c.tag || '—'}</span></h4>
+          <p style="font-size:11px;color:#666;margin:2px 0 0;">${getTypeLabel(c.type)}</p>
+        </div>
+      </div>
+      <div class="summary-row"><span>📅 Sale Date</span><span>${c.saleDate ? formatDate(c.saleDate) : '—'}</span></div>
+      <div class="summary-row"><span>💵 Sale Price</span><span>${bn(c.salePrice || 0)} Rs</span></div>
+      <div class="summary-row"><span>👤 Buyer</span><span>${c.buyerName || '—'}</span></div>
+      ${c.buyerPhone ? `<div class="summary-row"><span>📞 Phone</span><span>${c.buyerPhone}</span></div>` : ''}
+      ${c.buyerAddress ? `<div class="summary-row"><span>🏠 Address</span><span style="font-size:11px;">${c.buyerAddress}</span></div>` : ''}
+      <div class="summary-row"><span>💳 Payment</span><span>${c.paymentMode || '—'}</span></div>
+      <div class="summary-row"><span>💰 Purchase</span><span>${bn(c.purchasePrice || 0)} Rs</span></div>
+      <div class="summary-row" style="border-top:2px solid #E0E0E0;padding-top:8px;margin-top:8px;"><span style="font-weight:bold;">${profit >= 0 ? '📈 Profit' : '📉 Loss'}</span><span style="color:${profitColor};font-weight:bold;">${profit >= 0 ? '+' : ''}${bn(profit)} Rs</span></div>
+      <button class="btn-blue" onclick="openSaleBill('${c.id}')" style="margin-top:10px;">📄 View Sale Bill</button>
+    </div>`;
+  }).join('');
+}
 function renderContacts() {
   const list = document.getElementById('contactsList');
   if (!list) return;
