@@ -582,7 +582,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 
     <!-- COW ONLY FIELDS -->
     <div id="cowOnlyFields" class="section-sub">
-      <div class="section-sub-title" data-t="cow_only_info">⭐ Cow Only Fields</div>
+      <div class="section-sub-title" id="cowOnlyTitle">⭐ Cow Information</div>
       <div class="form-group"><label data-t="lactation">Lactation No</label>
         <select id="cowLactation">
           <option value="">—</option>
@@ -2467,8 +2467,28 @@ function selectType(type) {
   document.querySelectorAll('.type-btn').forEach(el => {
     el.classList.toggle('active', el.getAttribute('data-type') === type);
   });
+  
   const cowOnly = document.getElementById('cowOnlyFields');
-  if (cowOnly) cowOnly.style.display = (type === 'cow' || type === 'buffalo') ? 'block' : 'none';
+  const isCowType = (type === 'cow' || type === 'buffalo');
+  const isHeifer = (type === 'heifer');
+  
+  if (cowOnly) {
+    cowOnly.style.display = (isCowType || isHeifer) ? 'block' : 'none';
+  }
+  
+  const lactationField = document.getElementById('cowLactation')?.closest('.form-group');
+  const capacityField = document.getElementById('cowCapacity')?.closest('.form-group');
+  const lastCalvingField = document.getElementById('cowLastCalving')?.closest('.form-group');
+  
+  if (lactationField) lactationField.style.display = isCowType ? 'block' : 'none';
+  if (capacityField) capacityField.style.display = isCowType ? 'block' : 'none';
+  if (lastCalvingField) lastCalvingField.style.display = isCowType ? 'block' : 'none';
+const titleEl = document.getElementById('cowOnlyTitle');
+if (titleEl) {
+  if (type === 'cow') titleEl.textContent = '⭐ Cow Information';
+  else if (type === 'buffalo') titleEl.textContent = '⭐ Buffalo Information';
+  else if (type === 'heifer') titleEl.textContent = '⭐ Heifer Information';
+}
 }
 
 function toggleInsemination() {
@@ -2636,6 +2656,24 @@ function saveCow() {
   showPage('cows');
 }
 // ========== COW PROFILE ==========
+function autoTransferCattleTypes() {
+  let changed = 0;
+  (DB.cows || []).forEach(c => {
+    if (c.status === 'sold') return;
+    if (c.type !== 'calf') return;
+    if (!c.birthDate) return;
+    const days = daysFromToday(c.birthDate);
+    if (days >= 300) {
+      const oldType = c.type;
+      c.type = c.gender === 'male' ? 'bull' : 'heifer';
+      changed++;
+      setTimeout(() => {
+        toast('🐄 ' + c.name + ' auto-moved to ' + getTypeLabel(c.type));
+      }, 3000);
+    }
+  });
+  if (changed > 0) saveDB();
+}
 function formatAge(c) {
   if (c.birthDate) {
     const days = daysFromToday(c.birthDate);
@@ -4898,6 +4936,7 @@ function renderSellingHistory() {
       <div class="summary-row"><span>📅 Sale Date</span><span>${c.saleDate ? formatDate(c.saleDate) : '—'}</span></div>
       <div class="summary-row"><span>💵 Sale Price</span><span>${bn(c.salePrice || 0)} Rs</span></div>
       <div class="summary-row"><span>👤 Buyer</span><span>${c.buyerName || '—'}</span></div>
+      ${c.buyerId ? `<div class="summary-row"><span>🆔 Buyer ID</span><span>${c.buyerId}</span></div>` : ''}
       ${c.buyerPhone ? `<div class="summary-row"><span>📞 Phone</span><span>${c.buyerPhone}</span></div>` : ''}
       ${c.buyerAddress ? `<div class="summary-row"><span>🏠 Address</span><span style="font-size:11px;">${c.buyerAddress}</span></div>` : ''}
       <div class="summary-row"><span>💳 Payment</span><span>${c.paymentMode || '—'}</span></div>
@@ -6007,6 +6046,7 @@ function clearAllData() {
 
 // ========== AFTER LOGIN ==========
 function afterLogin() {
+autoTransferCattleTypes();
   addDefaultContacts();
   applyLang();
   loadSettings();
