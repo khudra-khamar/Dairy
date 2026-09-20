@@ -2735,6 +2735,7 @@ function renderPurchaseSection(c) {
 function renderCowMilkSection(cowId) {
   const cow = DB.cows.find(c => c.id === cowId);
   if (!cow) return '';
+  if (cow.type !== 'cow' && cow.type !== 'buffalo') return '';
   const entries = DB.milk.filter(m => m.cowId === cowId);
   if (entries.length === 0) {
     return `<div class="summary-box">
@@ -3025,7 +3026,8 @@ function saveCalfEntry() {
       id: uid(),
       name: name || ('Calf of ' + cow.name),
       tag: tag,
-      type: gender === 'male' ? 'bull' : 'heifer',
+      type: 'calf',
+      gender: gender,
       breed: cow.breed || 'Cross',
       age: 0,
       weight: weight || '',
