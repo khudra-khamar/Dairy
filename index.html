@@ -381,12 +381,18 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   <div class="menu-item" onclick="closeMenu(); showPage('calving-history')">
 <span class="menu-icon">📅</span> Calving History
 </div>
+
 <div class="menu-item" onclick="closeMenu(); showPage('selling-history')">
 <span class="menu-icon">💰</span> Selling History
 </div>
-  <div class="menu-item" onclick="closeMenu(); showPage('contacts')">
-    <span class="menu-icon">📞</span> Emergency Contacts
-  </div>
+
+<div class="menu-item" id="menuRetailItem" onclick="closeMenu(); showPage('retail')">
+<span class="menu-icon">🛒</span> খুচরো বিক্রি
+</div>
+
+<div class="menu-item" onclick="closeMenu(); showPage('contacts')">
+<span class="menu-icon">📞</span> Emergency Contacts
+</div>
   <div class="menu-item" onclick="closeMenu(); shareApp()">
     <span class="menu-icon">📤</span> Share App
   </div>
@@ -431,7 +437,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         <div class="count" data-t="view">View</div>
       </div>
       <div class="card calv-card" onclick="showPage('calving')">
-        <div class="icon">🍼</div>
+        <div class="icon">??</div>
         <div class="label" data-t="calving">Calving</div>
         <div class="count" data-t="calculator">Calculator</div>
       </div>
@@ -1140,6 +1146,28 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 <div id="calvingHistoryList"></div>
 </div>
+
+<div id="page-retail" class="page">
+<div class="page-header">
+<button class="back-icon" onclick="showPage('home')">←</button>
+<h2>🛒 খুচরো বিক্রি</h2>
+</div>
+<div id="retailSummary"></div>
+<div class="search-bar">
+<span>🔍</span>
+<input type="text" id="retailSearch" placeholder="Search customer..." oninput="doRetailSearch()">
+</div>
+<button class="btn-primary" onclick="openAddCustomer()">➕ নতুন ক্রেতা</button>
+<div id="retailCustomerList" style="margin-top:14px;"></div>
+</div>
+
+<div id="page-retail-profile" class="page">
+<div class="page-header">
+<button class="back-icon" onclick="showPage('retail')">←</button>
+<h2 id="retailProfileTitle">👤 Customer</h2>
+</div>
+<div id="retailProfileContent"></div>
+</div>
 <div id="page-calf-entry" class="page">
 <div class="page-header">
 <button class="back-icon" onclick="cancelCalfEntry()">←</button>
@@ -1544,6 +1572,7 @@ const T = {
 let DB = {
   cows: [], milk: [], finance: [], medicine: [], notes: [],
   medStock: [], feedStock: [], contacts: [],
+  customers: [], retailEntries: [],
   snoozed: {}, deviceId: '',
   security: { pin: '', skipped: false },
   license: { code: '', expiry: '', trial: false },
@@ -1562,7 +1591,8 @@ let DB = {
       alertsDeworm: true,
       alertsVaccine: true,
       medicine: true,
-      notes: true
+     notes: true,
+     retail: true
     }
   }
 };
@@ -1583,6 +1613,8 @@ function loadDB() {
   if (!DB.medStock) DB.medStock = [];
   if (!DB.feedStock) DB.feedStock = [];
   if (!DB.contacts) DB.contacts = [];
+  if (!DB.customers) DB.customers = [];
+  if (!DB.retailEntries) DB.retailEntries = [];
   if (!DB.snoozed) DB.snoozed = {};
   if (!DB.deviceId) DB.deviceId = '';
   if (!DB.security) DB.security = { pin:'', skipped:false };
@@ -1590,12 +1622,13 @@ function loadDB() {
   if (!DB.license) DB.license = { code:'', expiry:'', trial:false };
   if (!DB.settings) DB.settings = {};
   if (!DB.settings.features) DB.settings.features = {
-    lactation:true, milkRecord:false, alertsPD:true, alertsHeat:true,
-    alertsDry:true, alertsCalving:true, alertsDeworm: true,
-    alertsVaccine: true,medicine:true, notes:true
-  };
+  lactation:true, milkRecord:false, alertsPD:true, alertsHeat:true,
+  alertsDry:true, alertsCalving:true, alertsDeworm: true,
+  alertsVaccine: true,medicine:true, notes:true, retail:true
+};
   if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
   if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
+  if (DB.settings.features.retail === undefined) DB.settings.features.retail = true;
   if (!DB.settings.preset) DB.settings.preset = 'medium';
   if (!DB.settings.lang) DB.settings.lang = 'en';
   if (!DB.settings.price) DB.settings.price = 40;
@@ -1681,15 +1714,15 @@ const PRESETS = {
     medicine: false, notes: false
   },
   medium: {
-    lactation: true, milkRecord: false,
-    alertsPD: true, alertsHeat: true, alertsDry: true, alertsCalving: true,
-    medicine: true, notes: true
-  },
+  lactation: true, milkRecord: false,
+  alertsPD: true, alertsHeat: true, alertsDry: true, alertsCalving: true,
+  medicine: true, notes: true, retail: true
+},
   advanced: {
-    lactation: true, milkRecord: true,
-    alertsPD: true, alertsHeat: true, alertsDry: true, alertsCalving: true,
-    medicine: true, notes: true
-  }
+  lactation: true, milkRecord: true,
+  alertsPD: true, alertsHeat: true, alertsDry: true, alertsCalving: true,
+  medicine: true, notes: true, retail: true
+},
 };
 
 function applyPreset(name) {
@@ -1751,6 +1784,8 @@ const FEATURE_LIST = [
   { key: 'alertsVaccine', label: 'Vaccination Alert', icon: '💉' },
   { key: 'medicine', label: 'Medicine Tracker', icon: '💊' },
   { key: 'notes', label: 'Notes', icon: '📝' }
+  ,
+  { key: 'retail', label: 'খুচরো বিক্রি', icon: '🛒' }
 ];
 
 function renderFeatureToggles() {
@@ -1777,16 +1812,22 @@ function toggleFeature(key, val) {
 function applyNavVisibility() {
   const f = DB.settings.features;
   const nav = document.getElementById('bottomNav');
-  if (!nav) return;
-  const map = {
-    'notes': f.notes
-  };
-  nav.querySelectorAll('.nav-item').forEach(item => {
-    const navKey = item.getAttribute('data-nav');
-    if (map.hasOwnProperty(navKey)) {
-      item.style.display = map[navKey] ? '' : 'none';
-    }
-  });
+  if (nav) {
+    const map = {
+      'notes': f.notes
+    };
+    nav.querySelectorAll('.nav-item').forEach(item => {
+      const navKey = item.getAttribute('data-nav');
+      if (map.hasOwnProperty(navKey)) {
+        item.style.display = map[navKey] ? '' : 'none';
+      }
+    });
+  }
+  
+  const retailItem = document.getElementById('menuRetailItem');
+  if (retailItem) {
+    retailItem.style.display = f.retail ? '' : 'none';
+  }
 }
 
 // ========== MENU ==========
@@ -2305,6 +2346,7 @@ function showPage(p) {
   if (p === 'manual') renderManual();
   if (p === 'calving-history') renderCalvingHistory();
 if (p === 'selling-history') renderSellingHistory();
+if (p === 'retail') renderRetail();
   if (p === 'add-cow' && !document.getElementById('cowEditId').value) resetCowForm();
 }
 
@@ -5255,6 +5297,574 @@ function renderSellingHistory() {
     </div>`;
   }).join('');
 }
+function openAddCustomer(editId) {
+  const isEdit = !!editId;
+  const c = isEdit ? DB.customers.find(x => x.id === editId) : null;
+  
+  const html = `
+    <div style="text-align:left;">
+      <div class="form-group">
+        <label>📛 নাম *</label>
+        <input type="text" id="rcName" value="${c ? c.name : ''}" placeholder="রহিম">
+      </div>
+      <div class="form-group">
+        <label>📝 ধরন</label>
+        <input type="text" id="rcType" value="${c ? (c.type || '') : ''}" placeholder="চায়ের দোকান / মিষ্টির দোকান / প্রতিবেশী">
+      </div>
+      <div class="form-group">
+        <label>📞 মোবাইল</label>
+        <input type="tel" id="rcPhone" value="${c ? (c.phone || '') : ''}" placeholder="9876543210">
+      </div>
+      <div class="form-group">
+        <label>💵 দুধের দাম (Rs/L) *</label>
+        <input type="number" id="rcRate" value="${c ? (c.rate || 40) : (DB.settings.price || 40)}" placeholder="40">
+      </div>
+      <div class="form-group">
+        <label>🏠 ঠিকানা</label>
+        <input type="text" id="rcAddress" value="${c ? (c.address || '') : ''}" placeholder="গ্রাম / বাজার">
+      </div>
+      <div class="form-group">
+        <label>📝 Note (optional)</label>
+        <textarea id="rcNote" rows="2">${c ? (c.note || '') : ''}</textarea>
+      </div>
+    </div>`;
+  
+  document.getElementById('modalTitle').textContent = isEdit ? '✏️ Edit Customer' : '➕ নতুন ক্রেতা';
+  document.getElementById('modalMsg').innerHTML = html;
+  document.getElementById('modalMsg').style.maxHeight = '70vh';
+  document.getElementById('modalMsg').style.overflowY = 'auto';
+  document.getElementById('modalInput').style.display = 'none';
+  document.getElementById('modalCancel').style.display = '';
+  document.getElementById('modalCancel').textContent = 'Cancel';
+  document.getElementById('modalOk').textContent = isEdit ? '💾 Update' : '💾 Add';
+  modalInputMode = false;
+  modalCallback = function() { saveCustomerFromModal(editId); };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function saveCustomerFromModal(editId) {
+  const name = document.getElementById('rcName').value.trim();
+  if (!name) { toast('❌ নাম লিখুন'); return; }
+  
+  const rate = Number(document.getElementById('rcRate').value) || 40;
+  
+  if (editId) {
+    const c = DB.customers.find(x => x.id === editId);
+    if (c) {
+      c.name = name;
+      c.type = document.getElementById('rcType').value.trim();
+      c.phone = document.getElementById('rcPhone').value.trim();
+      c.rate = rate;
+      c.address = document.getElementById('rcAddress').value.trim();
+      c.note = document.getElementById('rcNote').value.trim();
+    }
+    toast('✅ Updated');
+  } else {
+    DB.customers.push({
+      id: uid(),
+      name: name,
+      type: document.getElementById('rcType').value.trim(),
+      phone: document.getElementById('rcPhone').value.trim(),
+      rate: rate,
+      address: document.getElementById('rcAddress').value.trim(),
+      note: document.getElementById('rcNote').value.trim(),
+      createdAt: today()
+    });
+    toast('✅ যোগ হয়েছে');
+  }
+  saveDB();
+  renderRetail();
+}
+
+function renderRetail() {
+  renderRetailSummary();
+  renderRetailCustomers();
+}
+
+function renderRetailSummary() {
+  const el = document.getElementById('retailSummary');
+  if (!el) return;
+  const customers = DB.customers || [];
+  const entries = DB.retailEntries || [];
+  
+  let totalDue = 0;
+  customers.forEach(c => {
+    const due = calcCustomerDue(c.id);
+    if (due > 0) totalDue += due;
+  });
+  
+  const thisMonth = today().substring(0, 7);
+  const monthSales = entries
+    .filter(e => e.type === 'milk' && e.date.substring(0, 7) === thisMonth)
+    .reduce((s, e) => s + (Number(e.qty) * Number(e.price)), 0);
+  
+  el.innerHTML = `<div class="summary-box" style="background:#FFF3E0;border-left:4px solid #E65100;">
+    <div class="summary-row"><span>💰 মোট বাকি</span><span style="color:#C62828;">${bn(totalDue)} Rs</span></div>
+    <div class="summary-row"><span>📅 এই মাসের বিক্রি</span><span style="color:#2E7D32;">${bn(monthSales)} Rs</span></div>
+  </div>`;
+}
+
+let currentRetailCustomerId = '';
+
+function openRetailProfile(id) {
+  const c = DB.customers.find(x => x.id === id);
+  if (!c) return;
+  currentRetailCustomerId = id;
+  document.getElementById('retailProfileTitle').textContent = '👤 ' + c.name;
+  renderRetailProfile();
+  showPage('retail-profile');
+}
+
+function renderRetailProfile() {
+  const c = DB.customers.find(x => x.id === currentRetailCustomerId);
+  if (!c) return;
+  
+  const entries = (DB.retailEntries || []).filter(e => e.customerId === c.id);
+  const due = calcCustomerDue(c.id);
+  const dueColor = due > 0 ? '#C62828' : '#2E7D32';
+  const dueIcon = due > 0 ? '⚠️' : '✅';
+  
+  const thisMonth = today().substring(0, 7);
+  const monthEntries = entries.filter(e => e.date.substring(0, 7) === thisMonth);
+  const monthMilk = monthEntries.filter(e => e.type === 'milk').reduce((s, e) => s + (Number(e.qty) * Number(e.price)), 0);
+  const monthPaid = monthEntries.filter(e => e.type === 'payment').reduce((s, e) => s + Number(e.amount), 0);
+  const monthQty = monthEntries.filter(e => e.type === 'milk').reduce((s, e) => s + Number(e.qty), 0);
+  
+  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
+  const historyHtml = sorted.slice(0, 30).map(e => {
+    if (e.type === 'milk') {
+      return `<div class="entry-item" style="border-left:4px solid #2E7D32;">
+        <div class="entry-left">
+          <h5>📥 ${bn(e.qty)} L × ${bn(e.price)} Rs</h5>
+          <p>${formatDate(e.date)}${e.time ? ' • ' + e.time : ''}${e.note ? ' • ' + e.note : ''}</p>
+        </div>
+        <div class="entry-right">
+          <div class="amount expense">+${bn(e.qty * e.price)} Rs</div>
+          <button style="background:none;border:none;color:#C62828;font-size:16px;cursor:pointer;" onclick="deleteRetailEntry('${e.id}')">🗑️</button>
+        </div>
+      </div>`;
+    } else {
+      return `<div class="entry-item" style="border-left:4px solid #1976D2;">
+        <div class="entry-left">
+          <h5>💵 Payment (${e.paymentMode || 'Cash'})</h5>
+          <p>${formatDate(e.date)}${e.note ? ' • ' + e.note : ''}</p>
+        </div>
+        <div class="entry-right">
+          <div class="amount income">-${bn(e.amount)} Rs</div>
+          <button style="background:none;border:none;color:#C62828;font-size:16px;cursor:pointer;" onclick="deleteRetailEntry('${e.id}')">🗑️</button>
+        </div>
+      </div>`;
+    }
+  }).join('');
+  
+  document.getElementById('retailProfileContent').innerHTML = `
+    <div class="summary-box" style="background:#FFF3E0;border-left:4px solid #E65100;">
+      <div class="summary-row"><span>📝 ধরন</span><span>${c.type || '—'}</span></div>
+      <div class="summary-row"><span>📞 মোবাইল</span><span>${c.phone || '—'}</span></div>
+      <div class="summary-row"><span>💵 দুধের দাম</span><span>${bn(c.rate || 40)} Rs/L</span></div>
+      ${c.address ? `<div class="summary-row"><span>🏠 ঠিকানা</span><span>${c.address}</span></div>` : ''}
+    </div>
+    
+    <div class="summary-box" style="background:${due > 0 ? '#FFEBEE' : '#E8F5E9'};border-left:4px solid ${dueColor};">
+      <h3 style="color:${dueColor};">${dueIcon} বাকি: ${bn(due)} Rs</h3>
+    </div>
+    
+    <div class="summary-box">
+      <h3>📊 এই মাস (${thisMonth})</h3>
+      <div class="summary-row"><span>🥛 Total দুধ</span><span>${bn(monthQty)} L</span></div>
+      <div class="summary-row"><span>💰 Total বিল</span><span>${bn(monthMilk)} Rs</span></div>
+      <div class="summary-row"><span>✅ Total Paid</span><span>${bn(monthPaid)} Rs</span></div>
+      <div class="summary-row"><span>⚠️ এই মাসের বাকি</span><span style="color:${(monthMilk - monthPaid) > 0 ? '#C62828' : '#2E7D32'};">${bn(monthMilk - monthPaid)} Rs</span></div>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <button class="btn-primary" onclick="openRetailEntryForm('milk')">➕ দুধ Entry</button>
+      <button class="btn-blue" onclick="openRetailEntryForm('payment')">💵 Payment</button>
+    </div>
+    
+    <button class="btn-secondary" onclick="openRetailPDF()" style="margin-bottom:8px;">📄 মাসিক PDF</button>
+    <button class="btn-secondary" onclick="shareRetailWhatsApp()" style="margin-bottom:8px;background:#25D366;">💬 WhatsApp Summary</button>
+    <button class="btn-secondary" onclick="openAddCustomer('${c.id}')" style="margin-bottom:8px;">✏️ Edit Customer</button>
+    <button class="btn-danger" onclick="deleteRetailCustomer('${c.id}')">🗑️ Delete Customer</button>
+    
+    <div class="summary-box" style="margin-top:16px;">
+      <h3>📅 Entry History</h3>
+      ${historyHtml || '<div class="empty" style="padding:20px;"><p>No entries yet</p></div>'}
+    </div>
+  `;
+}
+
+function openRetailEntryForm(type) {
+  const c = DB.customers.find(x => x.id === currentRetailCustomerId);
+  if (!c) return;
+  
+  if (type === 'milk') {
+    const html = `
+      <div style="text-align:left;">
+        <div class="form-group"><label>📅 Date</label><input type="date" id="reDate" value="${today()}"></div>
+        <div class="form-group"><label>⏰ Time</label>
+          <select id="reTime">
+            <option value="সকাল">সকাল</option>
+            <option value="বিকাল">বিকাল</option>
+            <option value="সকাল ও বিকাল">সকাল ও বিকাল</option>
+          </select>
+        </div>
+        <div class="form-group"><label>🥛 Quantity (L)</label><input type="number" id="reQty" step="0.1" placeholder="5"></div>
+        <div class="form-group"><label>💵 Price (Rs/L)</label><input type="number" id="rePrice" value="${c.rate || 40}" step="0.1"></div>
+        <div class="form-group"><label>📝 Note</label><input type="text" id="reNote" placeholder="optional"></div>
+      </div>`;
+    document.getElementById('modalTitle').textContent = '➕ দুধ Entry';
+    document.getElementById('modalMsg').innerHTML = html;
+    document.getElementById('modalOk').textContent = '💾 Save';
+    modalInputMode = false;
+    modalCallback = function() { saveRetailEntry('milk'); };
+    document.getElementById('modalCancel').style.display = '';
+    document.getElementById('modalCancel').textContent = 'Cancel';
+    document.getElementById('modalOverlay').classList.add('show');
+  } else {
+    const html = `
+      <div style="text-align:left;">
+        <div class="form-group"><label>📅 Date</label><input type="date" id="reDate" value="${today()}"></div>
+        <div class="form-group"><label>💵 Amount (Rs)</label><input type="number" id="reAmount" placeholder="500"></div>
+        <div class="form-group"><label>💳 Mode</label>
+          <select id="reMode">
+            <option value="নগদ">💵 নগদ</option>
+            <option value="UPI">📱 UPI</option>
+            <option value="বাকি">📝 বাকি (Credit)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>📝 Note</label><input type="text" id="reNote" placeholder="optional"></div>
+      </div>`;
+    document.getElementById('modalTitle').textContent = '💵 Payment';
+    document.getElementById('modalMsg').innerHTML = html;
+    document.getElementById('modalOk').textContent = '💾 Save';
+    modalInputMode = false;
+    modalCallback = function() { saveRetailEntry('payment'); };
+    document.getElementById('modalCancel').style.display = '';
+    document.getElementById('modalCancel').textContent = 'Cancel';
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+}
+
+function saveRetailEntry(type) {
+  const c = DB.customers.find(x => x.id === currentRetailCustomerId);
+  if (!c) return;
+  
+  const date = document.getElementById('reDate').value || today();
+  
+  if (type === 'milk') {
+    const qty = Number(document.getElementById('reQty').value);
+    const price = Number(document.getElementById('rePrice').value);
+    if (!qty || qty <= 0) { toast('❌ Quantity দিন'); return; }
+    if (!price || price <= 0) { toast('❌ Price দিন'); return; }
+    
+    DB.retailEntries.push({
+      id: uid(),
+      customerId: c.id,
+      type: 'milk',
+      date: date,
+      time: document.getElementById('reTime').value,
+      qty: qty,
+      price: price,
+      note: document.getElementById('reNote').value.trim()
+    });
+    toast('✅ Milk entry added');
+  } else {
+    const amount = Number(document.getElementById('reAmount').value);
+    if (!amount || amount <= 0) { toast('❌ Amount দিন'); return; }
+    
+    DB.retailEntries.push({
+      id: uid(),
+      customerId: c.id,
+      type: 'payment',
+      date: date,
+      amount: amount,
+      paymentMode: document.getElementById('reMode').value,
+      note: document.getElementById('reNote').value.trim()
+    });
+    toast('✅ Payment added');
+  }
+  
+  saveDB();
+  renderRetailProfile();
+  renderRetail();
+}
+
+function deleteRetailEntry(id) {
+  if (!confirm('এই entry মুছে ফেলবেন?')) return;
+  DB.retailEntries = DB.retailEntries.filter(e => e.id !== id);
+  saveDB();
+  renderRetailProfile();
+  renderRetail();
+  toast('🗑️ Deleted');
+}
+
+function deleteRetailCustomer(id) {
+  if (!confirm('এই ক্রেতা এবং সব entry মুছে যাবে। নিশ্চিত?')) return;
+  DB.customers = DB.customers.filter(c => c.id !== id);
+  DB.retailEntries = DB.retailEntries.filter(e => e.customerId !== id);
+  saveDB();
+  renderRetail();
+  showPage('retail');
+  toast('🗑️ Customer deleted');
+}
+function shareRetailWhatsApp() {
+  const c = DB.customers.find(x => x.id === currentRetailCustomerId);
+  if (!c) return;
+  
+  const entries = (DB.retailEntries || []).filter(e => e.customerId === c.id);
+  if (entries.length === 0) {
+    toast('❌ কোনো entry নেই');
+    return;
+  }
+  
+  const thisMonth = today().substring(0, 7);
+  const monthEntries = entries.filter(e => e.date.substring(0, 7) === thisMonth);
+  const monthMilk = monthEntries.filter(e => e.type === 'milk').reduce((s, e) => s + Number(e.qty), 0);
+  const monthBill = monthEntries.filter(e => e.type === 'milk').reduce((s, e) => s + (Number(e.qty) * Number(e.price)), 0);
+  const monthPaid = monthEntries.filter(e => e.type === 'payment').reduce((s, e) => s + Number(e.amount), 0);
+  const totalDue = calcCustomerDue(c.id);
+  
+  const farm = DB.settings.farmName || 'Dairy Farm';
+  const owner = DB.settings.ownerName || '';
+  
+  const monthLabel = new Date(thisMonth + '-01').toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  
+  let msg = '🐄 *' + farm + '*\n';
+  if (owner) msg += '👤 ' + owner + '\n';
+  msg += '\n👤 *ক্রেতার নাম:* ' + c.name + '\n';
+  if (c.type) msg += '📝 *ধরন:* ' + c.type + '\n';
+  msg += '💵 *দুধের দাম:* ' + (c.rate || 40) + ' Rs/L\n';
+  msg += '📅 *মাস:* ' + monthLabel + '\n';
+  msg += '\n─────────────────────\n';
+  msg += '📊 *এই মাসের হিসাব*\n';
+  msg += '─────────────────────\n';
+  msg += '🥛 Total দুধ: *' + monthMilk.toFixed(1) + ' L*\n';
+  msg += '💰 Total বিল: *' + monthBill.toFixed(0) + ' Rs*\n';
+  msg += '✅ Total Paid: *' + monthPaid.toFixed(0) + ' Rs*\n';
+  msg += '\n─────────────────────\n';
+  if (totalDue > 0) {
+    msg += '⚠️ *মোট বাকি: ' + totalDue.toFixed(0) + ' Rs*\n';
+  } else {
+    msg += '✅ *সব পরিশোধ হয়েছে*\n';
+  }
+  msg += '─────────────────────\n';
+  msg += '\n_Dairy Manager থেকে পাঠানো_';
+  
+  let phone = (c.phone || '').replace(/\D/g, '');
+  if (phone.length === 10) phone = '91' + phone;
+  if (phone.length === 11 && phone.startsWith('0')) phone = '91' + phone.substring(1);
+  
+  const url = phone 
+    ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
+    : 'https://wa.me/?text=' + encodeURIComponent(msg);
+  
+  window.open(url, '_blank');
+  toast('📤 WhatsApp খুলছে...');
+}
+
+function openRetailPDF() {
+  const c = DB.customers.find(x => x.id === currentRetailCustomerId);
+  if (!c) return;
+  
+  const now = new Date();
+  const currentMonth = today().substring(0, 7);
+  
+  const html = `
+    <div style="text-align:left;">
+      <div class="form-group">
+        <label>📅 মাস সিলেক্ট করুন</label>
+        <input type="month" id="pdfMonth" value="${currentMonth}">
+      </div>
+      <p style="font-size:12px;color:#888;">প্রতি মাসের সম্পূর্ণ হিসাব PDF আকারে ডাউনলোড হবে।</p>
+    </div>`;
+  
+  document.getElementById('modalTitle').textContent = '📄 Monthly Statement';
+  document.getElementById('modalMsg').innerHTML = html;
+  document.getElementById('modalInput').style.display = 'none';
+  document.getElementById('modalCancel').style.display = '';
+  document.getElementById('modalCancel').textContent = 'Cancel';
+  document.getElementById('modalOk').textContent = '📄 Generate';
+  modalInputMode = false;
+  modalCallback = function() {
+    const month = document.getElementById('pdfMonth').value;
+    if (!month) { toast('❌ মাস সিলেক্ট করুন'); return; }
+    generateRetailPDF(c.id, month);
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function generateRetailPDF(customerId, month) {
+  const c = DB.customers.find(x => x.id === customerId);
+  if (!c) return;
+  
+  const entries = (DB.retailEntries || [])
+    .filter(e => e.customerId === customerId && e.date.substring(0, 7) === month)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  
+  if (entries.length === 0) {
+    toast('❌ এই মাসে কোনো entry নেই');
+    return;
+  }
+  
+  const milkEntries = entries.filter(e => e.type === 'milk');
+  const paymentEntries = entries.filter(e => e.type === 'payment');
+  
+  const totalMilk = milkEntries.reduce((s, e) => s + Number(e.qty), 0);
+  const totalBill = milkEntries.reduce((s, e) => s + (Number(e.qty) * Number(e.price)), 0);
+  const totalPaid = paymentEntries.reduce((s, e) => s + Number(e.amount), 0);
+  const due = totalBill - totalPaid;
+  
+  const farm = DB.settings.farmName || 'Dairy Farm';
+  const owner = DB.settings.ownerName || '';
+  const phone = DB.settings.phone || '';
+  const logoHtml = DB.settings.logo
+    ? '<img src="' + DB.settings.logo + '" style="width:55px;height:55px;object-fit:cover;border-radius:8px;">'
+    : '<div style="width:55px;height:55px;background:#2E7D32;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;">🐄</div>';
+  
+  const monthLabel = new Date(month + '-01').toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  
+  const milkRows = milkEntries.map(e => 
+    '<tr><td>' + formatDate(e.date) + '</td><td>' + (e.time || '') + '</td>' +
+    '<td style="text-align:right;">' + Number(e.qty).toFixed(1) + '</td>' +
+    '<td style="text-align:right;">' + Number(e.price).toFixed(0) + '</td>' +
+    '<td style="text-align:right;">' + (Number(e.qty) * Number(e.price)).toFixed(0) + '</td></tr>'
+  ).join('');
+  
+  const payRows = paymentEntries.map(e => 
+    '<tr><td>' + formatDate(e.date) + '</td><td>' + (e.paymentMode || 'Cash') + '</td>' +
+    '<td style="text-align:right;">' + Number(e.amount).toFixed(0) + '</td></tr>'
+  ).join('');
+  
+  const pdfHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' +
+    '* { font-family: Arial, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }' +
+    'body { padding: 20px; color: #222; }' +
+    '.header { display: flex; align-items: center; gap: 12px; border-bottom: 3px solid #2E7D32; padding-bottom: 10px; margin-bottom: 14px; }' +
+    '.header h1 { font-size: 18px; color: #2E7D32; }' +
+    '.header p { font-size: 10px; color: #666; margin-top: 2px; }' +
+    '.title { text-align: center; font-size: 15px; font-weight: bold; color: #2E7D32; background: #E8F5E9; padding: 8px; border-radius: 8px; margin-bottom: 12px; }' +
+    '.cust-info { background: #F5F5F5; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 11px; }' +
+    '.cust-info div { padding: 3px 0; }' +
+    '.cust-info b { color: #555; display: inline-block; min-width: 90px; }' +
+    'table { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 12px; }' +
+    'th { background: #2E7D32; color: #fff; padding: 5px; text-align: left; font-size: 10px; }' +
+    'td { padding: 4px 5px; border-bottom: 1px solid #eee; }' +
+    'tr:nth-child(even) { background: #FAFAFA; }' +
+    '.summary { background: #FFF3E0; padding: 10px; border-radius: 8px; margin-top: 12px; font-size: 12px; }' +
+    '.summary .row { display: flex; justify-content: space-between; padding: 3px 0; }' +
+    '.summary .total { border-top: 2px solid #E65100; margin-top: 6px; padding-top: 6px; font-size: 14px; font-weight: bold; color: #E65100; }' +
+    '.footer { margin-top: 20px; text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 10px; }' +
+    '</style></head><body>' +
+    '<div class="header">' + logoHtml +
+    '<div><h1>' + farm + '</h1><p>' + (owner ? owner + ' • ' : '') + phone + '</p></div></div>' +
+    '<div class="title">🥛 Monthly Statement / মাসিক বিল</div>' +
+    '<div class="cust-info">' +
+    '<div><b>Customer:</b> ' + c.name + '</div>' +
+    (c.type ? '<div><b>Type:</b> ' + c.type + '</div>' : '') +
+    (c.phone ? '<div><b>Phone:</b> ' + c.phone + '</div>' : '') +
+    (c.address ? '<div><b>Address:</b> ' + c.address + '</div>' : '') +
+    '<div><b>Rate:</b> ' + (c.rate || 40) + ' Rs/L</div>' +
+    '<div><b>Month:</b> ' + monthLabel + '</div>' +
+    '</div>' +
+    '<div style="font-size:12px;font-weight:bold;color:#2E7D32;margin-bottom:6px;">📥 Milk Entries</div>' +
+    '<table><thead><tr><th>Date</th><th>Time</th><th style="text-align:right;">Qty(L)</th><th style="text-align:right;">Price</th><th style="text-align:right;">Amount</th></tr></thead>' +
+    '<tbody>' + milkRows + '</tbody></table>' +
+    '<div style="font-size:12px;font-weight:bold;color:#1976D2;margin-bottom:6px;">💵 Payments</div>' +
+    '<table><thead><tr><th>Date</th><th>Mode</th><th style="text-align:right;">Amount</th></tr></thead>' +
+    '<tbody>' + (payRows || '<tr><td colspan="3" style="text-align:center;color:#888;">No payments</td></tr>') + '</tbody></table>' +
+    '<div class="summary">' +
+    '<div class="row"><span>Total Milk</span><span>' + totalMilk.toFixed(1) + ' L</span></div>' +
+    '<div class="row"><span>Total Bill</span><span>' + totalBill.toFixed(0) + ' Rs</span></div>' +
+    '<div class="row"><span>Total Paid</span><span>' + totalPaid.toFixed(0) + ' Rs</span></div>' +
+    '<div class="row total"><span>' + (due > 0 ? '⚠️ Due' : '✅ Clear') + '</span><span>' + Math.abs(due).toFixed(0) + ' Rs</span></div>' +
+    '</div>' +
+    '<div class="footer">Generated by Dairy Manager • ' + formatDate(new Date()) + '</div>' +
+    '</body></html>';
+  
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(pdfHtml);
+  doc.close();
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch(e) { toast('❌ Print failed'); }
+    setTimeout(() => {
+      if (document.body.contains(iframe)) document.body.removeChild(iframe);
+    }, 2000);
+  }, 500);
+  toast('📄 Print dialog — choose "Save as PDF"');
+}
+
+function calcCustomerDue(customerId) {
+  const entries = (DB.retailEntries || []).filter(e => e.customerId === customerId);
+  const milkTotal = entries.filter(e => e.type === 'milk').reduce((s, e) => s + (Number(e.qty) * Number(e.price)), 0);
+  const paidTotal = entries.filter(e => e.type === 'payment').reduce((s, e) => s + Number(e.amount), 0);
+  return milkTotal - paidTotal;
+}
+
+function renderRetailCustomers() {
+  const list = document.getElementById('retailCustomerList');
+  if (!list) return;
+  const customers = DB.customers || [];
+  if (customers.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="icon">🛒</div><p>এখনো কোনো ক্রেতা নেই</p></div>';
+    return;
+  }
+  list.innerHTML = customers.map(c => {
+    const due = calcCustomerDue(c.id);
+    const dueColor = due > 0 ? '#C62828' : '#2E7D32';
+    const badge = due > 0 ? '⚠️' : '✅';
+    return `<div class="cow-item" style="cursor:pointer;border-left-color:${due > 0 ? '#C62828' : '#2E7D32'};" onclick="openRetailProfile('${c.id}')">
+      <div class="cow-avatar" style="background:linear-gradient(135deg,#FFB74D,#E65100);">👤</div>
+      <div class="cow-info">
+        <h4>${c.name} <span class="tag-badge">${c.type || '—'}</span></h4>
+        <p>📞 ${c.phone || '—'} • ${bn(c.rate || 40)} Rs/L</p>
+        <p style="color:${dueColor};font-weight:600;">${badge} বাকি: ${bn(due)} Rs</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function doRetailSearch() {
+  const q = document.getElementById('retailSearch').value.trim().toLowerCase();
+  const list = document.getElementById('retailCustomerList');
+  if (!list) return;
+  const customers = DB.customers || [];
+  const filtered = q ? customers.filter(c => 
+    (c.name || '').toLowerCase().includes(q) || 
+    (c.phone || '').includes(q) ||
+    (c.type || '').toLowerCase().includes(q)
+  ) : customers;
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="icon">🔍</div><p>কিছু পাওয়া যায়নি</p></div>';
+    return;
+  }
+  list.innerHTML = filtered.map(c => {
+    const due = calcCustomerDue(c.id);
+    const dueColor = due > 0 ? '#C62828' : '#2E7D32';
+    const badge = due > 0 ? '⚠️' : '✅';
+    return `<div class="cow-item" style="cursor:pointer;border-left-color:${due > 0 ? '#C62828' : '#2E7D32'};" onclick="openRetailProfile('${c.id}')">
+      <div class="cow-avatar" style="background:linear-gradient(135deg,#FFB74D,#E65100);">👤</div>
+      <div class="cow-info">
+        <h4>${c.name} <span class="tag-badge">${c.type || '—'}</span></h4>
+        <p>📞 ${c.phone || '—'} • ${bn(c.rate || 40)} Rs/L</p>
+        <p style="color:${dueColor};font-weight:600;">${badge} বাকি: ${bn(due)} Rs</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderContacts() {
   const list = document.getElementById('contactsList');
   if (!list) return;
