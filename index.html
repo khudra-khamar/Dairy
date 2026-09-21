@@ -1058,7 +1058,16 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         <button class="lang-btn" id="langHi" onclick="setLang('hi')">हिन्दी</button>
       </div>
     </div>
-
+<div class="summary-box">
+  <h3>🔤 Font Size / লেখার আকার</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">
+    <button class="font-size-btn" id="fsSmall" onclick="setFontSize(0.85)">Small</button>
+    <button class="font-size-btn" id="fsMedium" onclick="setFontSize(1.0)">Medium</button>
+    <button class="font-size-btn" id="fsLarge" onclick="setFontSize(1.15)">Large</button>
+    <button class="font-size-btn" id="fsXL" onclick="setFontSize(1.30)">Extra</button>
+  </div>
+  <div style="text-align:center;font-size:11px;color:#888;margin-top:8px;" id="fontSizeLabel">Current: Medium</div>
+</div>
     <div class="summary-box">
       <h3 data-t="features_title">🔧 Feature Control</h3>
       <div id="featureToggles"></div>
@@ -1531,7 +1540,7 @@ let DB = {
   settings: {
     lang: 'en',
     farmName: '', ownerName: '', phone: '',
-    logo: '', price: 40,
+    logo: '', price: 40, fontScale: 1.0,
     preset: 'medium',
     features: {
       lactation: true,
@@ -1575,6 +1584,7 @@ function loadDB() {
   if (!DB.settings.preset) DB.settings.preset = 'medium';
   if (!DB.settings.lang) DB.settings.lang = 'en';
   if (!DB.settings.price) DB.settings.price = 40;
+  if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
 }
 
 function saveDB() {
@@ -5484,6 +5494,31 @@ function openSaleBill(id) {
   toast('📄 Print dialog — choose "Save as PDF"');
 }
 // ========== SETTINGS ==========
+function setFontSize(scale) {
+  DB.settings.fontScale = scale;
+  saveDB();
+  applyFontSize();
+  const labels = {0.85:'Small', 1.0:'Medium', 1.15:'Large', 1.30:'Extra Large'};
+  toast('✅ Font: ' + (labels[scale] || 'Medium'));
+}
+
+function applyFontSize() {
+  const scale = DB.settings.fontScale || 1.0;
+  document.body.style.zoom = scale;
+  
+  const labels = {0.85:'Small', 1.0:'Medium', 1.15:'Large', 1.30:'Extra Large'};
+  const labelEl = document.getElementById('fontSizeLabel');
+  if (labelEl) labelEl.textContent = 'Current: ' + (labels[scale] || 'Medium');
+  
+  const fsSmall = document.getElementById('fsSmall');
+  const fsMedium = document.getElementById('fsMedium');
+  const fsLarge = document.getElementById('fsLarge');
+  const fsXL = document.getElementById('fsXL');
+  if (fsSmall) fsSmall.classList.toggle('active', scale === 0.85);
+  if (fsMedium) fsMedium.classList.toggle('active', scale === 1.0);
+  if (fsLarge) fsLarge.classList.toggle('active', scale === 1.15);
+  if (fsXL) fsXL.classList.toggle('active', scale === 1.30);
+}
 function loadSettings() {
   const fn = document.getElementById('setFarmName');
   const on = document.getElementById('setOwnerName');
@@ -6048,6 +6083,7 @@ function clearAllData() {
 
 // ========== AFTER LOGIN ==========
 function afterLogin() {
+applyFontSize();
 autoTransferCattleTypes();
   addDefaultContacts();
   applyLang();
