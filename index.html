@@ -898,6 +898,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <div class="tabs">
       <div class="tab active" id="medTabCow" onclick="switchMedTab('cow')">🐄 Animal Medicine</div>
       <div class="tab" id="medTabStock" onclick="switchMedTab('stock')">📦 Stock</div>
+      <div class="tab" id="medTabFirstAid" onclick="switchMedTab('firstaid')">🩺 First Aid</div>
     </div>
 
     <!-- ANIMAL MEDICINE TAB -->
@@ -918,6 +919,15 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <div id="medStockSummary" style="margin-top:14px;"></div>
     </div>
   </div>
+  
+<!-- FIRST AID TAB -->
+<div id="medFirstAidTab" style="display:none;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <h3 style="font-size:15px;color:#2E7D32;">🩺 First Aid Guide</h3>
+    <button id="faDevBtn" onclick="openDevPassword()" style="background:#fff;border:2px solid #E0E0E0;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;">⚙️</button>
+  </div>
+  <div id="firstAidList"></div>
+</div>
 
 </div>
 <div class="container">
@@ -1549,6 +1559,8 @@ let DB = {
       alertsHeat: true,
       alertsDry: true,
       alertsCalving: true,
+      alertsDeworm: true,
+      alertsVaccine: true,
       medicine: true,
       notes: true
     }
@@ -1579,8 +1591,11 @@ function loadDB() {
   if (!DB.settings) DB.settings = {};
   if (!DB.settings.features) DB.settings.features = {
     lactation:true, milkRecord:false, alertsPD:true, alertsHeat:true,
-    alertsDry:true, alertsCalving:true, medicine:true, notes:true
+    alertsDry:true, alertsCalving:true, alertsDeworm: true,
+    alertsVaccine: true,medicine:true, notes:true
   };
+  if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
+  if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
   if (!DB.settings.preset) DB.settings.preset = 'medium';
   if (!DB.settings.lang) DB.settings.lang = 'en';
   if (!DB.settings.price) DB.settings.price = 40;
@@ -1732,6 +1747,8 @@ const FEATURE_LIST = [
   { key: 'alertsHeat', label: 'Heat Alert', icon: '🔔' },
   { key: 'alertsDry', label: 'Dry-off Alert', icon: '🍼' },
   { key: 'alertsCalving', label: 'Calving Alert', icon: '🐄' },
+  { key: 'alertsDeworm', label: 'Deworming Alert', icon: '💊' },
+  { key: 'alertsVaccine', label: 'Vaccination Alert', icon: '💉' },
   { key: 'medicine', label: 'Medicine Tracker', icon: '💊' },
   { key: 'notes', label: 'Notes', icon: '📝' }
 ];
@@ -3655,18 +3672,221 @@ function renderMedAll() {
     </div>`;
   }).join('');
 }
+const FIRST_AID_DATA = [
+  { id: 'wound', icon: '🩸', title: 'ক্ষত / রক্তক্ষরণ', dos: ['পরিষ্কার পানি দিয়ে ধুয়ে ফেলুন','পরিষ্কার কাপড় দিয়ে চেপে ধরুন','ক্ষত কে ব্যান্ডেজ করুন','Tetnus injection 24 ঘন্টার মধ্যে','ব্যথা বেশি হলে ডাক্তার ডাকুন'], donts: ['চুন-মাটি লাগাবেন না','ময়লা কাপড় জড়াবেন না','পানি ছাড়া অন্য কিছু ঢালবেন না'] },
+  { id: 'burn', icon: '🔥', title: 'পোড়া', dos: ['ঠান্ডা পানি ১০-১৫ মিনিট ঢালুন','পরিষ্কার কাপড় ঢেকে রাখুন','ব্যথার ঔষধ দিন','পানি ফোস্কা ফাটাবেন না'], donts: ['বরফ লাগাবেন না','তেল/মাখন লাগাবেন না','টুথপেস্ট লাগাবেন না'] },
+  { id: 'poison', icon: '🤢', title: 'বিষ / গেলা বিষক্রিয়া', dos: ['মুখ থেকে বিষ সরান','পানি দিয়ে মুখ ধুয়ে দিন','দ্রুত ডাক্তারের কাছে যান','বমি করাবেন না (কিভাবে বিষ ঢুকেছে জেনে)'], donts: ['নিজে বমি করাবেন না','দুধ/তেল খাওয়াবেন না','সময় নষ্ট করবেন না'] },
+  { id: 'fever', icon: '🌡️', title: 'জ্বর', dos: ['ঠান্ডা পানিতে কাপড় ভিজিয়ে শরীর মুছুন','পানি বেশি খাওয়ান','ছায়ায় রাখুন','ডাক্তার ডাকুন (১০৪°F+)'], donts: ['বরফ পানি ঢালবেন না','বাধ্য করে খাওয়াবেন না'] },
+  { id: 'calving', icon: '🍼', title: 'প্রসবের সমস্যা', dos: ['শান্ত থাকুন','পরিষ্কার জায়গায় রাখুন','২ ঘন্টা অপেক্ষা করুন','সমস্যা হলে ডাক্তার ডাকুন'], donts: ['জোরে টানবেন না','নোংরা হাতে ধরবেন না','অতিরিক্ত অপেক্ষা করবেন না'] },
+  { id: 'fracture', icon: '🦴', title: 'হাড় ভাঙা', dos: ['গরু কে শুইয়ে রাখুন','বাঁশ/কাঠ দিয়ে সাপোর্ট দিন','নড়াচড়া করতে দেবেন না','ডাক্তার ডাকুন'], donts: ['নিজে হাড় ঠিক করার চেষ্টা করবেন না','জোরে টানবেন না'] },
+  { id: 'reaction', icon: '💉', title: 'টিকা reaction', dos: ['ছায়ায় শুইয়ে রাখুন','পানি দিন','১০ মিনিট পর্যবেক্ষণ','ডাক্তার ডাকুন'], donts: ['একা ফেলে রাখবেন না','জোরে দৌড়াবেন না'] },
+  { id: 'snake', icon: '🐍', title: 'সাপের কামড়', dos: ['নড়াচড়া কম করুন','কামড়ের জায়গা হৃদয়ের নিচে রাখুন','দ্রুত হাসপাতালে যান','সময় লিখে রাখুন'], donts: ['চুষে বের করবেন না','কাটবেন না','বাঁধন দেবেন না','সময় নষ্ট করবেন না'] },
+  { id: 'breath', icon: '🫁', title: 'শ্বাসকষ্ট', dos: ['খোলা জায়গায় নিন','গলা ঢিলা করুন','ছায়ায় রাখুন','ডাক্তার ডাকুন'], donts: ['শুইয়ে রাখবেন না','জোরে হাঁটাবেন না'] },
+  { id: 'noteat', icon: '🍔', title: 'খাওয়া বন্ধ', dos: ['মুখ পরীক্ষা করুন','জ্বর চেক করুন','পেট দেখুন','২৪ ঘন্টা অপেক্ষা করুন','ডাক্তার ডাকুন'], donts: ['জোর করে খাওয়াবেন না','বাড়তি ঔষধ দেবেন না'] },
+  { id: 'teeth', icon: '🦷', title: 'দাঁতের সমস্যা', dos: ['মুখ খুলে দেখুন','নরম খাবার দিন','লবণ পানি দিয়ে ধুয়ে দিন','ডাক্তার ডাকুন'], donts: ['জোরে টানবেন না','নিজে ভাঙবেন না'] },
+  { id: 'bloat', icon: '🫘', title: 'পেট ফুলে যাওয়া (Bloat)', dos: ['হাঁটান ১০-১৫ মিনিট','পিছনের দিকে রাখুন','বাঁ দিকে শুইয়ে রাখুন','জরুরি ডাক্তার ডাকুন'], donts: ['খাওয়াবেন না','পানি দেবেন না','সময় নষ্ট করবেন না'] },
+  { id: 'fmd', icon: '🩹', title: 'FMD এর ক্ষত', dos: ['মুখ ও পা পরিষ্কার করুন','লবণ পানি দিয়ে ধুয়ে দিন','নরম খাবার দিন','Antiseptic লাগান'], donts: ['অন্য পশুর সাথে মেশাবেন না','নোংরা রাখবেন না'] },
+  { id: 'uterine', icon: '🤰', title: 'জরায়ুর সমস্যা', dos: ['পরিষ্কার পানি দিয়ে ধুয়ে দিন','ডাক্তার ডাকুন','অন্য পশু থেকে দূরে রাখুন'], donts: ['নিজে ঢুকিয়ে ঠিক করার চেষ্টা করবেন না','নোংরা হাতে ধরবেন না'] },
+  { id: 'bloodmilk', icon: '🩸', title: 'দুধে রক্ত', dos: ['দুধ ফেলে দিন','ওলান পরীক্ষা করুন','গরম পানির সেঁক দিন','ডাক্তার ডাকুন'], donts: ['ওই দুধ খাবেন না','জোরে চাপবেন না'] },
+  { id: 'mastitis', icon: '🐄', title: 'Mastitis (ওলান ফোলা)', dos: ['গরম সেঁক দিন','নরম হাতে মালিশ করুন','নিয়মিত দুধ দোহন করুন','ডাক্তার ডাকুন'], donts: ['ব্যথা দেবেন না','ওই দুধ খাবেন না'] },
+  { id: 'eye', icon: '👁️', title: 'চোখের সমস্যা', dos: ['পরিষ্কার পানিতে কাপড় ভিজিয়ে মুছুন','ছায়ায় রাখুন','ডাক্তার ডাকুন'], donts: ['হাত দিয়ে ঘষবেন না','নোংরা কাপড় লাগাবেন না'] }
+];
+
+function openFirstAidDetail(id) {
+  const item = FIRST_AID_DATA.find(x => x.id === id);
+  if (!item) return;
+  
+  const dosHtml = item.dos.map((d, i) => `<li style="margin-bottom:6px;">${d}</li>`).join('');
+  const dontsHtml = item.donts.map((d, i) => `<li style="margin-bottom:6px;">${d}</li>`).join('');
+  
+  const html = `
+    <div style="text-align:left;max-height:65vh;overflow-y:auto;">
+      <div style="text-align:center;font-size:44px;margin-bottom:8px;">${item.icon}</div>
+      <h3 style="text-align:center;color:#2E7D32;margin-bottom:16px;font-size:17px;">${item.title}</h3>
+      
+      <div style="background:#E8F5E9;border-left:4px solid #2E7D32;padding:12px;border-radius:8px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;color:#1B5E20;margin-bottom:8px;">✅ কী করতে হবে:</div>
+        <ol style="padding-left:20px;font-size:13px;color:#333;line-height:1.6;">${dosHtml}</ol>
+      </div>
+      
+      <div style="background:#FFEBEE;border-left:4px solid #C62828;padding:12px;border-radius:8px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;">❌ কী করবেন না:</div>
+        <ul style="padding-left:20px;font-size:13px;color:#333;line-height:1.6;list-style:none;">${dontsHtml}</ul>
+      </div>
+      
+      <div style="background:#FFF3E0;border-left:4px solid #E65100;padding:10px;border-radius:8px;">
+<div style="font-size:12px;font-weight:700;color:#E65100;margin-bottom:8px;text-align:center;">⚠️ ভেটেনেরিয়ান এর সাথে যোগাযোগ করুন</div>
+<div style="display:flex;gap:8px;">
+<a href="tel:+919800696104" style="flex:1;background:#1976D2;color:#fff;text-decoration:none;padding:8px;border-radius:8px;font-weight:600;font-size:12px;text-align:center;">📞 Call</a>
+<a href="https://wa.me/919800696104" target="_blank" style="flex:1;background:#25D366;color:#fff;text-decoration:none;padding:8px;border-radius:8px;font-weight:600;font-size:12px;text-align:center;">💬 WhatsApp</a>
+</div>
+</div>
+    </div>`;
+  
+  document.getElementById('modalTitle').textContent = item.title;
+  document.getElementById('modalMsg').innerHTML = html;
+  document.getElementById('modalMsg').style.maxHeight = '70vh';
+  document.getElementById('modalMsg').style.overflowY = 'auto';
+  document.getElementById('modalInput').style.display = 'none';
+  document.getElementById('modalCancel').style.display = 'none';
+  document.getElementById('modalOk').textContent = 'Close';
+  modalInputMode = false;
+  modalCallback = null;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+let devModeActive = false;
+
+function openDevPassword() {
+  if (devModeActive) {
+    devModeActive = false;
+    toast('🔒 Developer Mode OFF');
+    renderFirstAid();
+    return;
+  }
+  
+  document.getElementById('modalTitle').textContent = '🔐 Developer Login';
+  document.getElementById('modalMsg').innerHTML = '<p style="font-size:13px;color:#666;margin-bottom:10px;">Enter developer password:</p>';
+  const inp = document.getElementById('modalInput');
+  inp.style.display = 'block';
+  inp.type = 'password';
+  inp.value = '';
+  document.getElementById('modalCancel').style.display = '';
+  document.getElementById('modalOk').textContent = 'Login';
+  modalInputMode = true;
+  modalCallback = function(pwd) {
+    if (checkDevPassword(pwd)) {
+      devModeActive = true;
+      toast('✅ Developer Mode ON');
+      renderFirstAid();
+    } else {
+      toast('❌ Wrong password');
+    }
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+  setTimeout(() => inp.focus(), 100);
+}
+
+function checkDevPassword(input) {
+  if (!input) return false;
+  const codes = [80,108,97,115,115,101,121,64,49];
+  const expected = codes.map(c => String.fromCharCode(c)).join('');
+  return input === expected;
+}
+
+function editFirstAid(id) {
+  const item = FIRST_AID_DATA.find(x => x.id === id);
+  if (!item) return;
+  
+  const dosText = item.dos.join('\n');
+  const dontsText = item.donts.join('\n');
+  
+  const html = `
+    <div style="text-align:left;">
+      <div class="form-group">
+        <label style="font-size:12px;font-weight:600;">Title</label>
+        <input type="text" id="faEditTitle" value="${item.title}" style="width:100%;padding:10px;border:2px solid #E0E0E0;border-radius:8px;font-size:14px;">
+      </div>
+      <div class="form-group">
+        <label style="font-size:12px;font-weight:600;">✅ কী করতে হবে (প্রতি লাইনে একটা)</label>
+        <textarea id="faEditDos" rows="6" style="width:100%;padding:10px;border:2px solid #E0E0E0;border-radius:8px;font-size:13px;font-family:inherit;">${dosText}</textarea>
+      </div>
+      <div class="form-group">
+        <label style="font-size:12px;font-weight:600;">❌ কী করবেন না</label>
+        <textarea id="faEditDonts" rows="4" style="width:100%;padding:10px;border:2px solid #E0E0E0;border-radius:8px;font-size:13px;font-family:inherit;">${dontsText}</textarea>
+      </div>
+    </div>`;
+  
+  document.getElementById('modalTitle').textContent = '✏️ Edit First Aid';
+  document.getElementById('modalMsg').innerHTML = html;
+  document.getElementById('modalMsg').style.maxHeight = '70vh';
+  document.getElementById('modalMsg').style.overflowY = 'auto';
+  document.getElementById('modalInput').style.display = 'none';
+  document.getElementById('modalCancel').style.display = '';
+  document.getElementById('modalCancel').textContent = '🔄 Reset';
+  document.getElementById('modalOk').textContent = '💾 Save';
+  modalInputMode = false;
+  modalCallback = function() { saveFirstAidEdit(id); };
+  
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function saveFirstAidEdit(id) {
+  const item = FIRST_AID_DATA.find(x => x.id === id);
+  if (!item) return;
+  
+  const title = document.getElementById('faEditTitle').value.trim();
+  const dosText = document.getElementById('faEditDos').value.trim();
+  const dontsText = document.getElementById('faEditDonts').value.trim();
+  
+  if (!title) { toast('❌ Title required'); return; }
+  if (!dosText) { toast('❌ At least one DO step required'); return; }
+  
+  item.title = title;
+  item.dos = dosText.split('\n').map(s => s.trim()).filter(s => s);
+  item.donts = dontsText.split('\n').map(s => s.trim()).filter(s => s);
+  
+  if (!DB.firstAidData) DB.firstAidData = {};
+  DB.firstAidData[id] = { title: item.title, dos: item.dos, donts: item.donts };
+  saveDB();
+  
+  renderFirstAid();
+  toast('✅ Saved');
+}
+
+function applyFirstAidOverrides() {
+  if (!DB.firstAidData) return;
+  Object.keys(DB.firstAidData).forEach(id => {
+    const item = FIRST_AID_DATA.find(x => x.id === id);
+    if (item) {
+      const saved = DB.firstAidData[id];
+      if (saved.title) item.title = saved.title;
+      if (saved.dos) item.dos = saved.dos;
+      if (saved.donts) item.donts = saved.donts;
+    }
+  });
+}
+
+function getEditButtonHtml(itemId) {
+  if (!devModeActive) return '';
+  return '<button onclick="event.stopPropagation();editFirstAid(\'' + itemId + '\')" style="background:#1976D2;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:14px;cursor:pointer;margin-right:6px;">✏️</button>';
+}
+
+function renderFirstAid() {
+  const list = document.getElementById('firstAidList');
+  if (!list) return;
+  list.innerHTML = FIRST_AID_DATA.map(item => `
+    <div class="contact-card" style="cursor:pointer;" onclick="openFirstAidDetail('${item.id}')">
+      <div class="contact-icon" style="font-size:24px;">${item.icon}</div>
+      <div class="contact-info">
+        <h4>${item.title}</h4>
+        <p>${item.dos.length} steps • ${item.donts.length} warnings</p>
+      </div>
+      ${getEditButtonHtml(item.id)}
+      <div style="font-size:20px;color:#888;">›</div>
+    </div>
+  `).join('');
+}
 
 function switchMedTab(tab) {
   currentMedTab = tab;
   const cowTab = document.getElementById('medTabCow');
   const stockTab = document.getElementById('medTabStock');
+  const firstAidTab = document.getElementById('medTabFirstAid');
   const cowContent = document.getElementById('medCowTab');
   const stockContent = document.getElementById('medStockTab');
+  const firstAidContent = document.getElementById('medFirstAidTab');
+  
   if (cowTab) cowTab.classList.toggle('active', tab === 'cow');
   if (stockTab) stockTab.classList.toggle('active', tab === 'stock');
+  if (firstAidTab) firstAidTab.classList.toggle('active', tab === 'firstaid');
+  
   if (cowContent) cowContent.style.display = tab === 'cow' ? 'block' : 'none';
   if (stockContent) stockContent.style.display = tab === 'stock' ? 'block' : 'none';
+  if (firstAidContent) firstAidContent.style.display = tab === 'firstaid' ? 'block' : 'none';
+  
   if (tab === 'stock') renderMedStock();
+  if (tab === 'firstaid') renderFirstAid();
 }
 // ========== MEDICINE STOCK ==========
 const MED_STOCK_CATS = {
@@ -4056,9 +4276,34 @@ function renderNotes() {
     <div class="note-item">
       <div class="date">📅 ${formatDate(n.date)}</div>
       <div class="text">${n.text.replace(/\n/g, '<br>')}</div>
+      <button class="btn-sm" style="background:#1976D2;" onclick="editNote('${n.id}')">✏️</button>
       <button class="btn-small-danger" onclick="deleteNote('${n.id}')">🗑️</button>
     </div>
   `).join('');
+}
+function editNote(id) {
+  const n = DB.notes.find(x => x.id === id);
+  if (!n) return;
+  
+  document.getElementById('modalTitle').textContent = '✏️ Edit Note';
+  document.getElementById('modalMsg').innerHTML = '<textarea id="modalTextarea" rows="6" style="width:100%;padding:12px;border:2px solid #E0E0E0;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;">' + n.text + '</textarea>';
+  document.getElementById('modalInput').style.display = 'none';
+  document.getElementById('modalCancel').style.display = '';
+  document.getElementById('modalOk').textContent = 'Save';
+  modalInputMode = false;
+  modalCallback = function() {
+    const newText = document.getElementById('modalTextarea').value;
+    if (!newText || !newText.trim()) { toast('❌ Note cannot be empty'); return; }
+    n.text = newText.trim();
+    saveDB();
+    renderNotes();
+    toast('✅ Updated');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+  setTimeout(() => {
+    const ta = document.getElementById('modalTextarea');
+    if (ta) ta.focus();
+  }, 100);
 }
 
 function deleteNote(id) {
@@ -4221,7 +4466,38 @@ function getAlerts() {
       });
     }
   });
-
+// Deworming & Vaccination Alerts
+(DB.medicine || []).forEach(m => {
+  const cow = DB.cows.find(c => c.id === m.cowId);
+  if (!cow) return;
+  if (cow.status === 'sold') return;
+  
+  const daysFromNext = daysFromToday(m.nextDate);
+  
+  if (m.type === 'deworm' && f.alertsDeworm) {
+    if (daysFromNext >= 0 && daysFromNext <= 7 && !isSnoozed(m.id + '_dewormdue')) {
+      alerts.push({
+        id: m.id + '_dewormdue',
+        cowId: m.cowId, type: 'deworm', icon: '💊', color: 'orange',
+        title: '💊 Deworming Due',
+        desc: cow.name + ' (' + (cow.tag || '—') + ') — ' + m.name + '<br>📅 Due: ' + formatDate(m.nextDate),
+        action: 'deworm'
+      });
+    }
+  }
+  
+  if (m.type === 'vaccine' && f.alertsVaccine) {
+    if (daysFromNext >= 0 && daysFromNext <= 7 && !isSnoozed(m.id + '_vaccinedue')) {
+      alerts.push({
+        id: m.id + '_vaccinedue',
+        cowId: m.cowId, type: 'vaccine', icon: '💉', color: 'blue',
+        title: '💉 Vaccination Due',
+        desc: cow.name + ' (' + (cow.tag || '—') + ') — ' + m.name + '<br>📅 Due: ' + formatDate(m.nextDate),
+        action: 'vaccine'
+      });
+    }
+  }
+});
   return alerts;
 }
 
@@ -4279,6 +4555,8 @@ function markAlertDone(key, cowId, action) {
   if (action === 'pd') { cow.pdDone = true; toast(t('pd_done')); }
   else if (action === 'heat') { cow.heatDone = true; DB.snoozed[key] = '9999-12-31'; toast(t('heat_done')); }
   else if (action === 'dry') { cow.dryDone = true; toast('✅ Dry period started'); }
+  else if (action === 'deworm') { DB.snoozed[key] = '9999-12-31'; toast('✅ Deworming marked done'); }
+  else if (action === 'vaccine') { DB.snoozed[key] = '9999-12-31'; toast('✅ Vaccination marked done'); }
   else if (action === 'calving') { toast('✅ Use "Calved" button in profile'); }
   else if (action === 'breed') { toast('✅ Breeding recorded'); }
   else if (action === 'prepcalving') { toast('✅ Calving area prepared'); }
@@ -4349,11 +4627,30 @@ function closeModal(ok) {
   document.getElementById('modalOverlay').classList.remove('show');
   const cb = modalCallback;
   const val = document.getElementById('modalInput').value;
+  const cancelText = document.getElementById('modalCancel').textContent;
   modalCallback = null;
+  
   if (ok && cb) {
     if (modalInputMode) cb(val);
     else cb();
+  } else if (!ok && cancelText === '🔄 Reset') {
+    if (confirm('🔄 Reset to default content?')) {
+      const id = document.getElementById('modalTitle').textContent.replace('✏️ Edit First Aid', '').trim();
+      // find id from editFirstAid - store it globally
+      if (window._editFirstAidId) {
+        const item = FIRST_AID_DATA.find(x => x.id === window._editFirstAidId);
+        if (item && DB.firstAidData) {
+          delete DB.firstAidData[window._editFirstAidId];
+          saveDB();
+        }
+        window.location.reload();
+      }
+    }
   }
+  
+  setTimeout(() => {
+    document.getElementById('modalCancel').textContent = 'Cancel';
+  }, 100);
 }
 
 // ========== REPORTS ==========
@@ -6085,6 +6382,7 @@ function clearAllData() {
 function afterLogin() {
 applyFontSize();
 autoTransferCattleTypes();
+applyFirstAidOverrides();
   addDefaultContacts();
   applyLang();
   loadSettings();
