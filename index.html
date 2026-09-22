@@ -429,7 +429,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <div class="card money-card" onclick="showPage('finance')">
         <div class="icon">💰</div>
         <div class="label" data-t="finance">Finance</div>
-        <div class="count" id="homeMoneyCount">0</div>
+        <div class="count" id="homeMoneyCount">0৳</div>
       </div>
       <div class="card report-card" onclick="showPage('reports')">
         <div class="icon">📊</div>
@@ -437,7 +437,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         <div class="count" data-t="view">View</div>
       </div>
       <div class="card calv-card" onclick="showPage('calving')">
-        <div class="icon">🍼</div>
+        <div class="icon">??</div>
         <div class="label" data-t="calving">Calving</div>
         <div class="count" data-t="calculator">Calculator</div>
       </div>
@@ -460,15 +460,15 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <div class="summary-box">
       <h3 data-t="today_summary">📅 Today's Summary</h3>
       <div class="summary-row"><span data-t="today_milk">🥛 Today's Milk</span><span id="todayMilk">0 L</span></div>
-      <div class="summary-row"><span data-t="today_income">💵 Today's Income</span><span id="todayIncome">0</span></div>
-      <div class="summary-row"><span data-t="today_expense">💸 Today's Expense</span><span id="todayExpense">0</span></div>
+      <div class="summary-row"><span data-t="today_income">💵 Today's Income</span><span id="todayIncome">0৳</span></div>
+      <div class="summary-row"><span data-t="today_expense">💸 Today's Expense</span><span id="todayExpense">0৳</span></div>
     </div>
 
     <div class="summary-box">
       <h3 data-t="total_summary">📊 Total Summary</h3>
-      <div class="summary-row"><span data-t="total_income">💵 Total Income</span><span id="totalIncome">0</span></div>
-      <div class="summary-row"><span data-t="total_expense">💸 Total Expense</span><span id="totalExpense">0</span></div>
-      <div class="summary-row"><span data-t="total_profit">📈 Total Profit</span><span id="totalProfit">0</span></div>
+      <div class="summary-row"><span data-t="total_income">💵 Total Income</span><span id="totalIncome">0৳</span></div>
+      <div class="summary-row"><span data-t="total_expense">💸 Total Expense</span><span id="totalExpense">0৳</span></div>
+      <div class="summary-row"><span data-t="total_profit">📈 Total Profit</span><span id="totalProfit">0৳</span></div>
     </div>
 
     <div class="summary-box">
@@ -482,7 +482,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     </div>
 
     <button class="btn-primary" data-t="add_cow" onclick="showPage('add-cow')">➕ Add New Animal</button>
-    <button class="btn-primary" onclick="debugPhotos()" style="background:#C62828;">🔍 Debug Photos</button>
 <div class="service-card" onclick="openServiceForm()">
   <div class="service-icon">🩺</div>
   <div class="service-text">
@@ -522,7 +521,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 
     <div id="cowsList"></div>
     <button class="btn-primary" data-t="add_cow" onclick="showPage('add-cow')">➕ Add New Animal</button>
-    <button class="btn-primary" onclick="debugPhotos()" style="background:#C62828;">🔍 Debug Photos</button>
   </div>
 
   <!-- GALLERY PAGE -->
@@ -1570,94 +1568,6 @@ const T = {
     feed_title:'🌾 चारा प्रबंधन'
   }
 };
-// ============ INDEXEDDB SETUP ============
-const IDB_NAME = 'dairyData_v1';
-const IDB_PHOTOS = 'dairyPhotos_v1';
-const IDB_BACKUP = 'dairyAutoBackup_v1';
-const IDB_VERSION = 1;
-
-let idbData = null;
-let idbPhotos = null;
-let idbBackup = null;
-let idbReady = false;
-
-function idbLog(msg) {
-  console.log('[IDB]', msg);
-}
-
-function initIndexedDB() {
-  return new Promise((resolve, reject) => {
-    let completed = 0;
-    const total = 3;
-    const checkDone = () => {
-      completed++;
-      if (completed === total) {
-        idbReady = true;
-        idbLog('All 3 databases ready');
-        resolve(true);
-      }
-    };
-    
-    // Database 1: Main Data
-    const req1 = indexedDB.open(IDB_NAME, IDB_VERSION);
-    req1.onupgradeneeded = function(e) {
-      const db = e.target.result;
-      ['cows','milk','finance','medicine','notes','medStock','feedStock',
-       'contacts','customers','retailEntries','snoozed','settings',
-       'security','license','device'].forEach(storeName => {
-        if (!db.objectStoreNames.contains(storeName)) {
-          db.createObjectStore(storeName, { keyPath: 'id' });
-        }
-      });
-    };
-    req1.onsuccess = function(e) {
-      idbData = e.target.result;
-      idbLog('dairyData ready');
-      checkDone();
-    };
-    req1.onerror = function(e) {
-      idbLog('dairyData error: ' + e.target.error);
-      reject(e.target.error);
-    };
-    
-    // Database 2: Photos (Blob)
-    const req2 = indexedDB.open(IDB_PHOTOS, IDB_VERSION);
-    req2.onupgradeneeded = function(e) {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('photos')) {
-        db.createObjectStore('photos', { keyPath: 'id' });
-      }
-    };
-    req2.onsuccess = function(e) {
-      idbPhotos = e.target.result;
-      idbLog('dairyPhotos ready');
-      checkDone();
-    };
-    req2.onerror = function(e) {
-      idbLog('dairyPhotos error: ' + e.target.error);
-      reject(e.target.error);
-    };
-    
-    // Database 3: Auto Backup
-    const req3 = indexedDB.open(IDB_BACKUP, IDB_VERSION);
-    req3.onupgradeneeded = function(e) {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('backups')) {
-        db.createObjectStore('backups', { keyPath: 'id' });
-      }
-    };
-    req3.onsuccess = function(e) {
-      idbBackup = e.target.result;
-      idbLog('dairyAutoBackup ready');
-      checkDone();
-    };
-    req3.onerror = function(e) {
-      idbLog('dairyAutoBackup error: ' + e.target.error);
-      reject(e.target.error);
-    };
-  });
-}
-
 // ========== DATABASE ==========
 let DB = {
   cows: [], milk: [], finance: [], medicine: [], notes: [],
@@ -1686,212 +1596,6 @@ let DB = {
     }
   }
 };
-
-// ============ IndexedDB CRUD HELPERS ============
-function idbGetAll(storeName) {
-  return new Promise((resolve) => {
-    if (!idbReady || !idbData) { resolve([]); return; }
-    try {
-      const tx = idbData.transaction(storeName, 'readonly');
-      const store = tx.objectStore(storeName);
-      const req = store.getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    } catch(e) { resolve([]); }
-  });
-}
-
-function idbPut(storeName, data) {
-  return new Promise((resolve) => {
-    if (!idbReady || !idbData) { resolve(false); return; }
-    try {
-      const tx = idbData.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      store.put(data);
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    } catch(e) { resolve(false); }
-  });
-}
-
-function idbClear(storeName) {
-  return new Promise((resolve) => {
-    if (!idbReady || !idbData) { resolve(false); return; }
-    try {
-      const tx = idbData.transaction(storeName, 'readwrite');
-      tx.objectStore(storeName).clear();
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    } catch(e) { resolve(false); }
-  });
-}
-
-async function loadDBAsync() {
-  if (!idbReady) {
-    idbLog('DB not ready — using defaults');
-    return false;
-  }
-  try {
-    // Load arrays
-    DB.cows = await idbGetAll('cows');
-    DB.milk = await idbGetAll('milk');
-    DB.finance = await idbGetAll('finance');
-    DB.medicine = await idbGetAll('medicine');
-    DB.notes = await idbGetAll('notes');
-    DB.medStock = await idbGetAll('medStock');
-    DB.feedStock = await idbGetAll('feedStock');
-    DB.contacts = await idbGetAll('contacts');
-    DB.customers = await idbGetAll('customers');
-    DB.retailEntries = await idbGetAll('retailEntries');
-    
-    // Load single objects
-    const settingsArr = await idbGetAll('settings');
-    if (settingsArr.length > 0) DB.settings = Object.assign(DB.settings, settingsArr[0]);
-    
-    const securityArr = await idbGetAll('security');
-    if (securityArr.length > 0) DB.security = securityArr[0];
-    
-    const licenseArr = await idbGetAll('license');
-    if (licenseArr.length > 0) DB.license = licenseArr[0];
-    
-    const deviceArr = await idbGetAll('device');
-    if (deviceArr.length > 0 && deviceArr[0].deviceId) DB.deviceId = deviceArr[0].deviceId;
-    
-    const snoozedArr = await idbGetAll('snoozed');
-    if (snoozedArr.length > 0) DB.snoozed = snoozedArr[0].data || {};
-
-// Load photos from separate store
-await loadAllPhotosSeparately();
-    
-    idbLog('Loaded from IndexedDB');
-    return true;
-  } catch(e) {
-    idbLog('Load error: ' + e.message);
-    return false;
-  }
-}
-
-let _saveTimer = null;
-let _savePending = false;
-
-function scheduleSave() {
-  _savePending = true;
-  if (_saveTimer) clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(() => {
-    saveDBAsync();
-    _savePending = false;
-  }, 500);
-}
-
-document.addEventListener('visibilitychange', function() {
-  if (document.hidden && _savePending) {
-    if (_saveTimer) clearTimeout(_saveTimer);
-    saveDBAsync();
-    _savePending = false;
-  }
-});
-
-window.addEventListener('pagehide', function() {
-  if (_savePending) {
-    saveDBAsync();
-    _savePending = false;
-  }
-});
-
-async function savePhotoSeparately(cowId, photoBase64) {
-  if (!idbReady || !idbPhotos) return false;
-  try {
-    const tx = idbPhotos.transaction('photos', 'readwrite');
-    tx.objectStore('photos').put({ id: cowId, data: photoBase64 });
-    return new Promise(resolve => {
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    });
-  } catch(e) { return false; }
-}
-
-async function deletePhotoSeparately(cowId) {
-  if (!idbReady || !idbPhotos) return false;
-  try {
-    const tx = idbPhotos.transaction('photos', 'readwrite');
-    tx.objectStore('photos').delete(cowId);
-    return new Promise(resolve => {
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    });
-  } catch(e) { return false; }
-}
-
-async function loadAllPhotosSeparately() {
-  if (!idbReady || !idbPhotos) return;
-  return new Promise((resolve) => {
-    try {
-      const tx = idbPhotos.transaction('photos', 'readonly');
-      const req = tx.objectStore('photos').getAll();
-      req.onsuccess = function() {
-        const photos = req.result || [];
-        idbLog('Loaded ' + photos.length + ' photos from IDB');
-        photos.forEach(p => {
-          const cow = DB.cows.find(c => c.id === p.id);
-          if (cow) cow.photo = p.data;
-        });
-        resolve(true);
-      };
-      req.onerror = function() {
-        idbLog('Photo load failed');
-        resolve(false);
-      };
-    } catch(e) {
-      idbLog('Photo load error: ' + e.message);
-      resolve(false);
-    }
-  });
-}
-
-async function saveDBAsync() {
-  if (!idbReady) return false;
-  try {
-    const stores = ['cows','milk','finance','medicine','notes','medStock',
-                    'feedStock','contacts','customers','retailEntries'];
-    for (const s of stores) {
-      await idbClear(s);
-      const arr = DB[s] || [];
-      for (const item of arr) {
-        if (!item.id) item.id = uid();
-        if (s === 'cows' && item.photo) {
-          await savePhotoSeparately(item.id, item.photo);
-          const cowCopy = Object.assign({}, item);
-          delete cowCopy.photo;
-          await idbPut(s, cowCopy);
-        } else {
-          await idbPut(s, item);
-        }
-      }
-    }
-    
-    // Save single objects
-    await idbClear('settings');
-    await idbPut('settings', Object.assign({ id: 'main' }, DB.settings));
-    
-    await idbClear('security');
-    await idbPut('security', Object.assign({ id: 'main' }, DB.security));
-    
-    await idbClear('license');
-    await idbPut('license', Object.assign({ id: 'main' }, DB.license));
-    
-    await idbClear('device');
-    await idbPut('device', { id: 'main', deviceId: DB.deviceId });
-    
-    await idbClear('snoozed');
-    await idbPut('snoozed', { id: 'main', data: DB.snoozed });
-    
-    idbLog('Saved to IndexedDB');
-    return true;
-  } catch(e) {
-    idbLog('Save error: ' + e.message);
-    return false;
-  }
-}
 
 function loadDB() {
   try {
@@ -1932,15 +1636,12 @@ function loadDB() {
 }
 
 function saveDB() {
-  // Keep localStorage as quick fallback
   try {
     localStorage.setItem('dairyDBv3', JSON.stringify(DB));
   } catch(e) {
-    // localStorage full — that's ok, IndexedDB will handle it
-    console.log('localStorage full, using IndexedDB only');
+    toast('⚠️ Storage full');
+    console.log('Save error', e);
   }
-  // Save to IndexedDB (debounced — 3 sec)
-  scheduleSave();
 }
 
 // ========== HELPERS ==========
@@ -2658,31 +2359,6 @@ function toast(msg) {
   window._toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 // ========== HOME ==========
-function debugPhotos() {
-  let msg = 'Total cows: ' + DB.cows.length + '\n\n';
-  DB.cows.forEach((c, i) => {
-    msg += (i+1) + '. ' + c.name + ' → photo: ' + (c.photo ? 'YES (' + Math.round(c.photo.length/1024) + ' KB)' : 'NO') + '\n';
-  });
-  
-  if (idbPhotos) {
-    const tx = idbPhotos.transaction('photos', 'readonly');
-    const req = tx.objectStore('photos').getAll();
-    req.onsuccess = function() {
-      const photos = req.result || [];
-      msg += '\nIn IndexedDB: ' + photos.length + ' photos\n';
-      photos.forEach(p => {
-        msg += '  - ' + p.id + ' (' + Math.round(p.data.length/1024) + ' KB)\n';
-      });
-      alert(msg);
-    };
-    req.onerror = function() {
-      alert(msg + '\n\nIndexedDB photos error');
-    };
-  } else {
-    alert(msg + '\n\nidbPhotos not ready');
-  }
-}
-
 function renderHome() {
   const td = today();
   const tm = (DB.milk || []).filter(m => m.date === td && m.cowId === 'TOTAL').reduce((s,m) => s + Number(m.qty), 0);
@@ -2705,7 +2381,7 @@ function renderHome() {
   setText('countCow', bn(DB.cows.filter(c => c.type === 'cow' && c.status !== 'sold').length) + ' ' + t('item'));
   setText('countBull', bn(DB.cows.filter(c => c.type === 'bull' && c.status !== 'sold').length) + ' ' + t('item'));
   setText('countBuffalo', bn(DB.cows.filter(c => c.type === 'buffalo' && c.status !== 'sold').length) + ' ' + t('item'));
-  setText('homeCowCount', bn(DB.cows.filter(c => c.status !== 'sold').length) + ' ' + t('item'));
+  setText('homeCowCount', bn(DB.cows.filter(c => c.type === 'cow' && c.status !== 'sold').length) + ' ' + t('item'));
   setText('homeMilkCount', bn(tm) + ' L');
   setText('homeMoneyCount', (TI - TE) >= 0 ? '+' + bn(TI - TE) + t('taka') : bn(TI - TE) + t('taka'));
 
@@ -2920,79 +2596,39 @@ function resetCowForm() {
   tempPhoto = null;
 }
 
-function compressImage(dataUrl, maxSize, quality, callback) {
-  const img = new Image();
-  img.onload = function() {
-    try {
-      const canvas = document.createElement('canvas');
-      let w = img.width, h = img.height;
-      if (w > h && w > maxSize) { h = Math.round((h * maxSize) / w); w = maxSize; }
-      else if (h > maxSize) { w = Math.round((w * maxSize) / h); h = maxSize; }
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(img, 0, 0, w, h);
-      const compressed = canvas.toDataURL('image/jpeg', quality);
-      callback(compressed);
-    } catch(e) {
-      console.log('Canvas error:', e);
-      callback(dataUrl);
-    }
-  };
-  img.onerror = function() {
-    console.log('Image load failed');
-    callback(dataUrl);
-  };
-  img.src = dataUrl;
-}
-
 function previewPhoto(e) {
   const f = e.target.files[0];
   if (!f) return;
-  console.log('Preview: file selected, size=' + f.size);
-  if (f.size > 15 * 1024 * 1024) {
-    toast('⚠️ Image too large (max 15MB)');
+  if (f.size > 2 * 1024 * 1024) {
+    toast('⚠️ Image too large (max 2MB)');
     e.target.value = '';
     return;
   }
   const r = new FileReader();
   r.onload = ev => {
-   compressImage(ev.target.result, 800, 0.8, function(compressed) {
-const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-window._previewPhotoSrc = compressed;
-tempPhoto = compressed;
-const previewBox = document.getElementById('photoPreview');
-previewBox.innerHTML = '';
-const imgEl = document.createElement('img');
-imgEl.src = compressed;
-imgEl.onclick = viewCurrentPhoto;
-imgEl.style.cssText = 'width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #2E7D32;cursor:pointer;';
-previewBox.appendChild(imgEl);
-const sizeEl = document.createElement('div');
-sizeEl.style.cssText = 'font-size:12px;color:#666;margin-top:8px;';
-sizeEl.textContent = '📷 ' + sizeKB + ' KB — Tap to view';
-previewBox.appendChild(sizeEl);
+    tempPhoto = compressImage(ev.target.result, 400, 0.7, function(compressed) {
+      tempPhoto = compressed;
+      document.getElementById('photoPreview').innerHTML =
+        `<img src="${compressed}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #2E7D32;">`;
     });
   };
   r.readAsDataURL(f);
 }
 
-function viewCurrentPhoto() {
-  const src = window._previewPhotoSrc;
-  if (!src) return;
-  document.getElementById('modalTitle').textContent = '📷 Photo';
-  document.getElementById('modalMsg').innerHTML = 
-    '<img src="' + src + '" style="width:100%;max-height:60vh;object-fit:contain;border-radius:10px;">';
-  document.getElementById('modalMsg').style.maxHeight = '70vh';
-  document.getElementById('modalMsg').style.overflowY = 'auto';
-  document.getElementById('modalInput').style.display = 'none';
-  document.getElementById('modalCancel').style.display = 'none';
-  document.getElementById('modalOk').textContent = 'Close';
-  modalInputMode = false;
-  modalCallback = null;
-  document.getElementById('modalOverlay').classList.add('show');
+function compressImage(dataUrl, maxSize, quality, callback) {
+  const img = new Image();
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    let w = img.width, h = img.height;
+    if (w > h && w > maxSize) { h = (h * maxSize) / w; w = maxSize; }
+    else if (h > maxSize) { w = (w * maxSize) / h; h = maxSize; }
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.src = dataUrl;
 }
 
 function saveCow() {
@@ -3083,11 +2719,6 @@ function saveCow() {
     }
   }
 
-  // Save photo directly to IndexedDB (bypass debounce)
-const savedCowId = cow.id;
-if (tempPhoto && savedCowId) {
-  savePhotoSeparately(savedCowId, tempPhoto);
-}
   saveDB();
   tempPhoto = null;
   document.getElementById('cowEditId').value = '';
@@ -6851,14 +6482,14 @@ let tempLogo = null;
 function previewLogo(e) {
   const f = e.target.files[0];
   if (!f) return;
-if (f.size > 5 * 1024 * 1024) {
-    toast('⚠️ Logo max 5MB');
+  if (f.size > 1024 * 1024) {
+    toast('⚠️ Logo max 1MB');
     e.target.value = '';
     return;
-}
+  }
   const r = new FileReader();
   r.onload = ev => {
-    compressImage(ev.target.result, 400, 0.8, function(compressed) {
+    compressImage(ev.target.result, 300, 0.8, function(compressed) {
       tempLogo = compressed;
       document.getElementById('logoPreview').innerHTML =
         `<img src="${compressed}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;border:2px solid #2E7D32;">`;
@@ -7415,95 +7046,26 @@ history.pushState(null, '', location.href);
 history.pushState(null, '', location.href);
 
 // ========== INIT ==========
-async function initApp() {
-  try {
-    // Step 1: Initialize IndexedDB
-    await initIndexedDB();
-    
-    // Step 2: Try to load from IndexedDB
-    const hasIDBData = await loadDBAsync();
-    
-    // Step 3: If IDB has no data, try localStorage (migration)
-    if (!hasIDBData || DB.cows.length === 0) {
-      const localData = localStorage.getItem('dairyDBv3');
-      if (localData) {
-        try {
-          const parsed = JSON.parse(localData);
-          DB = Object.assign(DB, parsed);
-          idbLog('Migrated from localStorage');
-          // Save to IndexedDB immediately
-          await saveDBAsync();
-        } catch(e) {
-          idbLog('Migration error: ' + e.message);
-        }
-      } else {
-        // Fresh install — load localStorage defaults if any
-        loadDB();
-      }
-    }
-    
-    // Step 4: Normalize DB structure
-    if (!DB.cows) DB.cows = [];
-    if (!DB.milk) DB.milk = [];
-    if (!DB.finance) DB.finance = [];
-    if (!DB.medicine) DB.medicine = [];
-    if (!DB.notes) DB.notes = [];
-    if (!DB.medStock) DB.medStock = [];
-    if (!DB.feedStock) DB.feedStock = [];
-    if (!DB.contacts) DB.contacts = [];
-    if (!DB.customers) DB.customers = [];
-    if (!DB.retailEntries) DB.retailEntries = [];
-    if (!DB.snoozed) DB.snoozed = {};
-    if (!DB.security) DB.security = { pin:'', skipped:false };
-    if (!DB.security.skipped) DB.security.skipped = false;
-    if (!DB.license) DB.license = { code:'', expiry:'', trial:false };
-    if (!DB.settings) DB.settings = {};
-    if (!DB.settings.features) DB.settings.features = {
-      lactation:true, milkRecord:false, alertsPD:true, alertsHeat:true,
-      alertsDry:true, alertsCalving:true, alertsDeworm:true,
-      alertsVaccine:true, medicine:true, notes:true, retail:true
-    };
-    if (DB.settings.features.retail === undefined) DB.settings.features.retail = true;
-    if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
-    if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
-    if (!DB.settings.preset) DB.settings.preset = 'medium';
-    if (!DB.settings.lang) DB.settings.lang = 'en';
-    if (!DB.settings.price) DB.settings.price = 40;
-    if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
-    
-    // Step 5: Device ID
-    if (!DB.deviceId) {
-      DB.deviceId = generateDeviceId();
-      await saveDBAsync();
-    }
-    
-    const dShow = document.getElementById('deviceIdShow');
-    if (dShow) dShow.textContent = DB.deviceId;
-    
-    // Step 6: Setup wizard or license check
-    if (!DB.settings.farmName && !DB.license.code && !DB.license.trial) {
-      document.getElementById('setupScreen').style.display = 'flex';
-      document.getElementById('setupStep1').style.display = 'block';
-      document.getElementById('setupStep2').style.display = 'none';
-      document.getElementById('setupStep3').style.display = 'none';
-    } else {
-      document.getElementById('setupScreen').style.display = 'none';
-      checkLicenseOnLoad();
-    }
-    
-    idbLog('App initialized successfully');
-  } catch(e) {
-    idbLog('Init error: ' + e.message);
-    // Fallback to localStorage
-    loadDB();
-    const dShow = document.getElementById('deviceIdShow');
-    if (dShow) dShow.textContent = DB.deviceId;
-    checkLicenseOnLoad();
-  }
+loadDB();
+
+if (!DB.deviceId) {
+  DB.deviceId = generateDeviceId();
+  saveDB();
 }
 
-// Start the app
-initApp();
+const dShow = document.getElementById('deviceIdShow');
+if (dShow) dShow.textContent = DB.deviceId;
+
+// First install → setup wizard
+if (!DB.settings.farmName && !DB.license.code && !DB.license.trial) {
+  document.getElementById('setupScreen').style.display = 'flex';
+  document.getElementById('setupStep1').style.display = 'block';
+  document.getElementById('setupStep2').style.display = 'none';
+  document.getElementById('setupStep3').style.display = 'none';
+} else {
+  document.getElementById('setupScreen').style.display = 'none';
+  checkLicenseOnLoad();
+}
 
 // Service Worker registration
 if ('serviceWorker' in navigator) {
