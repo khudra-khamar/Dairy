@@ -4353,6 +4353,7 @@ function faTitle(item) {
 }
 
 function renderFirstAid() {
+alert('DEBUG: A=' + typeof FIRST_AID_DATA + ' | B=' + (document.getElementById('firstAidList') ? 'OK' : 'NULL') + ' | C=' + typeof faField + ' | D=' + typeof faTitle);
   const list = document.getElementById('firstAidList');
   if (!list) return;
   if (typeof FIRST_AID_DATA === 'undefined') {
