@@ -7596,10 +7596,8 @@ window.addEventListener('popstate', function(e) {
 });
 
 // Initialize — one extra history entry so popstate always fires
-history.pushState(null, '', location.href);
+history.pushState({ page: 'home' }, '', '#app');
 
-
-history.pushState(null, '', location.href);
 
 // ========== INIT ==========
 async function initApp() {
