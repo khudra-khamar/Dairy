@@ -7557,13 +7557,12 @@ function checkLicenseWarning() {
 }
 
 // ========== BACK BUTTON ==========
-let lastBackPress = 0;
-
-window.addEventListener('popstate', function() {
+window.addEventListener('popstate', function(e) {
   const mainApp = document.getElementById('mainApp');
   if (!mainApp || mainApp.style.display === 'none') return;
   
   if (pageStack.length > 1) {
+    // Navigate to previous page (not home)
     pageStack.pop();
     const prev = pageStack[pageStack.length - 1];
     document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
@@ -7572,35 +7571,32 @@ window.addEventListener('popstate', function() {
     window.scrollTo(0, 0);
     history.pushState(null, '', location.href);
   } else {
-    const now = Date.now();
-    if (now - lastBackPress < 2000) {
-      // Second press within 2s — confirm and exit
-      const l = DB.settings.lang || 'en';
-      const msg = l === 'bn' 
-        ? 'আপনি কি অ্যাপ থেকে বের হতে চান?' 
-        : l === 'hi' 
-        ? 'क्या आप ऐप से बाहर निकलना चाहते हैं?' 
-        : 'Do you want to exit the app?';
-      
-      if (confirm(msg)) {
-        if (navigator.app) navigator.app.exitApp();
-        else window.close();
+    // At home page — ask to exit
+    const l = DB.settings.lang || 'en';
+    const msg = l === 'bn' 
+      ? 'আপনি কি অ্যাপ থেকে বের হতে চান?' 
+      : l === 'hi' 
+      ? 'क्या आप ऐप से बाहर निकलना चाहते हैं?' 
+      : 'Do you want to exit the app?';
+    
+    if (confirm(msg)) {
+      // User confirmed exit
+      if (navigator.app && navigator.app.exitApp) {
+        navigator.app.exitApp();
       } else {
-        history.pushState(null, '', location.href);
+        window.close();
+        // Fallback — try to leave
+        setTimeout(function(){ history.go(-2); }, 100);
       }
     } else {
-      lastBackPress = now;
-      const l = DB.settings.lang || 'en';
-      const toastMsg = l === 'bn' 
-        ? '🔙 আবার back চাপুন বের হতে' 
-        : l === 'hi' 
-        ? '🔙 बाहर निकलने के लिए फिर back दबाएँ' 
-        : '🔙 Press back again to exit';
-      toast(toastMsg);
+      // Cancel — stay in app
       history.pushState(null, '', location.href);
     }
   }
 });
+
+// Initialize — one extra history entry so popstate always fires
+history.pushState(null, '', location.href);
 
 
 history.pushState(null, '', location.href);
