@@ -2096,6 +2096,7 @@ const PRESETS = {
 // ========== LANGUAGE ==========
 function setLang(l) {
   DB.settings.lang = l;
+  track('language_change', { language: l });
   saveDB();
   applyLang();
   updateFinCategories();
@@ -3127,6 +3128,7 @@ function saveCow() {
     cow.status = 'active';
     DB.cows.push(cow);
     toast(t('saved'));
+    track('cow_added', { type: cow.type });
   }
 
   // Auto-add purchase to Finance (only for new animals)
@@ -3653,6 +3655,7 @@ function saveMilk() {
   renderMilk();
   renderHome();
   toast(t('saved'));
+  track('milk_entry', { qty: Number(qty), type: 'single' });
 }
 
 function showTotalMilkForm() {
@@ -3706,6 +3709,7 @@ function saveTotalMilk() {
   renderHome();
   renderFinance();
   toast(t('saved'));
+  track('milk_entry', { qty: Number(qty), type: 'total' });
 }
 function editMilk(id) {
   const m = DB.milk.find(x => x.id === id);
@@ -4339,6 +4343,7 @@ function getEditButtonHtml(itemId) {
 
 function faField(item, base) {
   const l = DB.settings.lang || 'en';
+  track('first_aid_view', { problem_id: id, lang: l });
   return item[base + '_' + l] || item[base + '_en'] || item[base + '_bn'] || [];
 }
 
@@ -4817,6 +4822,18 @@ function deleteNote(id) {
   saveDB();
   renderNotes();
   toast(t('deleted'));
+}
+
+// ========== ANALYTICS TRACKING ==========
+function track(eventName, params) {
+  try {
+    if (window._fbReady && window._fbAnalytics) {
+      window._fbAnalytics.logEvent(eventName, params || {});
+      console.log('📊 Tracked:', eventName, params || '');
+    }
+  } catch(e) {
+    console.warn('Track error:', e.message);
+  }
 }
 
 // ========== ALERTS ==========
@@ -5755,7 +5772,7 @@ function renderSellingHistory() {
       ${c.buyerAddress ? `<div class="summary-row"><span>🏠 Address</span><span style="font-size:11px;">${c.buyerAddress}</span></div>` : ''}
       <div class="summary-row"><span>💳 Payment</span><span>${c.paymentMode || '—'}</span></div>
       <div class="summary-row"><span>💰 Purchase</span><span>${bn(c.purchasePrice || 0)} Rs</span></div>
-      <div class="summary-row" style="border-top:2px solid #E0E0E0;padding-top:8px;margin-top:8px;"><span style="font-weight:bold;">${profit >= 0 ? '📈 Profit' : '📉 Loss'}</span><span style="color:${profitColor};font-weight:bold;">${profit >= 0 ? '+' : ''}${bn(profit)} Rs</span></div>
+      <div class="summary-row" style="border-top:2px solid #E0E0E0;padding-top:8px;margin-top:8px;"><span style="font-weight:bold;">${profit >= 0 ? '?? Profit' : '📉 Loss'}</span><span style="color:${profitColor};font-weight:bold;">${profit >= 0 ? '+' : ''}${bn(profit)} Rs</span></div>
       <button class="btn-blue" onclick="openSaleBill('${c.id}')" style="margin-top:10px;">📄 View Sale Bill</button>
     </div>`;
   }).join('');
@@ -7392,6 +7409,7 @@ function switchPreset(name) {
   
   if (!confirm(msg)) return;
   
+  track('preset_change', { preset: name });
   applyPreset(name);
   renderFeatureToggles();
   updatePresetSection();
