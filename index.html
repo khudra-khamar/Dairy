@@ -1261,14 +1261,19 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 <!-- ========== mainApp End ========== -->
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+<!-- Firebase SDK (deferred for fast load) -->
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 
-<!-- Firebase Init -->
+<!-- Firebase Init (wait for deferred SDK) -->
 <script>
-(function(){
+window.addEventListener('load', function(){
   try {
+    if (typeof firebase === 'undefined') {
+      console.warn('⚠️ Firebase SDK not loaded');
+      window._fbReady = false;
+      return;
+    }
     firebase.initializeApp({
       apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
       authDomain: "dairy-manager-1.firebaseapp.com",
@@ -1281,17 +1286,23 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     window._fbAnalytics = firebase.analytics();
     window._fbReady = true;
     console.log('✅ Firebase ready');
+    
+    // Track app open
+    window._fbAnalytics.logEvent('app_open', {
+      platform: 'pwa',
+      timestamp: Date.now()
+    });
   } catch(e) {
     console.warn('⚠️ Firebase failed:', e.message);
     window._fbReady = false;
   }
-})();
+});
 </script>
 
 <script src="first-aid-data.js"></script>
 
 <script>
-// ========== TRANSLATIONS ==========
+
 
 // ========== TRANSLATIONS ==========
 const T = {
