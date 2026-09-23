@@ -1261,6 +1261,33 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 <!-- ========== mainApp End ========== -->
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+
+<!-- Firebase Init -->
+<script>
+(function(){
+  try {
+    firebase.initializeApp({
+      apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
+      authDomain: "dairy-manager-1.firebaseapp.com",
+      projectId: "dairy-manager-1",
+      storageBucket: "dairy-manager-1.firebasestorage.app",
+      messagingSenderId: "724466410200",
+      appId: "1:724466410200:web:14f91a33287e95d8b1edad",
+      measurementId: "G-ETEEL2QSNY"
+    });
+    window._fbAnalytics = firebase.analytics();
+    window._fbReady = true;
+    console.log('✅ Firebase ready');
+  } catch(e) {
+    console.warn('⚠️ Firebase failed:', e.message);
+    window._fbReady = false;
+  }
+})();
+</script>
+
 <script src="first-aid-data.js"></script>
 
 <script>
@@ -2996,7 +3023,7 @@ imgEl.style.cssText = 'width:120px;height:120px;border-radius:50%;object-fit:cov
 previewBox.appendChild(imgEl);
 const sizeEl = document.createElement('div');
 sizeEl.style.cssText = 'font-size:12px;color:#666;margin-top:8px;';
-sizeEl.textContent = '📷 ' + sizeKB + ' KB — Tap to view';
+sizeEl.textContent = '?? ' + sizeKB + ' KB — Tap to view';
 previewBox.appendChild(sizeEl);
     });
   };
@@ -7535,6 +7562,7 @@ let lastBackPress = 0;
 window.addEventListener('popstate', function() {
   const mainApp = document.getElementById('mainApp');
   if (!mainApp || mainApp.style.display === 'none') return;
+  
   if (pageStack.length > 1) {
     pageStack.pop();
     const prev = pageStack[pageStack.length - 1];
@@ -7546,17 +7574,35 @@ window.addEventListener('popstate', function() {
   } else {
     const now = Date.now();
     if (now - lastBackPress < 2000) {
-      if (navigator.app) navigator.app.exitApp();
-      else window.close();
+      // Second press within 2s — confirm and exit
+      const l = DB.settings.lang || 'en';
+      const msg = l === 'bn' 
+        ? 'আপনি কি অ্যাপ থেকে বের হতে চান?' 
+        : l === 'hi' 
+        ? 'क्या आप ऐप से बाहर निकलना चाहते हैं?' 
+        : 'Do you want to exit the app?';
+      
+      if (confirm(msg)) {
+        if (navigator.app) navigator.app.exitApp();
+        else window.close();
+      } else {
+        history.pushState(null, '', location.href);
+      }
     } else {
       lastBackPress = now;
-      toast('🔙 Press back again to exit');
+      const l = DB.settings.lang || 'en';
+      const toastMsg = l === 'bn' 
+        ? '🔙 আবার back চাপুন বের হতে' 
+        : l === 'hi' 
+        ? '🔙 बाहर निकलने के लिए फिर back दबाएँ' 
+        : '🔙 Press back again to exit';
+      toast(toastMsg);
       history.pushState(null, '', location.href);
     }
   }
 });
 
-history.pushState(null, '', location.href);
+
 history.pushState(null, '', location.href);
 
 // ========== INIT ==========
@@ -7660,6 +7706,7 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
 
 // Prevent zoom on input focus
 document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
