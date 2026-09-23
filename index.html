@@ -7556,74 +7556,35 @@ function checkLicenseWarning() {
   }
 }
 
-// ========== BACK BUTTON (Always-Push Pattern) ==========
-window.addEventListener('popstate', function(e) {
+// ========== BACK BUTTON ==========
+let lastBackPress = 0;
+
+window.addEventListener('popstate', function() {
   const mainApp = document.getElementById('mainApp');
   if (!mainApp || mainApp.style.display === 'none') return;
-  
-  // Always re-push so history never empties
-  history.pushState({ app: true }, '', location.href);
-  
   if (pageStack.length > 1) {
-    // Navigate to previous page
     pageStack.pop();
     const prev = pageStack[pageStack.length - 1];
     document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
     const el = document.getElementById('page-' + prev);
     if (el) el.classList.add('active');
     window.scrollTo(0, 0);
+    history.pushState(null, '', location.href);
   } else {
-    // At home — show custom exit dialog
-    showExitConfirm();
+    const now = Date.now();
+    if (now - lastBackPress < 2000) {
+      if (navigator.app) navigator.app.exitApp();
+      else window.close();
+    } else {
+      lastBackPress = now;
+      toast('🔙 Press back again to exit');
+      history.pushState(null, '', location.href);
+    }
   }
 });
 
-function showExitConfirm() {
-  const l = DB.settings.lang || 'en';
-  const title = l === 'bn' ? 'অ্যাপ থেকে বের হবেন?' 
-    : l === 'hi' ? 'ऐप से बाहर निकलें?' 
-    : 'Exit App?';
-  const msg = l === 'bn' ? 'আপনি কি নিশ্চিত অ্যাপ থেকে বের হতে চান?'
-    : l === 'hi' ? 'क्या आप वाकई ऐप से बाहर निकलना चाहते हैं?'
-    : 'Are you sure you want to exit the app?';
-  const yes = l === 'bn' ? 'হ্যাঁ, বের হব'
-    : l === 'hi' ? 'हाँ, बाहर जाएँ'
-    : 'Yes, Exit';
-  const no = l === 'bn' ? 'না, থাকব'
-    : l === 'hi' ? 'नहीं, रहें'
-    : 'No, Stay';
-  
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalMsg').innerHTML = 
-    '<p style="text-align:center;font-size:14px;color:#333;padding:8px 0;">' + msg + '</p>' +
-    '<div style="display:flex;gap:8px;margin-top:12px;">' +
-    '<button onclick="closeModal(false)" style="flex:1;padding:10px;background:#888;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:14px;">' + no + '</button>' +
-    '<button onclick="doExitApp()" style="flex:1;padding:10px;background:#C62828;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:14px;">' + yes + '</button>' +
-    '</div>';
-  document.getElementById('modalInput').style.display = 'none';
-  document.getElementById('modalCancel').style.display = 'none';
-  document.getElementById('modalOk').style.display = 'none';
-  document.getElementById('modalOverlay').classList.add('show');
-}
-
-function doExitApp() {
-  document.getElementById('modalOverlay').classList.remove('show');
-  // Try to close
-  if (navigator.app && navigator.app.exitApp) {
-    navigator.app.exitApp();
-  } else {
-    window.close();
-    setTimeout(function(){ 
-      // Fallback: navigate away
-      location.href = 'about:blank';
-    }, 200);
-  }
-}
-
-// Initialize history with 2 entries so popstate fires reliably
-history.pushState({ sentinel: true }, '', location.href);
-history.pushState({ app: true }, '', location.href);
-
+history.pushState(null, '', location.href);
+history.pushState(null, '', location.href);
 
 // ========== INIT ==========
 async function initApp() {
