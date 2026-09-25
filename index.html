@@ -420,11 +420,11 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <h3 data-t="main_actions" style="font-size:13px;font-weight:700;color:#2E7D32;margin:16px 4px 10px;">Main Actions</h3>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
 
-  <div onclick="showPage('cows')" style="background:#E8F5E9;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
-    <div style="font-size:32px;margin-bottom:6px;">🐮</div>
-    <div data-t="cows" style="font-size:14px;font-weight:700;color:#1B5E20;margin-bottom:3px;">Animals</div>
-    <div id="homeCowCount" style="font-size:11px;color:#2E7D32;opacity:0.85;">0</div>
-  </div>
+<div onclick="showPage('cows')" style="background:#E8F5E9;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+  <img src="./farm-photo.jpg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;margin-bottom:6px;border:2px solid #A5D6A7;">
+  <div data-t="cows" style="font-size:14px;font-weight:700;color:#1B5E20;margin-bottom:3px;">Animals</div>
+  <div id="homeCowCount" style="font-size:11px;color:#2E7D32;opacity:0.85;">0</div>
+</div>
 
   <div onclick="showPage('milk')" style="background:#E3F2FD;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
     <div style="font-size:32px;margin-bottom:6px;">🥛</div>
@@ -1610,7 +1610,7 @@ const T = {
     select_cow_optional:'गाय/बछिया चुनें (वैकल्पिक)', none:'— कोई नहीं —',
     settings_title:'⚙️ सेटिंग्स', language:'🌐 भाषा', farm_info:'🏠 फार्म जानकारी',
     farm_name:'फार्म का नाम', owner_name:'मालिक का नाम', owner_phone:'मोबाइल नंबर',
-    default_price:'डिफ़ॉल्ट दूध मूल्य', save_settings:'💾 सेव करें',
+    default_price:'डिफ़ॉल्ट दूध मूल्य', save_settings:'?? सेव करें',
     farm_logo:'फार्म लोगो',
     security:'🔒 सुरक्षा', pin_status:'PIN लॉक', change_pin:'🔑 PIN बदलें', disable_pin:'🛑 PIN बंद करें',
     license_info:'🔐 लाइसेंस', license_code:'कोड', license_expiry:'समाप्ति', days_left:'शेष दिन',
