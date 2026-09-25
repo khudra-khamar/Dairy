@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#2E7D32">
 
-<!-- Facebook Meta Tags -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://khudra-khamar.github.io/Dairy/landing.html">
 <meta property="og:title" content="🐄 ক্ষুদ্র খামার — কৃষকের ডিজিটাল ডেইরি ম্যানেজার">
-<meta property="og:description" content="২৬টি প্রাথমিক চিকিৎসা, দুধ-খরচ-ঔষধের হিসাব — সব বাংলায়। অফলাইনেও কাজ করে।">
+<meta property="og:description" content="২৬টি প্রাথমিক চিকিৎসা, দুধ-খরচ-ঔষধের হিসাব — সব বাংলায়।">
 <meta property="og:image" content="https://khudra-khamar.github.io/Dairy/icon-512.png">
 
 <title>🐄 ক্ষুদ্র খামার — কৃষকের ডিজিটাল ডেইরি ম্যানেজার</title>
@@ -18,223 +17,70 @@
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color:transparent; }
 body { background:#FAFAF5; color:#333; line-height:1.6; }
 
-/* Language Bar */
-.lang-bar {
-  background:#1B5E20;
-  padding:8px 12px;
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  position:sticky;
-  top:0;
-  z-index:200;
-}
-.lang-btn {
-  background:rgba(255,255,255,0.15);
-  color:#fff;
-  border:2px solid transparent;
-  padding:6px 14px;
-  border-radius:20px;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s;
-}
-.lang-btn.active {
-  background:#FFD54F;
-  color:#1B5E20;
-  border-color:#FFD54F;
-}
+.lang-bar { background:#1B5E20; padding:8px 12px; display:flex; justify-content:center; gap:8px; position:sticky; top:0; z-index:200; }
+.lang-btn { background:rgba(255,255,255,0.15); color:#fff; border:2px solid transparent; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; }
+.lang-btn.active { background:#FFD54F; color:#1B5E20; border-color:#FFD54F; }
 
-/* Hero */
-.hero {
-  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
-  color: #fff;
-  padding: 40px 20px 60px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content:'';
-  position:absolute;
-  top:-50px; right:-50px;
-  width:200px; height:200px;
-  background:rgba(255,255,255,0.05);
-  border-radius:50%;
-}
+.hero { background:linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); color:#fff; padding:40px 20px 60px; text-align:center; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50px; right:-50px; width:200px; height:200px; background:rgba(255,255,255,0.05); border-radius:50%; }
 .hero-icon { font-size:80px; margin-bottom:12px; }
 .hero h1 { font-size:26px; font-weight:700; margin-bottom:8px; }
 .hero h1 span { color:#FFD54F; }
 .hero .tagline { font-size:14px; opacity:0.9; margin-bottom:24px; }
-.hero-cta {
-  display:inline-block;
-  background:#FFD54F;
-  color:#1B5E20;
-  padding:14px 32px;
-  border-radius:30px;
-  font-size:16px;
-  font-weight:700;
-  text-decoration:none;
-  box-shadow:0 4px 20px rgba(255,213,79,0.4);
-  transition:transform 0.2s;
-}
+.hero-cta { display:inline-block; background:#FFD54F; color:#1B5E20; padding:14px 32px; border-radius:30px; font-size:16px; font-weight:700; text-decoration:none; box-shadow:0 4px 20px rgba(255,213,79,0.4); }
 .hero-cta:active { transform:scale(0.96); }
 
-/* Sections */
-.section {
-  max-width:600px;
-  margin:0 auto;
-  padding:40px 20px;
-}
-.section-title {
-  font-size:22px;
-  color:#1B5E20;
-  font-weight:700;
-  text-align:center;
-  margin-bottom:8px;
-}
-.section-sub {
-  font-size:13px;
-  color:#666;
-  text-align:center;
-  margin-bottom:28px;
-}
+.section { max-width:600px; margin:0 auto; padding:40px 20px; }
+.section-title { font-size:22px; color:#1B5E20; font-weight:700; text-align:center; margin-bottom:8px; }
+.section-sub { font-size:13px; color:#666; text-align:center; margin-bottom:28px; }
 
-/* Features Grid */
-.features {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-.feature {
-  background:#fff;
-  border-radius:16px;
-  padding:20px 14px;
-  text-align:center;
-  box-shadow:0 2px 10px rgba(0,0,0,0.06);
-  border: 2px solid transparent;
-  transition: border-color 0.2s;
-}
+.features { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.feature { background:#fff; border-radius:16px; padding:20px 14px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.06); border:2px solid transparent; }
 .feature:active { border-color:#2E7D32; }
 .feature-icon { font-size:36px; margin-bottom:8px; }
 .feature-title { font-size:13px; font-weight:700; color:#1B5E20; margin-bottom:4px; }
 .feature-desc { font-size:11px; color:#666; line-height:1.4; }
 
-/* Steps */
 .steps { display:flex; flex-direction:column; gap:14px; }
-.step {
-  background:#fff;
-  border-radius:14px;
-  padding:16px;
-  display:flex;
-  gap:14px;
-  align-items:center;
-  box-shadow:0 2px 10px rgba(0,0,0,0.05);
-}
-.step-num {
-  flex-shrink:0;
-  width:38px;
-  height:38px;
-  background:#2E7D32;
-  color:#fff;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:700;
-  font-size:16px;
-}
+.step { background:#fff; border-radius:14px; padding:16px; display:flex; gap:14px; align-items:center; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+.step-num { flex-shrink:0; width:38px; height:38px; background:#2E7D32; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; }
 .step-text { font-size:13px; color:#333; line-height:1.5; }
 .step-text strong { color:#1B5E20; }
 
-/* WhatsApp CTA */
-.wa-section {
-  background:#25D366;
-  color:#fff;
-  padding:32px 20px;
-  text-align:center;
-  border-radius:20px;
-}
+.screens { display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+.screens::-webkit-scrollbar { height:4px; }
+.screens::-webkit-scrollbar-thumb { background:#ccc; border-radius:2px; }
+.screen { flex-shrink:0; width:180px; height:360px; border-radius:20px; box-shadow:0 4px 20px rgba(0,0,0,0.15); object-fit:cover; object-position:top; scroll-snap-align:center; background:#fff; border:3px solid #fff; display:block; }
+
+.wa-section { background:#25D366; color:#fff; padding:32px 20px; text-align:center; border-radius:20px; }
 .wa-section h3 { font-size:18px; margin-bottom:8px; }
 .wa-section p { font-size:13px; opacity:0.95; margin-bottom:16px; }
-.wa-btn {
-  display:inline-block;
-  background:#fff;
-  color:#25D366;
-  padding:12px 28px;
-  border-radius:30px;
-  font-size:15px;
-  font-weight:700;
-  text-decoration:none;
-}
+.wa-btn { display:inline-block; background:#fff; color:#25D366; padding:12px 28px; border-radius:30px; font-size:15px; font-weight:700; text-decoration:none; }
 
-/* Contact */
-.contact {
-  background:#fff;
-  border-radius:16px;
-  padding:24px;
-  text-align:center;
-  box-shadow:0 2px 10px rgba(0,0,0,0.05);
-}
+.contact { background:#fff; border-radius:16px; padding:24px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
 .contact h3 { font-size:16px; color:#1B5E20; margin-bottom:12px; }
 .contact-name { font-size:15px; font-weight:700; color:#333; margin-bottom:4px; }
 .contact-role { font-size:12px; color:#666; margin-bottom:12px; }
-.contact-link {
-  display:inline-block;
-  margin:6px 4px;
-  padding:10px 20px;
-  border-radius:20px;
-  text-decoration:none;
-  font-size:13px;
-  font-weight:600;
-}
+.contact-link { display:inline-block; margin:6px 4px; padding:10px 20px; border-radius:20px; text-decoration:none; font-size:13px; font-weight:600; }
 .contact-call { background:#1976D2; color:#fff; }
 .contact-wa { background:#25D366; color:#fff; }
 
-/* Footer */
-.footer {
-  background:#1B5E20;
-  color:#fff;
-  text-align:center;
-  padding:24px 20px;
-  font-size:12px;
-}
+.footer { background:#1B5E20; color:#fff; text-align:center; padding:24px 20px; font-size:12px; }
 .footer p { margin-bottom:4px; }
 .footer .small { font-size:11px; opacity:0.8; }
 
-/* Share Floating Button */
-.share-float {
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:#1877F2;
-  color:#fff;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:24px;
-  font-weight:700;
-  box-shadow:0 4px 20px rgba(24,119,242,0.4);
-  cursor:pointer;
-  z-index:100;
-  border:none;
-}
+.share-float { position:fixed; bottom:20px; right:20px; background:#1877F2; color:#fff; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; box-shadow:0 4px 20px rgba(24,119,242,0.4); cursor:pointer; z-index:100; border:none; }
 .share-float:active { transform:scale(0.94); }
 </style>
 </head>
 <body>
-<!-- LANGUAGE BAR -->
+
 <div class="lang-bar">
   <button class="lang-btn" id="btn-bn" onclick="setLang('bn')">বাংলা</button>
   <button class="lang-btn" id="btn-hi" onclick="setLang('hi')">हिन्दी</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">English</button>
 </div>
 
-<!-- HERO -->
 <div class="hero">
   <div class="hero-icon">🐄</div>
   <h1 id="t-hero-title">ক্ষুদ্র <span>খামার</span></h1>
@@ -242,102 +88,51 @@ body { background:#FAFAF5; color:#333; line-height:1.6; }
   <a href="/Dairy/" class="hero-cta" id="t-open-btn">📱 App Open করুন</a>
 </div>
 
-<!-- FEATURES -->
 <div class="section">
   <h2 class="section-title" id="t-feat-title">✨ কী কী আছে?</h2>
   <p class="section-sub" id="t-feat-sub">সব কিছু বাংলায় — একটাই App এ</p>
-
   <div class="features">
-    <div class="feature">
-      <div class="feature-icon">🩺</div>
-      <div class="feature-title" id="t-f1-title">২৬টি First Aid</div>
-      <div class="feature-desc" id="t-f1-desc">প্রাথমিক চিকিৎসার সম্পূর্ণ গাইড</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🥛</div>
-      <div class="feature-title" id="t-f2-title">দুধের হিসাব</div>
-      <div class="feature-desc" id="t-f2-desc">সকাল-বিকালের দুধ রেকর্ড</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">💰</div>
-      <div class="feature-title" id="t-f3-title">আয়-ব্যয়</div>
-      <div class="feature-desc" id="t-f3-desc">মাসিক লাভ-ক্ষতি দেখুন</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">💊</div>
-      <div class="feature-title" id="t-f4-title">ঔষধ-টিকা</div>
-      <div class="feature-desc" id="t-f4-desc">Deworming ও Vaccine রিমাইন্ডার</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🌾</div>
-      <div class="feature-title" id="t-f5-title">খাদ্য স্টক</div>
-      <div class="feature-desc" id="t-f5-desc">খাবারের মজুদ ও খরচ</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🔔</div>
-      <div class="feature-title" id="t-f6-title">স্মার্ট অ্যালার্ট</div>
-      <div class="feature-desc" id="t-f6-desc">Heat, PD, প্রসবের রিমাইন্ডার</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">📊</div>
-      <div class="feature-title" id="t-f7-title">PDF রিপোর্ট</div>
-      <div class="feature-desc" id="t-f7-desc">দুধের রিপোর্ট ডাউনলোড</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">📶</div>
-      <div class="feature-title" id="t-f8-title">Offline</div>
-      <div class="feature-desc" id="t-f8-desc">ইন্টারনেট ছাড়াও কাজ করে</div>
-    </div>
+    <div class="feature"><div class="feature-icon">🩺</div><div class="feature-title" id="t-f1-title">২৬টি First Aid</div><div class="feature-desc" id="t-f1-desc">প্রাথমিক চিকিৎসার সম্পূর্ণ গাইড</div></div>
+    <div class="feature"><div class="feature-icon">🥛</div><div class="feature-title" id="t-f2-title">দুধের হিসাব</div><div class="feature-desc" id="t-f2-desc">সকাল-বিকালের দুধ রেকর্ড</div></div>
+    <div class="feature"><div class="feature-icon">💰</div><div class="feature-title" id="t-f3-title">আয়-ব্যয়</div><div class="feature-desc" id="t-f3-desc">মাসিক লাভ-ক্ষতি দেখুন</div></div>
+    <div class="feature"><div class="feature-icon">💊</div><div class="feature-title" id="t-f4-title">ঔষধ-টিকা</div><div class="feature-desc" id="t-f4-desc">Deworming ও Vaccine রিমাইন্ডার</div></div>
+    <div class="feature"><div class="feature-icon">🌾</div><div class="feature-title" id="t-f5-title">খাদ্য স্টক</div><div class="feature-desc" id="t-f5-desc">খাবারের মজুদ ও খরচ</div></div>
+    <div class="feature"><div class="feature-icon">🔔</div><div class="feature-title" id="t-f6-title">স্মার্ট অ্যালার্ট</div><div class="feature-desc" id="t-f6-desc">Heat, PD, প্রসবের রিমাইন্ডার</div></div>
+    <div class="feature"><div class="feature-icon">📊</div><div class="feature-title" id="t-f7-title">PDF রিপোর্ট</div><div class="feature-desc" id="t-f7-desc">দুধের রিপোর্ট ডাউনলোড</div></div>
+    <div class="feature"><div class="feature-icon">📶</div><div class="feature-title" id="t-f8-title">Offline</div><div class="feature-desc" id="t-f8-desc">ইন্টারনেট ছাড়াও কাজ করে</div></div>
   </div>
 </div>
 
-  <!-- SCREENSHOTS -->
 <div class="section" style="padding-top:0;">
-  <h2 class="section-title">📱 App Preview</h2>
-  <p class="section-sub">← Swipe to see more →</p>
-
+  <h2 class="section-title" id="t-screens-title">📱 App Preview</h2>
+  <p class="section-sub" id="t-screens-sub">← ডানে scroll করুন →</p>
   <div class="screens">
-    <img src="./screen-setup.jpg" class="screen" alt="Setup Screen" loading="lazy">
-    <img src="./screen-home.jpg" class="screen" alt="Home Screen" loading="lazy">
+    <img src="./screen-setup.jpg" class="screen" alt="Setup" loading="lazy">
+    <img src="./screen-home.jpg" class="screen" alt="Home" loading="lazy">
     <img src="./screen-firstaid.jpg" class="screen" alt="First Aid" loading="lazy">
     <img src="./screen-license.jpg" class="screen" alt="License" loading="lazy">
-    <img src="./screen-fever.jpg" class="screen" alt="Fever Detail" loading="lazy">
+    <img src="./screen-fever.jpg" class="screen" alt="Fever" loading="lazy">
   </div>
 </div>
-  
-<!-- INSTALL STEPS -->
+
 <div class="section" style="padding-top:0;">
   <h2 class="section-title" id="t-inst-title">📲 কীভাবে Install করবেন?</h2>
   <p class="section-sub" id="t-inst-sub">মাত্র ৩ ধাপে</p>
-
   <div class="steps">
-    <div class="step">
-      <div class="step-num">১</div>
-      <div class="step-text" id="t-step1"><strong>App Open</strong> button চাপুন</div>
-    </div>
-    <div class="step">
-      <div class="step-num">২</div>
-      <div class="step-text" id="t-step2">Chrome Menu (⋮) → <strong>"Add to Home Screen"</strong> চাপুন</div>
-    </div>
-    <div class="step">
-      <div class="step-num">৩</div>
-      <div class="step-text" id="t-step3">Home screen এ <strong>ক্ষুদ্র খামার</strong> icon পাবেন — সেটাই App</div>
-    </div>
+    <div class="step"><div class="step-num">১</div><div class="step-text" id="t-step1"><strong>App Open</strong> button চাপুন</div></div>
+    <div class="step"><div class="step-num">২</div><div class="step-text" id="t-step2">Chrome Menu (⋮) → <strong>"Add to Home Screen"</strong> চাপুন</div></div>
+    <div class="step"><div class="step-num">৩</div><div class="step-text" id="t-step3">Home screen এ <strong>ক্ষুদ্র খামার</strong> icon পাবেন — সেটাই App</div></div>
   </div>
 </div>
 
-<!-- WHATSAPP CTA -->
 <div class="section" style="padding-top:0;">
   <div class="wa-section">
     <h3 id="t-wa-title">💬 WhatsApp এ যোগাযোগ করুন</h3>
     <p id="t-wa-sub">কোনো সমস্যা বা সাহায্য লাগলে — সাথে সাথে কথা বলুন</p>
-    <a href="https://wa.me/919800696104" class="wa-btn" id="t-wa-btn" target="_blank">
-      💬 WhatsApp করুন
-    </a>
+    <a href="https://wa.me/919800696104" class="wa-btn" id="t-wa-btn" target="_blank">💬 WhatsApp করুন</a>
   </div>
 </div>
 
-<!-- CONTACT -->
 <div class="section" style="padding-top:0;">
   <div class="contact">
     <h3 id="t-contact-title">👨‍⚕️ সেবা প্রদানকারী</h3>
@@ -351,24 +146,18 @@ body { background:#FAFAF5; color:#333; line-height:1.6; }
   </div>
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
   <p id="t-footer1">🐄 ক্ষুদ্র খামার — কৃষকের ডিজিটাল সঙ্গী</p>
   <p class="small" id="t-footer2">Made with ❤️ for farmers</p>
 </div>
 
-<!-- FACEBOOK SHARE FLOATING BUTTON -->
-<button class="share-float" onclick="shareToFacebook()" title="Share">f</button>
+<button class="share-float" onclick="shareToFacebook()">f</button>
 
 <script>
-// ===== LANGUAGE SYSTEM =====
-const LANDING_LANG = {
+const L = {
   bn: {
-    heroTitle: 'ক্ষুদ্র <span>খামার</span>',
-    tagline: 'কৃষকের ডিজিটাল ডেইরি ম্যানেজার',
-    openBtn: '📱 App Open করুন',
-    featTitle: '✨ কী কী আছে?',
-    featSub: 'সব কিছু বাংলায় — একটাই App এ',
+    heroTitle: 'ক্ষুদ্র <span>খামার</span>', tagline: 'কৃষকের ডিজিটাল ডেইরি ম্যানেজার', openBtn: '📱 App Open করুন',
+    featTitle: '✨ কী কী আছে?', featSub: 'সব কিছু বাংলায় — একটাই App এ',
     f1t: '২৬টি First Aid', f1d: 'প্রাথমিক চিকিৎসার সম্পূর্ণ গাইড',
     f2t: 'দুধের হিসাব', f2d: 'সকাল-বিকালের দুধ রেকর্ড',
     f3t: 'আয়-ব্যয়', f3d: 'মাসিক লাভ-ক্ষতি দেখুন',
@@ -377,25 +166,19 @@ const LANDING_LANG = {
     f6t: 'স্মার্ট অ্যালার্ট', f6d: 'Heat, PD, প্রসবের রিমাইন্ডার',
     f7t: 'PDF রিপোর্ট', f7d: 'দুধের রিপোর্ট ডাউনলোড',
     f8t: 'Offline', f8d: 'ইন্টারনেট ছাড়াও কাজ করে',
-    instTitle: '📲 কীভাবে Install করবেন?',
-    instSub: 'মাত্র ৩ ধাপে',
+    screensTitle: '📱 App Preview', screensSub: '← ডানে scroll করুন →',
+    instTitle: '📲 কীভাবে Install করবেন?', instSub: 'মাত্র ৩ ধাপে',
     step1: '<strong>App Open</strong> button চাপুন',
     step2: 'Chrome Menu (⋮) → <strong>"Add to Home Screen"</strong> চাপুন',
     step3: 'Home screen এ <strong>ক্ষুদ্র খামার</strong> icon পাবেন — সেটাই App',
-    waTitle: '💬 WhatsApp এ যোগাযোগ করুন',
-    waSub: 'কোনো সমস্যা বা সাহায্য লাগলে — সাথে সাথে কথা বলুন',
-    waBtn: '💬 WhatsApp করুন',
+    waTitle: '💬 WhatsApp এ যোগাযোগ করুন', waSub: 'কোনো সমস্যা বা সাহায্য লাগলে — সাথে সাথে কথা বলুন', waBtn: '💬 WhatsApp করুন',
     contactTitle: '👨‍⚕️ সেবা প্রদানকারী',
-    footer1: '🐄 ক্ষুদ্র খামার — কৃষকের ডিজিটাল সঙ্গী',
-    footer2: 'Made with ❤️ for farmers',
+    footer1: '🐄 ক্ষুদ্র খামার — কৃষকের ডিজিটাল সঙ্গী', footer2: 'Made with ❤️ for farmers',
     shareText: '🐄 কৃষক বন্ধুদের জন্য দারুণ একটি App!\n\n✅ ২৬টি প্রাথমিক চিকিৎসা\n✅ দুধ, খরচ, ঔষধ সব হিসাব\n✅ Offline এ কাজ করে\n✅ সম্পূর্ণ বাংলায়'
   },
   hi: {
-    heroTitle: 'छोटा <span>खेत</span>',
-    tagline: 'किसान का डिजिटल डेयरी मैनेजर',
-    openBtn: '📱 ऐप खोलें',
-    featTitle: '✨ क्या-क्या है?',
-    featSub: 'सब कुछ हिन्दी में — एक ही ऐप में',
+    heroTitle: 'छोटा <span>खेत</span>', tagline: 'किसान का डिजिटल डेयरी मैनेजर', openBtn: '📱 ऐप खोलें',
+    featTitle: '✨ क्या-क्या है?', featSub: 'सब कुछ हिन्दी में — एक ही ऐप में',
     f1t: '26 प्राथमिक चिकित्सा', f1d: 'पहली मदद की पूरी गाइड',
     f2t: 'दूध का हिसाब', f2d: 'सुबह-शाम का दूध रिकॉर्ड',
     f3t: 'आय-व्यय', f3d: 'मासिक लाभ-हानि देखें',
@@ -404,25 +187,19 @@ const LANDING_LANG = {
     f6t: 'स्मार्ट अलर्ट', f6d: 'हीट, PD, प्रसव का रिमाइंडर',
     f7t: 'PDF रिपोर्ट', f7d: 'दूध की रिपोर्ट डाउनलोड',
     f8t: 'ऑफलाइन', f8d: 'इंटरनेट के बिना भी काम करता है',
-    instTitle: '📲 कैसे इंस्टॉल करें?',
-    instSub: 'सिर्फ 3 कदम में',
+    screensTitle: '📱 ऐप प्रीव्यू', screensSub: '← दाएँ स्क्रॉल करें →',
+    instTitle: '📲 कैसे इंस्टॉल करें?', instSub: 'सिर्फ 3 कदम में',
     step1: '<strong>ऐप खोलें</strong> बटन दबाएँ',
     step2: 'Chrome मेनू (⋮) → <strong>"Add to Home Screen"</strong> दबाएँ',
     step3: 'Home screen पर <strong>छोटा खेत</strong> आइकन मिलेगा — वही ऐप है',
-    waTitle: '💬 WhatsApp पर संपर्क करें',
-    waSub: 'कोई समस्या हो तो — तुरंत बात करें',
-    waBtn: '💬 WhatsApp करें',
+    waTitle: '💬 WhatsApp पर संपर्क करें', waSub: 'कोई समस्या हो तो — तुरंत बात करें', waBtn: '💬 WhatsApp करें',
     contactTitle: '👨‍⚕️ सेवा प्रदाता',
-    footer1: '🐄 छोटा खेत — किसान का डिजिटल साथी',
-    footer2: 'किसानों के लिए ❤️ से बनाया',
-    shareText: '🐄 किसान भाइयों के लिए शानदार ऐप!\n\n✅ 26 प्राथमिक चिकित्सा\n✅ दूध, खर्च, दवा का हिसाब\n✅ ऑफलाइन में भी काम करता है\n✅ पूरी हिन्दी में'
+    footer1: '🐄 छोटा खेत — किसान का डिजिटल साथी', footer2: 'किसानों के लिए ❤️ से बनाया',
+    shareText: '🐄 किसान भाइयों के लिए शानदार ऐप!\n\n✅ 26 प्राथमिक चिकित्सा\n✅ दूध, खर्च, दवा का हिसाब\n✅ ऑफलाइन में भी काम करता है'
   },
   en: {
-    heroTitle: 'Dairy <span>Manager</span>',
-    tagline: 'Digital Dairy Manager for Farmers',
-    openBtn: '📱 Open App',
-    featTitle: '✨ What\'s Inside?',
-    featSub: 'Everything in 3 languages — one app',
+    heroTitle: 'Dairy <span>Manager</span>', tagline: 'Digital Dairy Manager for Farmers', openBtn: '📱 Open App',
+    featTitle: '✨ What\'s Inside?', featSub: 'Everything in 3 languages — one app',
     f1t: '26 First Aid', f1d: 'Complete first-aid guide',
     f2t: 'Milk Records', f2d: 'Morning-evening milk tracking',
     f3t: 'Income-Expense', f3d: 'Monthly profit-loss view',
@@ -431,32 +208,25 @@ const LANDING_LANG = {
     f6t: 'Smart Alerts', f6d: 'Heat, PD & calving reminders',
     f7t: 'PDF Reports', f7d: 'Download milk reports',
     f8t: 'Offline', f8d: 'Works without internet',
-    instTitle: '📲 How to Install?',
-    instSub: 'Just 3 easy steps',
+    screensTitle: '📱 App Preview', screensSub: '← Swipe to see more →',
+    instTitle: '📲 How to Install?', instSub: 'Just 3 easy steps',
     step1: 'Tap <strong>Open App</strong> button',
     step2: 'Chrome Menu (⋮) → <strong>"Add to Home Screen"</strong>',
     step3: 'Find <strong>Dairy Manager</strong> icon on home screen — that\'s the app',
-    waTitle: '💬 Contact on WhatsApp',
-    waSub: 'Any problem or need help — talk instantly',
-    waBtn: '💬 WhatsApp Now',
+    waTitle: '💬 Contact on WhatsApp', waSub: 'Any problem or need help — talk instantly', waBtn: '💬 WhatsApp Now',
     contactTitle: '👨‍⚕️ Service Provider',
-    footer1: '🐄 Dairy Manager — Farmer\'s Digital Companion',
-    footer2: 'Made with ❤️ for farmers',
+    footer1: '🐄 Dairy Manager — Farmer\'s Digital Companion', footer2: 'Made with ❤️ for farmers',
     shareText: '🐄 Great app for farmers!\n\n✅ 26 First Aid guides\n✅ Milk, expense, medicine tracking\n✅ Works offline\n✅ 3 languages'
   }
 };
 
-let currentLang = 'bn';
+let curLang = 'bn';
 
 function setLang(lang) {
-  if (!LANDING_LANG[lang]) return;
-  currentLang = lang;
-  
+  if (!L[lang]) return;
+  curLang = lang;
   try { localStorage.setItem('landing_lang', lang); } catch(e) {}
-  
-  const t = LANDING_LANG[lang];
-  
-  // Update all texts
+  const t = L[lang];
   document.getElementById('t-hero-title').innerHTML = t.heroTitle;
   document.getElementById('t-tagline').textContent = t.tagline;
   document.getElementById('t-open-btn').textContent = t.openBtn;
@@ -478,6 +248,8 @@ function setLang(lang) {
   document.getElementById('t-f7-desc').textContent = t.f7d;
   document.getElementById('t-f8-title').textContent = t.f8t;
   document.getElementById('t-f8-desc').textContent = t.f8d;
+  document.getElementById('t-screens-title').textContent = t.screensTitle;
+  document.getElementById('t-screens-sub').textContent = t.screensSub;
   document.getElementById('t-inst-title').textContent = t.instTitle;
   document.getElementById('t-inst-sub').textContent = t.instSub;
   document.getElementById('t-step1').innerHTML = t.step1;
@@ -489,43 +261,33 @@ function setLang(lang) {
   document.getElementById('t-contact-title').textContent = t.contactTitle;
   document.getElementById('t-footer1').textContent = t.footer1;
   document.getElementById('t-footer2').textContent = t.footer2;
-  
-  // Update lang buttons
   ['bn','hi','en'].forEach(l => {
     const btn = document.getElementById('btn-' + l);
     if (btn) btn.classList.toggle('active', l === lang);
   });
-  
-  // Update HTML lang attribute
   document.documentElement.lang = lang;
 }
 
-// Auto-detect on load
 function initLang() {
   let lang = 'bn';
   try {
     const saved = localStorage.getItem('landing_lang');
-    if (saved && LANDING_LANG[saved]) {
-      lang = saved;
-    } else {
-      const browserLang = (navigator.language || 'bn').toLowerCase();
-      if (browserLang.startsWith('hi')) lang = 'hi';
-      else if (browserLang.startsWith('bn')) lang = 'bn';
-      else if (browserLang.startsWith('en')) lang = 'en';
+    if (saved && L[saved]) lang = saved;
+    else {
+      const bl = (navigator.language || 'bn').toLowerCase();
+      if (bl.startsWith('hi')) lang = 'hi';
+      else if (bl.startsWith('en')) lang = 'en';
     }
   } catch(e) {}
   setLang(lang);
 }
 
-// Share on Facebook
 function shareToFacebook() {
   const url = 'https://khudra-khamar.github.io/Dairy/landing.html';
-  const text = LANDING_LANG[currentLang].shareText;
-  const fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text);
-  window.open(fbUrl, '_blank', 'width=600,height=400');
+  const text = L[curLang].shareText;
+  window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text), '_blank', 'width=600,height=400');
 }
 
-// Run on page load
 window.addEventListener('DOMContentLoaded', initLang);
 </script>
 
