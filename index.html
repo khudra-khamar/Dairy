@@ -235,6 +235,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 .manual-section ol { padding-left:20px; font-size:13px; color:#555; line-height:1.8; }
 .manual-section li { margin-bottom:4px; }
 </style>
+
 </head>
 <body>
 <!-- ========== SETUP WIZARD SCREEN ========== -->
@@ -361,7 +362,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <img src="./farm-photo.jpg" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.6);flex-shrink:0;">
 <div style="min-width:0;overflow:hidden;flex:1;">
 <h1 id="hdrTitle" style="font-size:14px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;font-weight:700;">🐄 Dairy Manager</h1>
-<p id="greeting" style="font-size:10px;margin:0;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">Good Night 🌙</p>
+<p id="hdrSubtitle" style="font-size:10px;margin:0;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">Loading...</p>
 </div>
 </div>
 
@@ -415,54 +416,100 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <div id="searchResults" style="display:none;"></div>
     <div id="alertCenter"></div>
 
-    <div class="cards">
-      <div class="card cow-card" onclick="showPage('cows')">
-        <div class="icon">🐮</div>
-        <div class="label" data-t="cows">Animals</div>
-        <div class="count" id="homeCowCount">0</div>
-      </div>
-      <div class="card milk-card" onclick="showPage('milk')">
-        <div class="icon">🥛</div>
-        <div class="label" data-t="milk">Milk</div>
-        <div class="count" id="homeMilkCount">0 L</div>
-      </div>
-      <div class="card money-card" onclick="showPage('finance')">
-        <div class="icon">💰</div>
-        <div class="label" data-t="finance">Finance</div>
-        <div class="count" id="homeMoneyCount">0</div>
-      </div>
-      <div class="card report-card" onclick="showPage('reports')">
-        <div class="icon">📊</div>
-        <div class="label" data-t="reports">Reports</div>
-        <div class="count" data-t="view">View</div>
-      </div>
-      <div class="card calv-card" onclick="showPage('calving')">
-        <div class="icon">🍼</div>
-        <div class="label" data-t="calving">Calving</div>
-        <div class="count" data-t="calculator">Calculator</div>
-      </div>
-      <div class="card feed-card" onclick="showPage('feed-stock')">
-        <div class="icon">🌾</div>
-        <div class="label" data-t="feed_stock">Feed Stock</div>
-        <div class="count" data-t="manage">Manage</div>
-      </div>
-      <div class="card add-card" onclick="showPage('add-cow')">
-        <div class="icon">➕</div>
-        <div class="label" data-t="add_cow">Add Animal</div>
-        <div class="count" data-t="add">Add</div>
-      </div>
-<div class="card report-card" onclick="showPage('med-all')">
-  <div class="icon">💊</div>
-  <div class="label" data-t="nav_med">Medicine</div>
-  <div class="count" data-t="manage">Manage</div>
+<!-- ========== MAIN ACTIONS ========== -->
+<h3 data-t="main_actions" style="font-size:13px;font-weight:700;color:#2E7D32;margin:16px 4px 10px;">Main Actions</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+
+  <div onclick="showPage('cows')" style="background:#E8F5E9;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+    <div style="font-size:32px;margin-bottom:6px;">🐮</div>
+    <div data-t="cows" style="font-size:14px;font-weight:700;color:#1B5E20;margin-bottom:3px;">Animals</div>
+    <div id="homeCowCount" style="font-size:11px;color:#2E7D32;opacity:0.85;">0</div>
+  </div>
+
+  <div onclick="showPage('milk')" style="background:#E3F2FD;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+    <div style="font-size:32px;margin-bottom:6px;">🥛</div>
+    <div data-t="milk" style="font-size:14px;font-weight:700;color:#0D47A1;margin-bottom:3px;">Milk</div>
+    <div id="homeMilkCount" style="font-size:11px;color:#1565C0;opacity:0.85;">0 L</div>
+  </div>
+
+  <div onclick="showPage('finance')" style="background:#FFF3E0;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+    <div style="font-size:32px;margin-bottom:6px;">💰</div>
+    <div data-t="finance" style="font-size:14px;font-weight:700;color:#E65100;margin-bottom:3px;">Finance</div>
+    <div id="homeMoneyCount" style="font-size:11px;color:#EF6C00;opacity:0.85;">0</div>
+  </div>
+
+  <div onclick="showPage('add-cow')" style="background:#FFF;border:2px dashed #2E7D32;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;">
+    <div style="font-size:32px;margin-bottom:6px;">➕</div>
+    <div data-t="add_cow" style="font-size:14px;font-weight:700;color:#1B5E20;margin-bottom:3px;">Add Animal</div>
+    <div data-t="add" style="font-size:11px;color:#2E7D32;opacity:0.85;">Add</div>
+  </div>
+
 </div>
+
+<!-- ========== OTHERS ========== -->
+<h3 data-t="others" style="font-size:13px;font-weight:700;color:#2E7D32;margin:16px 4px 10px;">Others</h3>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+
+  <div onclick="showPage('reports')" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="font-size:22px;margin-bottom:4px;">📊</div>
+    <div data-t="reports" style="font-size:10px;color:#333;font-weight:600;">Reports</div>
+  </div>
+
+  <div onclick="showPage('calving')" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="font-size:22px;margin-bottom:4px;">🍼</div>
+    <div data-t="calving" style="font-size:10px;color:#333;font-weight:600;">Calving</div>
+  </div>
+
+  <div onclick="showPage('feed-stock')" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="font-size:22px;margin-bottom:4px;">🌾</div>
+    <div data-t="feed_stock" style="font-size:10px;color:#333;font-weight:600;">Feed</div>
+  </div>
+
+  <div onclick="showPage('med-all')" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="font-size:22px;margin-bottom:4px;">💊</div>
+    <div data-t="nav_med" style="font-size:10px;color:#333;font-weight:600;">Medicine</div>
+  </div>
+
+  <div onclick="openServiceForm()" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="font-size:22px;margin-bottom:4px;">🩺</div>
+    <div style="font-size:10px;color:#333;font-weight:600;">Service</div>
+  </div>
+
+  <div onclick="showPage('notes')" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="font-size:22px;margin-bottom:4px;">📝</div>
+    <div data-t="nav_note" style="font-size:10px;color:#333;font-weight:600;">Notes</div>
+  </div>
+
+  <div onclick="openFirstAidPage()" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="font-size:22px;margin-bottom:4px;">🏥</div>
+    <div style="font-size:10px;color:#333;font-weight:600;">First Aid</div>
+  </div>
+
 </div>
-    <div class="summary-box">
-      <h3 data-t="today_summary">📅 Today's Summary</h3>
-      <div class="summary-row"><span data-t="today_milk">🥛 Today's Milk</span><span id="todayMilk">0 L</span></div>
-      <div class="summary-row"><span data-t="today_income">💵 Today's Income</span><span id="todayIncome">0</span></div>
-      <div class="summary-row"><span data-t="today_expense">💸 Today's Expense</span><span id="todayExpense">0</span></div>
+<div class="summary-box" style="padding:14px 16px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <h3 data-t="today_summary" style="margin:0;">📅 Today's Summary</h3>
+    <span id="todayDate" style="font-size:11px;color:#888;font-weight:600;"></span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="background:#E8F5E9;border-radius:12px;padding:12px 8px;text-align:center;">
+      <div id="todayMilk" style="font-size:18px;font-weight:700;color:#1B5E20;margin-bottom:4px;">0 L</div>
+      <div data-t="today_milk" style="font-size:11px;color:#2E7D32;opacity:0.9;">Milk</div>
     </div>
+    <div style="background:#E8F5E9;border-radius:12px;padding:12px 8px;text-align:center;">
+      <div id="todayIncome" style="font-size:18px;font-weight:700;color:#1B5E20;margin-bottom:4px;">0</div>
+      <div data-t="income_tab" style="font-size:11px;color:#2E7D32;opacity:0.9;">Income</div>
+    </div>
+    <div style="background:#FFEBEE;border-radius:12px;padding:12px 8px;text-align:center;">
+      <div id="todayExpense" style="font-size:18px;font-weight:700;color:#C62828;margin-bottom:4px;">0</div>
+      <div data-t="expense_tab" style="font-size:11px;color:#C62828;opacity:0.9;">Expense</div>
+    </div>
+    <div style="background:#FFF3E0;border-radius:12px;padding:12px 8px;text-align:center;">
+      <div id="todayProfit" style="font-size:18px;font-weight:700;color:#E65100;margin-bottom:4px;">0</div>
+      <div data-t="total_profit" style="font-size:11px;color:#E65100;opacity:0.9;">Profit</div>
+    </div>
+  </div>
+</div>
 
     <div class="summary-box">
       <h3 data-t="total_summary">📊 Total Summary</h3>
@@ -481,17 +528,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <div class="summary-row"><span data-t="total_animals">📊 Total Animals</span><span id="totalCows">0</span></div>
     </div>
 
-    <button class="btn-primary" data-t="add_cow" onclick="showPage('add-cow')">➕ Add New Animal</button>
-    <button class="btn-primary" onclick="debugPhotos()" style="background:#C62828;">🔍 Debug Photos</button>
-<div class="service-card" onclick="openServiceForm()">
-  <div class="service-icon">🩺</div>
-  <div class="service-text">
-    <h4 id="homeServiceTitle">AI / Vet Service</h4>
-    <p id="homeServiceSubtitle">AI • Vet • Vaccination • Deworming • Calving</p>
-  </div>
-  <div class="service-arrow">→</div>
-</div>
-  </div>
 
 </div>
 <div class="container">
@@ -521,7 +557,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     </div>
 
     <div id="cowsList"></div>
-    <button class="btn-primary" data-t="add_cow" onclick="showPage('add-cow')">➕ Add New Animal</button>
+
     <button class="btn-primary" onclick="debugPhotos()" style="background:#C62828;">🔍 Debug Photos</button>
   </div>
 
@@ -1264,6 +1300,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <!-- Firebase SDK (deferred for fast load) -->
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <!-- Firebase Init (wait for deferred SDK) -->
 <script>
@@ -1284,6 +1321,7 @@ window.addEventListener('load', function(){
       measurementId: "G-ETEEL2QSNY"
     });
     window._fbAnalytics = firebase.analytics();
+    window._db = firebase.firestore();
     window._fbReady = true;
     console.log('✅ Firebase ready');
     
@@ -1299,6 +1337,7 @@ window.addEventListener('load', function(){
 });
 </script>
 
+
 <script src="first-aid-data.js"></script>
 
 <script>
@@ -1310,6 +1349,9 @@ const T = {
     cows:'Animals', milk:'Milk', finance:'Finance', reports:'Reports',
     calving:'Calving', settings:'Settings', notes:'Notes',
     feed_stock:'Feed Stock', med_stock:'Medicine Stock', manage:'Manage',
+    main_actions:'Main Actions', others:'Others',
+    tab_today:'Today', tab_total:'Total', tab_herd:'Herd',
+    active:'active', animals_count:'animals',
     today_summary:"📅 Today's Summary", today_milk:"🥛 Today's Milk", today_income:"💵 Today's Income",
     today_expense:"💸 Today's Expense", total_summary:'📊 Total Summary',
     total_income:'💵 Total Income', total_expense:'💸 Total Expense', total_profit:'📈 Total Profit',
@@ -1412,114 +1454,120 @@ const T = {
     feed_title:'🌾 Feed Management'
   },
   bn: {
-  cows:'পশুর তালিকা', milk:'দুধের হিসাব', finance:'আয়-ব্যয়', reports:'রিপোর্ট',
-  calving:'প্রসব ক্যালকুলেটর', settings:'সেটিংস', notes:'নোট',
-  feed_stock:'খাবার স্টক', med_stock:'ঔষধ স্টক', manage:'ব্যবস্থাপনা',
-  today_summary:'📅 আজকের সামারি', today_milk:'🥛 আজকের দুধ', today_income:'💵 আজকের আয়',
-  today_expense:'💸 আজকের ব্যয়', total_summary:'📊 মোট হিসাব',
-  total_income:'💵 মোট আয়', total_expense:'💸 মোট ব্যয়', total_profit:'📈 মোট লাভ',
-  herd_summary:'🐄 পশুর হিসাব', total_animals:'📊 মোট পশু',
-  add_cow:'➕ নতুন পশু যোগ করুন', cows_list:'🐮 পশুর তালিকা', new_cow:'➕ নতুন পশু',
-  profile:'প্রোফাইল', cow_name:'নাম *', animal_type:'পশুর ধরন *', tag_no:'🏷️ Tag No *',
-  type_calf:'বাছুর', type_heifer:'বকনা', type_cow:'গাভী', type_bull:'ষাঁড়', type_buffalo:'মহিষ',
-  filter_all:'সব', breed:'জাত', age:'বয়স (বছর)', weight:'ওজন (কেজি)', photo:'ছবি (ঐচ্ছিক)', note:'নোট',
-  save:'💾 সেভ করুন', cancel:'বাতিল',
-  cow_only_info:'⭐ শুধু গাভীর জন্য', lactation:'Lactation নম্বর',
-  capacity:'দুধ ক্ষমতা (লিটার/দিন)', last_calving:'Last Calving Date',
-  inseminated_q:'Inseminated হয়েছে?', no:'না', yes:'হ্যাঁ',
-  insem_date:'Insemination Date', insem_type:'Type',
-  semen:'Semen Details', bull_no:'Bull No', ai_cost:'AI খরচ (টাকা)',
-  ai_worker:'AI কর্মীর নাম', other:'অন্যান্য',
-  breed_desi:'দেশি', breed_friesian:'ফ্রিজিয়ান', breed_hf:'HF', breed_jersey:'জার্সি',
-  breed_sahiwal:'শাহীওয়াল', breed_sindhi:'সিন্ধি', breed_brahman:'ব্রাহমান',
-  breed_cross:'সংকর', breed_other:'অন্যান্য',
-  no_breed:'জাত নেই', years:'বছর', kg:'কেজি', liter:'লিটার', taka:'টাকা', item:'টি',
-  milk_title:'🥛 দুধের হিসাব', new_milk_entry:'➕ নতুন দুধ এন্ট্রি',
-  total_milk_btn:'🥛 Total Milk (Day)', total_milk_title:'🥛 Total Milk (Day)',
-  single_entry_title:'🐮 আলাদা গাভীর এন্ট্রি',
-  milk_record_title:'🐮 Milk Record / Cow', record_btn:'📊 Record',
-  calving_date:'Calving Date (Auto)', dry_date:'Dry Date (Manual)',
-  select_cow:'গাভী সিলেক্ট করুন *', date:'তারিখ', time:'সময়', quantity:'পরিমাণ (লিটার)',
-  price_per_l:'দাম (টাকা/লিটার)', morning:'সকাল', evening:'বিকাল', both:'সকাল ও বিকাল',
-  finance_title:'💰 আয়-ব্যয়', income_tab:'💵 আয়', expense_tab:'💸 ব্যয়',
-  new_entry:'➕ নতুন এন্ট্রি', type:'ধরন', category:'খাত', amount:'পরিমাণ (টাকা)',
-  description:'বিবরণ',
-  reports_title:'📊 রিপোর্ট', monthly_fin:'📈 মাসিক আয়-ব্যয়', monthly_milk:'🥛 মাসিক দুধ উৎপাদন',
-  overall_stats:'📋 সার্বিক পরিসংখ্যান', total_milk_prod:'মোট দুধ উৎপাদন',
-  milk_income:'দুধ বিক্রি থেকে আয়', net_profit:'নিট লাভ', backup:'💾 ব্যাকআপ',
-  export:'📤 ডাটা এক্সপোর্ট', import:'📥 ডাটা ইমপোর্ট', clear_all:'🗑️ সব ডাটা মুছুন',
-  clear_all_short:'🗑️ সব মুছুন',
-  calving_title:'🍼 প্রসব ক্যালকুলেটর', ai_date:'কৃত্রিম প্রজননের তারিখ (AI Date)',
-  calculate:'🧮 হিসাব করুন', no_days_pregnant:'গর্ভাবস্থার দিন সংখ্যা',
-  expected_calve:'সম্ভাব্য বাচ্চা জন্মের তারিখ', target_dry:'শুকনো করার তারিখ',
-  save_to_cow:'💾 সেভ করুন',
-  cow_type_cow:'🐄 গরু', cow_type_buffalo:'🐃 মহিষ',
-  select_cow_optional:'গাভী/বকনা সিলেক্ট করুন (ঐচ্ছিক)', none:'— কোনোটি না —',
-  settings_title:'⚙️ সেটিংস', language:'🌐 ভাষা', farm_info:'🏠 খামারের তথ্য',
-  farm_name:'খামারের নাম', owner_name:'মালিকের নাম', owner_phone:'মোবাইল নম্বর',
-  default_price:'দুধের ডিফল্ট দাম', save_settings:'💾 সেভ করুন',
-  farm_logo:'খামারের লোগো',
-  security:'🔒 নিরাপত্তা', pin_status:'PIN লক', change_pin:'🔑 PIN পরিবর্তন', disable_pin:'🛑 PIN বন্ধ করুন',
-  license_info:'🔐 লাইসেন্স', license_code:'কোড', license_expiry:'মেয়াদ শেষ', days_left:'বাকি দিন',
-  features_title:'🔧 ফিচার কন্ট্রোল',
-  contacts_title:'📞 জরুরি যোগাযোগ',
-  nav_home:'হোম', nav_cows:'পশু', nav_milk:'দুধ', nav_fin:'হিসাব',
-  nav_med:'ঔষধ', nav_feed:'খাবার', nav_note:'নোট', nav_set:'সেটিংস',
-  greeting_morning:'শুভ সকাল 🌅', greeting_noon:'শুভ দুপুর ☀️',
-  greeting_evening:'শুভ সন্ধ্যা 🌆', greeting_night:'শুভ রাত্রি 🌙',
-  saved:'✅ সেভ হয়েছে', deleted:'🗑️ মুছে ফেলা হয়েছে', updated:'✅ আপডেট হয়েছে',
-  confirm_del:'আপনি কি নিশ্চিত? এটা ফেরানো যাবে না।',
-  enter_name:'❌ নাম লিখুন', enter_tag:'❌ Tag No লিখুন',
-  enter_qty:'❌ পরিমাণ লিখুন', enter_amount:'❌ পরিমাণ লিখুন',
-  enter_ai_date:'❌ প্রজননের তারিখ দিন', enter_med_name:'❌ ঔষধের নাম লিখুন',
-  need_cow:'❌ আগে গাভী যোগ করুন', no_cows:'এখনো কোনো পশু যোগ করা হয়নি',
-  no_milk:'এখনো কোনো দুধের এন্ট্রি নেই', no_income:'এখনো কোনো আয় নেই',
-  no_expense:'এখনো কোনো ব্যয় নেই', edit:'✏️ সম্পাদনা', delete:'🗑️ মুছুন',
-  export_done:'📤 ডাউনলোড হয়েছে', import_ok:'✅ ইমপোর্ট সফল',
-  import_bad:'❌ ফাইল সঠিক নয়', error:'❌ ত্রুটি',
-  settings_saved:'✅ সেটিংস সেভ হয়েছে', lang_changed:'✅ ভাষা পরিবর্তন হয়েছে',
-  save_calving_first:'❌ আগে পশু সিলেক্ট করুন', calving_saved:'✅ সেভ হয়েছে',
-  days_remaining:'দিন বাকি', pregnancy_progress:'গর্ভাবস্থার অগ্রগতি',
-  insem_info:'🧬 Insemination তথ্য', ai_date_lbl:'AI তারিখ',
-  days_passed:'দিন পার হয়েছে', cost_lbl:'খরচ', worker_lbl:'কর্মী',
-  weight_lbl:'ওজন', age_lbl:'বয়স', cow_stats:'📊 এই পশুর হিসাব',
-  cow_total_milk:'🥛 মোট দুধ', cow_milk_income:'💵 দুধ থেকে আয়', cow_profit:'📈 লাভ',
-  alerts_title:'🔔 অ্যালার্ট সেন্টার', alerts_empty:'✅ কোনো অ্যালার্ট নেই!',
-  mark_done:'✅ হয়ে গেছে', snooze:'🔕 ৭ দিন পরে', view:'👁️ দেখুন',
-  view_all:'সব দেখুন', calculator:'ক্যালকুলেটর', add:'যোগ করুন',
-  alert_pd:'🩺 Pregnancy Diagnosis', alert_heat:'🔔 হিট চেক করুন',
-  alert_dry:'🍼 Dry Period শুরু করুন', alert_calving:'🍼 প্রসবের সময়!',
-  alert_breeding:'👀 প্রজনন করানোর সময়', alert_prepcalving:'🏠 প্রসবের প্রস্তুতি নিন',
-  pd_done:'✅ PD সম্পন্ন', heat_done:'✅ হিট চেক সম্পন্ন', snoozed:'🔕 ৭ দিন পরে মনে করাবে',
-  medicine_title:'💊 ঔষধ ও টিকা', new_med_entry:'➕ নতুন এন্ট্রি',
-  med_type:'ধরন *', med_name:'ঔষধ/ভ্যাকসিনের নাম *', med_note:'নোট (ঐচ্ছিক)',
-  deworm:'💊 Deworming (কৃমির ঔষধ)', vaccine:'💉 Vaccination (টিকা)',
-  med_all_title:'💊 ঔষধ সেন্টার', due:'⏰ সময় হয়েছে',
-  next_due:'পরবর্তী:', given:'দেওয়া হয়েছে', med_saved:'✅ ঔষধ সেভ হয়েছে',
-  no_med:'এখনো কোনো ঔষধ এন্ট্রি নেই',
-  notes_title:'📝 আমার নোট', note_placeholder:'নোট লিখুন...', note_save:'💾 নোট সেভ করুন',
-  note_saved:'✅ নোট সেভ হয়েছে', no_notes:'এখনো কোনো নোট নেই', note_delete:'নোট মুছবেন?',
-  gallery_title:'📸 গাভীর গ্যালারি', no_gallery:'কোনো ছবি নেই', medicine_btn:'💊 ঔষধ',
-  range_btn:'📅', range_title:'📅 তারিখ রেঞ্জ',
-  from_date:'শুরু তারিখ', to_date:'শেষ তারিখ',
-  calc_btn:'🔍 হিসাব দেখুন', close_btn:'✖ বন্ধ',
-  range_total_milk:'🥛 মোট দুধ', range_total_income:'💰 মোট আয়',
-  range_avg_daily:'📊 গড় দৈনিক', range_days:'📅 দিন', range_entries:'🐄 এন্ট্রি',
-  pdf_section:'📄 দুধের রিপোর্ট PDF', pdf_preview:'👁️ রিপোর্ট দেখুন',
-  pdf_download:'📄 PDF ডাউনলোড', pdf_share:'📤 শেয়ার', pdf_wa:'💬 WhatsApp',
-  enter_dates:'❌ তারিখ দিন', no_data_range:'❌ এই রেঞ্জে ডাটা নেই',
-  search_placeholder:'খুঁজুন: গাভী, Tag No...', no_search:'কিছু পাওয়া যায়নি',
-  pin_wrong:'❌ ভুল PIN', pin_match:'❌ PIN মিলছে না', pin_4digit:'❌ ৪ সংখ্যা দিন',
-  enter_old_pin:'পুরনো PIN দিন',
-  mr_total_milk:'🥛 মোট দুধ', mr_total_income:'💰 মোট আয়',
-  mr_days:'📅 দিন সংখ্যা', mr_avg:'📊 গড় দৈনিক',
-  mr_no_data:'❌ কোনো ডাটা নেই',
-  feed_title:'🌾 খাবার ব্যবস্থাপনা'
-},
+    cows:'পশুর তালিকা', milk:'দুধের হিসাব', finance:'আয়-ব্যয়', reports:'রিপোর্ট',
+    calving:'প্রসব ক্যালকুলেটর', settings:'সেটিংস', notes:'নোট',
+    feed_stock:'খাবার স্টক', med_stock:'ঔষধ স্টক', manage:'ব্যবস্থাপনা',
+    main_actions:'প্রধান কাজ', others:'অন্যান্য',
+    tab_today:'আজ', tab_total:'মোট হিসাব', tab_herd:'পালের অবস্থা',
+    active:'সক্রিয়', animals_count:'টি পশু',
+    today_summary:'📅 আজকের সামারি', today_milk:'🥛 আজকের দুধ', today_income:'💵 আজকের আয়',
+    today_expense:'💸 আজকের ব্যয়', total_summary:'📊 মোট হিসাব',
+    total_income:'💵 মোট আয়', total_expense:'💸 মোট ব্যয়', total_profit:'📈 মোট লাভ',
+    herd_summary:'🐄 পশুর হিসাব', total_animals:'📊 মোট পশু',
+    add_cow:'➕ নতুন পশু যোগ করুন', cows_list:'🐮 পশুর তালিকা', new_cow:'➕ নতুন পশু',
+    profile:'প্রোফাইল', cow_name:'নাম *', animal_type:'পশুর ধরন *', tag_no:'🏷️ Tag No *',
+    type_calf:'বাছুর', type_heifer:'বকনা', type_cow:'গাভী', type_bull:'ষাঁড়', type_buffalo:'মহিষ',
+    filter_all:'সব', breed:'জাত', age:'বয়স (বছর)', weight:'ওজন (কেজি)', photo:'ছবি (ঐচ্ছিক)', note:'নোট',
+    save:'💾 সেভ করুন', cancel:'বাতিল',
+    cow_only_info:'⭐ শুধু গাভীর জন্য', lactation:'Lactation নম্বর',
+    capacity:'দুধ ক্ষমতা (লিটার/দিন)', last_calving:'Last Calving Date',
+    inseminated_q:'Inseminated হয়েছে?', no:'না', yes:'হ্যাঁ',
+    insem_date:'Insemination Date', insem_type:'Type',
+    semen:'Semen Details', bull_no:'Bull No', ai_cost:'AI খরচ (টাকা)',
+    ai_worker:'AI কর্মীর নাম', other:'অন্যান্য',
+    breed_desi:'দেশি', breed_friesian:'ফ্রিজিয়ান', breed_hf:'HF', breed_jersey:'জার্সি',
+    breed_sahiwal:'শাহীওয়াল', breed_sindhi:'সিন্ধি', breed_brahman:'ব্রাহমান',
+    breed_cross:'সংকর', breed_other:'অন্যান্য',
+    no_breed:'জাত নেই', years:'বছর', kg:'কেজি', liter:'লিটার', taka:'টাকা', item:'টি',
+    milk_title:'🥛 দুধের হিসাব', new_milk_entry:'➕ নতুন দুধ এন্ট্রি',
+    total_milk_btn:'🥛 Total Milk (Day)', total_milk_title:'🥛 Total Milk (Day)',
+    single_entry_title:'🐮 আলাদা গাভীর এন্ট্রি',
+    milk_record_title:'🐮 Milk Record / Cow', record_btn:'📊 Record',
+    calving_date:'Calving Date (Auto)', dry_date:'Dry Date (Manual)',
+    select_cow:'গাভী সিলেক্ট করুন *', date:'তারিখ', time:'সময়', quantity:'পরিমাণ (লিটার)',
+    price_per_l:'দাম (টাকা/লিটার)', morning:'সকাল', evening:'বিকাল', both:'সকাল ও বিকাল',
+    finance_title:'💰 আয়-ব্যয়', income_tab:'💵 আয়', expense_tab:'💸 ব্যয়',
+    new_entry:'➕ নতুন এন্ট্রি', type:'ধরন', category:'খাত', amount:'পরিমাণ (টাকা)',
+    description:'বিবরণ',
+    reports_title:'📊 রিপোর্ট', monthly_fin:'📈 মাসিক আয়-ব্যয়', monthly_milk:'🥛 মাসিক দুধ উৎপাদন',
+    overall_stats:'📋 সার্বিক পরিসংখ্যান', total_milk_prod:'মোট দুধ উৎপাদন',
+    milk_income:'দুধ বিক্রি থেকে আয়', net_profit:'নিট লাভ', backup:'💾 ব্যাকআপ',
+    export:'📤 ডাটা এক্সপোর্ট', import:'📥 ডাটা ইমপোর্ট', clear_all:'🗑️ সব ডাটা মুছুন',
+    clear_all_short:'🗑️ সব মুছুন',
+    calving_title:'🍼 প্রসব ক্যালকুলেটর', ai_date:'কৃত্রিম প্রজননের তারিখ (AI Date)',
+    calculate:'🧮 হিসাব করুন', no_days_pregnant:'গর্ভাবস্থার দিন সংখ্যা',
+    expected_calve:'সম্ভাব্য বাচ্চা জন্মের তারিখ', target_dry:'শুকনো করার তারিখ',
+    save_to_cow:'💾 সেভ করুন',
+    cow_type_cow:'🐄 গরু', cow_type_buffalo:'🐃 মহিষ',
+    select_cow_optional:'গাভী/বকনা সিলেক্ট করুন (ঐচ্ছিক)', none:'— কোনোটি না —',
+    settings_title:'⚙️ সেটিংস', language:'🌐 ভাষা', farm_info:'🏠 খামারের তথ্য',
+    farm_name:'খামারের নাম', owner_name:'মালিকের নাম', owner_phone:'মোবাইল নম্বর',
+    default_price:'দুধের ডিফল্ট দাম', save_settings:'💾 সেভ করুন',
+    farm_logo:'খামারের লোগো',
+    security:'🔒 নিরাপত্তা', pin_status:'PIN লক', change_pin:'🔑 PIN পরিবর্তন', disable_pin:'🛑 PIN বন্ধ করুন',
+    license_info:'🔐 লাইসেন্স', license_code:'কোড', license_expiry:'মেয়াদ শেষ', days_left:'বাকি দিন',
+    features_title:'🔧 ফিচার কন্ট্রোল',
+    contacts_title:'📞 জরুরি যোগাযোগ',
+    nav_home:'হোম', nav_cows:'পশু', nav_milk:'দুধ', nav_fin:'হিসাব',
+    nav_med:'ঔষধ', nav_feed:'খাবার', nav_note:'নোট', nav_set:'সেটিংস',
+    greeting_morning:'শুভ সকাল 🌅', greeting_noon:'শুভ দুপুর ☀️',
+    greeting_evening:'শুভ সন্ধ্যা 🌆', greeting_night:'শুভ রাত্রি 🌙',
+    saved:'✅ সেভ হয়েছে', deleted:'🗑️ মুছে ফেলা হয়েছে', updated:'✅ আপডেট হয়েছে',
+    confirm_del:'আপনি কি নিশ্চিত? এটা ফেরানো যাবে না।',
+    enter_name:'❌ নাম লিখুন', enter_tag:'❌ Tag No লিখুন',
+    enter_qty:'❌ পরিমাণ লিখুন', enter_amount:'❌ পরিমাণ লিখুন',
+    enter_ai_date:'❌ প্রজননের তারিখ দিন', enter_med_name:'❌ ঔষধের নাম লিখুন',
+    need_cow:'❌ আগে গাভী যোগ করুন', no_cows:'এখনো কোনো পশু যোগ করা হয়নি',
+    no_milk:'এখনো কোনো দুধের এন্ট্রি নেই', no_income:'এখনো কোনো আয় নেই',
+    no_expense:'এখনো কোনো ব্যয় নেই', edit:'✏️ সম্পাদনা', delete:'🗑️ মুছুন',
+    export_done:'📤 ডাউনলোড হয়েছে', import_ok:'✅ ইমপোর্ট সফল',
+    import_bad:'❌ ফাইল সঠিক নয়', error:'❌ ত্রুটি',
+    settings_saved:'✅ সেটিংস সেভ হয়েছে', lang_changed:'✅ ভাষা পরিবর্তন হয়েছে',
+    save_calving_first:'❌ আগে পশু সিলেক্ট করুন', calving_saved:'✅ সেভ হয়েছে',
+    days_remaining:'দিন বাকি', pregnancy_progress:'গর্ভাবস্থার অগ্রগতি',
+    insem_info:'🧬 Insemination তথ্য', ai_date_lbl:'AI তারিখ',
+    days_passed:'দিন পার হয়েছে', cost_lbl:'খরচ', worker_lbl:'কর্মী',
+    weight_lbl:'ওজন', age_lbl:'বয়স', cow_stats:'📊 এই পশুর হিসাব',
+    cow_total_milk:'🥛 মোট দুধ', cow_milk_income:'💵 দুধ থেকে আয়', cow_profit:'📈 লাভ',
+    alerts_title:'🔔 অ্যালার্ট সেন্টার', alerts_empty:'✅ কোনো অ্যালার্ট নেই!',
+    mark_done:'✅ হয়ে গেছে', snooze:'🔕 ৭ দিন পরে', view:'👁️ দেখুন',
+    view_all:'সব দেখুন', calculator:'ক্যালকুলেটর', add:'যোগ করুন',
+    alert_pd:'🩺 Pregnancy Diagnosis', alert_heat:'🔔 হিট চেক করুন',
+    alert_dry:'🍼 Dry Period শুরু করুন', alert_calving:'🍼 প্রসবের সময়!',
+    alert_breeding:'👀 প্রজনন করানোর সময়', alert_prepcalving:'🏠 প্রসবের প্রস্তুতি নিন',
+    pd_done:'✅ PD সম্পন্ন', heat_done:'✅ হিট চেক সম্পন্ন', snoozed:'🔕 ৭ দিন পরে মনে করাবে',
+    medicine_title:'💊 ঔষধ ও টিকা', new_med_entry:'➕ নতুন এন্ট্রি',
+    med_type:'ধরন *', med_name:'ঔষধ/ভ্যাকসিনের নাম *', med_note:'নোট (ঐচ্ছিক)',
+    deworm:'💊 Deworming (কৃমির ঔষধ)', vaccine:'💉 Vaccination (টিকা)',
+    med_all_title:'💊 ঔষধ সেন্টার', due:'⏰ সময় হয়েছে',
+    next_due:'পরবর্তী:', given:'দেওয়া হয়েছে', med_saved:'✅ ঔষধ সেভ হয়েছে',
+    no_med:'এখনো কোনো ঔষধ এন্ট্রি নেই',
+    notes_title:'📝 আমার নোট', note_placeholder:'নোট লিখুন...', note_save:'💾 নোট সেভ করুন',
+    note_saved:'✅ নোট সেভ হয়েছে', no_notes:'এখনো কোনো নোট নেই', note_delete:'নোট মুছবেন?',
+    gallery_title:'📸 গাভীর গ্যালারি', no_gallery:'কোনো ছবি নেই', medicine_btn:'💊 ঔষধ',
+    range_btn:'📅', range_title:'📅 তারিখ রেঞ্জ',
+    from_date:'শুরু তারিখ', to_date:'শেষ তারিখ',
+    calc_btn:'🔍 হিসাব দেখুন', close_btn:'✖ বন্ধ',
+    range_total_milk:'🥛 মোট দুধ', range_total_income:'💰 মোট আয়',
+    range_avg_daily:'📊 গড় দৈনিক', range_days:'📅 দিন', range_entries:'🐄 এন্ট্রি',
+    pdf_section:'📄 দুধের রিপোর্ট PDF', pdf_preview:'👁️ রিপোর্ট দেখুন',
+    pdf_download:'📄 PDF ডাউনলোড', pdf_share:'📤 শেয়ার', pdf_wa:'💬 WhatsApp',
+    enter_dates:'❌ তারিখ দিন', no_data_range:'❌ এই রেঞ্জে ডাটা নেই',
+    search_placeholder:'খুঁজুন: গাভী, Tag No...', no_search:'কিছু পাওয়া যায়নি',
+    pin_wrong:'❌ ভুল PIN', pin_match:'❌ PIN মিলছে না', pin_4digit:'❌ ৪ সংখ্যা দিন',
+    enter_old_pin:'পুরনো PIN দিন',
+    mr_total_milk:'🥛 মোট দুধ', mr_total_income:'💰 মোট আয়',
+    mr_days:'📅 দিন সংখ্যা', mr_avg:'📊 গড় দৈনিক',
+    mr_no_data:'❌ কোনো ডাটা নেই',
+    feed_title:'🌾 খাবার ব্যবস্থাপনা'
+  },
   hi: {
     cows:'पशु सूची', milk:'दूध', finance:'आय-व्यय', reports:'रिपोर्ट',
     calving:'प्रसव कैलकुलेटर', settings:'सेटिंग्स', notes:'नोट्स',
     feed_stock:'चारा स्टॉक', med_stock:'दवा स्टॉक', manage:'प्रबंधन',
+    main_actions:'मुख्य कार्य', others:'अन्य',
+    tab_today:'आज', tab_total:'कुल हिसाब', tab_herd:'झुंड की स्थिति',
+    active:'सक्रिय', animals_count:'पशु',
     today_summary:'📅 आज का सारांश', today_milk:'🥛 आज का दूध', today_income:'💵 आज की आय',
     today_expense:'💸 आज का खर्च', total_summary:'📊 कुल सारांश',
     total_income:'💵 कुल आय', total_expense:'💸 कुल खर्च', total_profit:'📈 कुल लाभ',
@@ -1597,13 +1645,13 @@ const T = {
     alert_breeding:'👀 प्रजनन का समय', alert_prepcalving:'🏠 प्रसव की तैयारी करें',
     pd_done:'✅ PD पूर्ण', heat_done:'✅ हीट जाँच पूर्ण', snoozed:'🔕 ७ दिन बाद याद दिलाएगा',
     medicine_title:'💊 दवा और टीका', new_med_entry:'➕ नई एंट्री',
-    med_type:'प्रकार *', med_name:'दवा/टीके का नाम *', med_note:'नोट (वैकल्पिक)',
-    deworm:'💊 डीवर्मिंग (कृमि दवा)', vaccine:'💉 टीकाकरण',
-    med_all_title:'💊 दवा केंद्र', due:'⏰ देय',
-    next_due:'अगली:', given:'दिया गया', med_saved:'✅ दवा सेव हो गई',
+    med_type:'प्रकार *', med_name:'दवा/वैक्सीन का नाम *', med_note:'नोट (वैकल्पिक)',
+    deworm:'💊 कृमिनाशक', vaccine:'💉 टीकाकरण',
+    med_all_title:'💊 दवा केंद्र', due:'⏰ समय हो गया',
+    next_due:'अगला:', given:'दिया गया', med_saved:'✅ दवा सेव हो गई',
     no_med:'अभी तक कोई दवा एंट्री नहीं',
     notes_title:'📝 मेरे नोट्स', note_placeholder:'नोट लिखें...', note_save:'💾 नोट सेव करें',
-    note_saved:'✅ नोट सेव हो गया', no_notes:'अभी तक कोई नोट नहीं', note_delete:'यह नोट मिटाएं?',
+    note_saved:'✅ नोट सेव हो गया', no_notes:'अभी तक कोई नोट नहीं', note_delete:'नोट मिटाएं?',
     gallery_title:'📸 गाय गैलरी', no_gallery:'कोई फोटो नहीं', medicine_btn:'💊 दवा',
     range_btn:'📅', range_title:'📅 तिथि सीमा',
     from_date:'प्रारंभ तिथि', to_date:'अंतिम तिथि',
@@ -1612,7 +1660,7 @@ const T = {
     range_avg_daily:'📊 औसत दैनिक', range_days:'📅 दिन', range_entries:'🐄 एंट्री',
     pdf_section:'📄 दूध रिपोर्ट PDF', pdf_preview:'👁️ रिपोर्ट देखें',
     pdf_download:'📄 PDF डाउनलोड', pdf_share:'📤 शेयर', pdf_wa:'💬 WhatsApp',
-    enter_dates:'❌ तिथियाँ दर्ज करें', no_data_range:'❌ सीमा में डेटा नहीं',
+    enter_dates:'❌ तिथियाँ दर्ज करें', no_data_range:'❌ इस सीमा में डेटा नहीं',
     search_placeholder:'खोजें: गाय, टैग नं...', no_search:'कुछ नहीं मिला',
     pin_wrong:'❌ गलत PIN', pin_match:'❌ PIN मेल नहीं खाता', pin_4digit:'❌ ४ अंक दर्ज करें',
     enter_old_pin:'पुराना PIN दर्ज करें',
@@ -1622,6 +1670,8 @@ const T = {
     feed_title:'🌾 चारा प्रबंधन'
   }
 };
+
+   
 // ============ INDEXEDDB SETUP ============
 const IDB_NAME = 'dairyData_v1';
 const IDB_PHOTOS = 'dairyPhotos_v1';
@@ -2094,6 +2144,16 @@ const PRESETS = {
 };
 
 // ========== LANGUAGE ==========
+function updateHeaderSubtitle() {
+  const el = document.getElementById('hdrSubtitle');
+  if (!el) return;
+  const l = DB.settings.lang || 'en';
+  const count = (DB.cows || []).filter(c => c.status !== 'sold').length;
+  const countText = l === 'bn' ? count + 'টি পশু' : l === 'hi' ? count + ' पशु' : count + ' animals';
+  const activeText = l === 'bn' ? 'সক্রিয়' : l === 'hi' ? 'सक्रिय' : 'active';
+  el.textContent = countText + ' · ' + activeText;
+}
+
 function setLang(l) {
   DB.settings.lang = l;
   track('language_change', { language: l });
@@ -2122,10 +2182,7 @@ function applyLang() {
     const map = { langEn:'en', langBn:'bn', langHi:'hi' };
     el.classList.toggle('active', map[id] === l);
   });
-  const h = new Date().getHours();
-  const gk = h < 12 ? 'greeting_morning' : h < 17 ? 'greeting_noon' : h < 19 ? 'greeting_evening' : 'greeting_night';
-  const gr = document.getElementById('greeting');
-  if (gr) gr.textContent = t(gk);
+updateHeaderSubtitle();
   const searchEl = document.getElementById('globalSearch');
   if (searchEl) searchEl.placeholder = t('search_placeholder');
   applyNavVisibility();
@@ -6458,6 +6515,13 @@ function deleteContact(id) {
   renderContacts();
   toast('🗑️ Deleted');
 }
+function openFirstAidPage() {
+  showPage('med-all');
+  setTimeout(function() {
+    if (typeof switchMedTab === 'function') switchMedTab('firstaid');
+  }, 200);
+}
+
 function openServiceForm() {
   const t = sT();
   
@@ -7000,62 +7064,100 @@ function generateDeviceId() {
 }
 
 // ========== LICENSE ==========
-const SECRET = 'D4!Ry_Mgr_v3_2026_S3cr3t_K3y_X9Z';
+// SECRET removed in Phase 3 — security upgrade
 const TRIAL_DAYS = 7;
 const GRACE_DAYS = 7;
 
-async function hmacSign(message) {
+// hmacSign removed in Phase 3 — using Firestore verify instead
+
+// ===== NEW: Firestore-based verify =====
+async function verifyLicenseFromFirestore(code, deviceId) {
   try {
-    const enc = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-      'raw', enc.encode(SECRET),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false, ['sign']
-    );
-    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
-    const arr = new Uint8Array(sig);
-    let hex = '';
-    for (let i = 0; i < arr.length; i++) {
-      hex += arr[i].toString(16).padStart(2, '0');
+    // Firebase ready check
+    if (!window._fbReady || !window._db) {
+      console.warn('⚠️ Firestore not ready');
+      return { ok: false, error: 'offline' };
     }
-    return hex.toUpperCase();
+    
+    const cleanCode = code.trim().toUpperCase();
+    
+    // Firestore এ query
+    const docRef = window._db.collection('licenses').doc(cleanCode);
+    const docSnap = await docRef.get();
+    
+    if (!docSnap.exists) {
+      console.log('❌ License not found in Firestore:', cleanCode);
+      return { ok: false, error: 'not_found' };
+    }
+    
+    const data = docSnap.data();
+    
+    // Device match check
+    if (data.deviceId !== deviceId) {
+      console.log('❌ Device mismatch');
+      return { ok: false, error: 'device_mismatch' };
+    }
+    
+    // Active check
+    if (!data.active) {
+      console.log('❌ License inactive');
+      return { ok: false, error: 'inactive' };
+    }
+    
+    // Expiry check
+    const expDate = new Date(data.expiry + 'T00:00:00');
+    if (expDate < new Date()) {
+      console.log('❌ License expired');
+      return { ok: false, error: 'expired' };
+    }
+    
+    console.log('✅ License verified via Firestore:', cleanCode);
+    return { 
+      ok: true, 
+      expiry: data.expiry,
+      source: 'firestore'
+    };
   } catch(e) {
-    let h = 0;
-    const str = SECRET + '|' + message;
-    for (let i = 0; i < str.length; i++) {
-      h = ((h << 5) - h) + str.charCodeAt(i);
-      h = h & h;
-    }
-    let h2 = 0;
-    for (let i = str.length - 1; i >= 0; i--) {
-      h2 = ((h2 << 5) - h2) + str.charCodeAt(i);
-      h2 = h2 & h2;
-    }
-    const combined = Math.abs(h).toString(16) + Math.abs(h2).toString(16);
-    return (combined + '00000000').substring(0, 16).toUpperCase();
+    console.error('❌ Firestore verify error:', e);
+    return { ok: false, error: 'network' };
   }
 }
 
 async function verifyLicense(code, deviceId) {
-  const parts = code.trim().toUpperCase().split('-');
-  if (parts.length !== 4 || parts[0] !== 'DM') return false;
-  const devPart = parts[1];
-  const expPart = parts[2];
-  const sigPart = parts[3];
-
-  const devHash = deviceId.replace('DEV-', '').substring(0, 4).toUpperCase();
-  if (devPart !== devHash) return false;
-
-  if (expPart.length !== 8) return false;
-  const expiry = expPart.substring(0, 4) + '-' +
-                 expPart.substring(4, 6) + '-' +
-                 expPart.substring(6, 8);
-
-  const expectedSig = await hmacSign(deviceId + '|' + expPart);
-  if (expectedSig.substring(0, 8) !== sigPart) return false;
-
-  return { expiry };
+  const cleanCode = code.trim().toUpperCase();
+  
+  // ===== Step 1: Try Firestore first =====
+  const fsResult = await verifyLicenseFromFirestore(cleanCode, deviceId);
+  
+  if (fsResult.ok) {
+    return { expiry: fsResult.expiry, source: 'firestore' };
+  }
+  
+  // ===== Step 2: If offline, try cached license =====
+  if (fsResult.error === 'offline' || fsResult.error === 'network') {
+    console.log('⚠️ Network issue — trying cache');
+    
+    // Cached license check
+    if (DB.license && DB.license.code === cleanCode) {
+      const cacheAge = Date.now() - (DB.license.lastCheck || 0);
+      const cacheDays = cacheAge / 86400000;
+      
+      // 30 days cache
+      if (cacheDays <= 30 && DB.license.expiry) {
+        const exp = new Date(DB.license.expiry + 'T00:00:00');
+        if (exp > new Date()) {
+          console.log('✅ Using cached license (age: ' + Math.floor(cacheDays) + ' days)');
+          return { expiry: DB.license.expiry, source: 'cache' };
+        }
+      }
+    }
+  }
+  
+  // ===== Step 3: Failed =====
+  return null;
 }
+
+
 function continueWithTrial() {
   // If trial already active — just skip license screen
   if (!DB.license.trial || !DB.license.expiry) {
@@ -7143,8 +7245,10 @@ async function checkLicenseOnLoad() {
     return false;
   }
 
-  DB.license.expiry = result.expiry;
-  saveDB();
+DB.license.expiry = result.expiry;
+DB.license.lastCheck = Date.now();
+DB.license.verifiedVia = result.source || 'unknown';
+saveDB();
   const exp = new Date(result.expiry + 'T00:00:00');
   const daysLeft = Math.ceil((exp - new Date()) / 86400000);
 
@@ -7204,9 +7308,15 @@ async function verifyAndApplyLicense(code) {
     showAlert('❌ Invalid', 'This license is not valid for this device.\n\nYour device: ' + DB.deviceId);
     return;
   }
-  DB.license = { code: code, expiry: result.expiry, trial: false };
-  saveDB();
-  toast('✅ License activated!');
+  DB.license = { 
+  code: code, 
+  expiry: result.expiry, 
+  trial: false,
+  lastCheck: Date.now(),
+  verifiedVia: result.source || 'unknown'
+};
+saveDB();
+toast('✅ License activated!');
   loadSettings();
 }
 
