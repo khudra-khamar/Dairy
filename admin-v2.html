@@ -899,13 +899,14 @@ html += '<div class="form-tabs">' +
   '<button class="form-tab active" onclick="switchFormTab(\'bn\')" id="tab-bn">BN | </button>' +
   '<button class="form-tab" onclick="switchFormTab(\'en\')" id="tab-en">EN | English</button>' +
   '<button class="form-tab" onclick="switchFormTab(\'hi\')" id="tab-hi">HI | </button>' +
-  '<button class="form-tab" onclick="switchFormTab(\'med\')" id="tab-med">MED | Medicine</button>' +
+  '<button class="form-tab" onclick="switchFormTab(\'med\')" id="tab-med">MED </button>' +
 '</div>';
   
-  html += '<div class="form-tab-content active" id="content-bn">' + buildLangFields(problem, 'bn') + '</div>';
-  html += '<div class="form-tab-content" id="content-en">' + buildLangFields(problem, 'en') + '</div>';
-  html += '<div class="form-tab-content" id="content-hi">' + buildLangFields(problem, 'hi') + '</div>';
-  html += '<div class="form-tab-content" id="content-med">' + buildMedFields(problem) + '</div>';
+  const titleLbl = lang === 'bn' ? 'TITLE' : lang === 'en' ? 'TITLE' : 'TITLE';
+const whatLbl = lang === 'bn' ? 'WHAT IS IT?' : lang === 'en' ? 'WHAT IS IT?' : 'WHAT IS IT?';
+const dosLbl = lang === 'bn' ? 'DO NOW (Steps)' : lang === 'en' ? 'DO NOW (Steps)' : 'DO NOW (Steps)';
+const dontsLbl = lang === 'bn' ? 'DON\\'T DO (Warnings)' : lang === 'en' ? 'DON\\'T DO (Warnings)' : 'DON\\'T DO (Warnings)';
+const flagsLbl = lang === 'bn' ? 'RED FLAGS' : lang === 'en' ? 'RED FLAGS' : 'RED FLAGS';
   
   body.innerHTML = html;
 }
