@@ -899,7 +899,7 @@ html += '<div class="form-tabs">' +
   '<button class="form-tab active" onclick="switchFormTab(\'bn\')" id="tab-bn">BN | </button>' +
   '<button class="form-tab" onclick="switchFormTab(\'en\')" id="tab-en">EN | English</button>' +
   '<button class="form-tab" onclick="switchFormTab(\'hi\')" id="tab-hi">HI | </button>' +
-  '<button class="form-tab" onclick="switchFormTab(\'med\')" id="tab-med">MED </button>' +
+  '<button class="form-tab" onclick="switchFormTab(\'med\')" id="tab-med">MED</button>' +
 '</div>';
   
   const titleLbl = lang === 'bn' ? 'TITLE' : lang === 'en' ? 'TITLE' : 'TITLE';
@@ -966,7 +966,7 @@ function buildLangFields(problem, lang) {
 function dynamicItemHTML(value) {
   return '<div class="dynamic-item">' +
     '<input type="text" value="' + escapeAttr(value || '') + '" placeholder="...">' +
-    '<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)"></button>' +
+     '<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)">X</button>'
   '</div>';
 }
 
