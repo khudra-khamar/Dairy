@@ -1338,29 +1338,35 @@ window.addEventListener('load', function(){
     window._db = firebase.firestore();
     // Firebase Messaging
 try {
+
 // Firebase Messaging with custom SW
 try {
-  window._messaging = firebase.messaging();
-  
-  // Register custom service worker at /Dairy/ scope
-  navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-    scope: './'
-  }).then(function(registration) {
-    console.log('✅ FCM SW registered:', registration.scope);
-    window._fcmSWReg = registration;
+  if (typeof firebase === 'undefined' || typeof firebase.messaging === 'undefined') {
+    alert('DEBUG: firebase.messaging undefined! firebase=' + typeof firebase + ' messaging=' + typeof firebase.messaging);
+    window._messaging = null;
+  } else {
+    window._messaging = firebase.messaging();
     
-    // ⚠️ IMPORTANT: Tell Firebase to use OUR registration
-    window._messaging.useServiceWorker(registration);
-    console.log('✅ Firebase using custom SW');
-  }).catch(function(err) {
-    console.warn('⚠️ FCM SW registration failed:', err.message);
-  });
-  
-  console.log('✅ Firebase Messaging ready');
+    navigator.serviceWorker.register('./firebase-messaging-sw.js', {
+      scope: './'
+    }).then(function(registration) {
+      console.log('✅ FCM SW registered:', registration.scope);
+      window._fcmSWReg = registration;
+      window._messaging.useServiceWorker(registration);
+      console.log('✅ Firebase using custom SW');
+    }).catch(function(err) {
+      alert('DEBUG SW: ' + err.message);
+      console.warn('⚠️ FCM SW registration failed:', err.message);
+    });
+    
+    console.log('✅ Firebase Messaging ready');
+  }
 } catch(e) {
+  alert('DEBUG MSG: ' + e.message + '\nCode: ' + (e.code || 'none'));
   console.warn('⚠️ Messaging failed:', e.message);
   window._messaging = null;
 }
+
     window._fbReady = true;
     console.log('✅ Firebase ready');
     
@@ -2198,6 +2204,12 @@ function updateHeaderSubtitle() {
 async function enableNotifications() {
   const btn = document.getElementById('notifBtn');
   const statusEl = document.getElementById('notifStatus');
+  
+if (!window._messaging) {
+  const dbg = 'PROTO: ' + location.protocol + '\nHOST: ' + location.hostname + '\nFB: ' + typeof firebase + '\nMSG_FN: ' + (typeof firebase !== 'undefined' ? typeof firebase.messaging : 'no-firebase') + '\nMSG_OBJ: ' + typeof window._messaging + '\nSW_REG: ' + typeof window._fcmSWReg + '\nFB_READY: ' + window._fbReady;
+  alert(dbg);
+  return;
+}
   
   // Check support
   if (!('Notification' in window)) {
@@ -4752,7 +4764,7 @@ function renderMedStock() {
 
   const items = DB.medStock || [];
   if (items.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="icon">??</div><p>No medicine stock yet</p></div>`;
+    list.innerHTML = `<div class="empty"><div class="icon">📦</div><p>No medicine stock yet</p></div>`;
     if (summary) summary.innerHTML = '';
     return;
   }
