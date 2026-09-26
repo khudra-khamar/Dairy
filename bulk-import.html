@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Import — First Aid</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+body { background:linear-gradient(135deg,#1B5E20,#2E7D32); min-height:100vh; padding:20px; color:#333; }
+.container { max-width:500px; margin:0 auto; }
+.card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,0,0.2); margin-bottom:16px; }
+h1 { color:#fff; font-size:22px; text-align:center; margin-bottom:20px; }
+h2 { color:#2E7D32; font-size:16px; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid #E8F5E9; }
+input, button { width:100%; padding:12px; border-radius:10px; font-size:15px; }
+input { border:2px solid #E0E0E0; margin-bottom:12px; }
+input:focus { outline:none; border-color:#2E7D32; }
+button { background:#2E7D32; color:#fff; border:none; font-weight:600; cursor:pointer; margin-top:8px; }
+button:disabled { opacity:0.5; }
+.log { background:#F5F5F5; border-radius:8px; padding:12px; font-size:12px; max-height:300px; overflow-y:auto; font-family:monospace; margin-top:12px; }
+.log-item { padding:4px 0; border-bottom:1px solid #E0E0E0; }
+.log-item.ok { color:#2E7D32; }
+.log-item.err { color:#C62828; }
+.log-item.info { color:#1976D2; }
+.badge { display:inline-block; background:#2E7D32; color:#fff; padding:4px 12px; border-radius:12px; font-size:12px; }
+.status-box { padding:12px; border-radius:10px; margin-bottom:12px; font-size:14px; }
+.status-ok { background:#E8F5E9; color:#1B5E20; }
+.status-err { background:#FFEBEE; color:#C62828; }
+.status-info { background:#E3F2FD; color:#0D47A1; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🚀 Bulk Import — First Aid</h1>
+
+<div class="card">
+  <h2>🔐 Admin Login</h2>
+  <input type="email" id="email" placeholder="Email" value="matiur49@gmail.com">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn" onclick="doLogin()">Login</button>
+  <div id="loginStatus" style="margin-top:12px;font-size:13px;"></div>
+</div>
+
+<div class="card" id="importCard" style="display:none;">
+  <h2>📥 Import 26 Problems</h2>
+  <div id="importStatus" class="status-box status-info">
+    Ready to import. Click the button below.
+  </div>
+  <button id="importBtn" onclick="startImport()">📥 Start Import</button>
+  <div class="log" id="log"></div>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="./first-aid-data.js"></script>
+
+<script>
+let db, auth;
+
+function log(msg, type) {
+  const logEl = document.getElementById('log');
+  if (!logEl) return;
+  const cls = type || 'info';
+  const time = new Date().toLocaleTimeString();
+  logEl.innerHTML += '<div class="log-item ' + cls + '">[' + time + '] ' + msg + '</div>';
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('importStatus');
+  el.className = 'status-box status-' + (type || 'info');
+  el.textContent = msg;
+}
+
+// Init Firebase
+try {
+  firebase.initializeApp({
+    apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
+    authDomain: "dairy-manager-1.firebaseapp.com",
+    projectId: "dairy-manager-1",
+    storageBucket: "dairy-manager-1.firebasestorage.app",
+    messagingSenderId: "724466410200",
+    appId: "1:724466410200:web:14f91a33287e95d8b1edad",
+    measurementId: "G-ETEEL2QSNY"
+  });
+  db = firebase.firestore();
+  auth = firebase.auth();
+  log('✅ Firebase initialized', 'ok');
+} catch(e) {
+  log('❌ Firebase init failed: ' + e.message, 'err');
+}
+
+function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  
+  if (!email || !password) {
+    document.getElementById('loginStatus').innerHTML = '<span style="color:#C62828;">❌ Email ও Password দিন</span>';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Logging in...';
+  document.getElementById('loginStatus').innerHTML = '<span style="color:#1976D2;">⏳ Logging in...</span>';
+  
+  auth.signInWithEmailAndPassword(email, password)
+    .then(function(cred) {
+      document.getElementById('loginStatus').innerHTML = '<span style="color:#2E7D32;">✅ Logged in as ' + cred.user.email + '</span>';
+      document.getElementById('importCard').style.display = 'block';
+      log('✅ Logged in: ' + cred.user.email, 'ok');
+    })
+    .catch(function(err) {
+      document.getElementById('loginStatus').innerHTML = '<span style="color:#C62828;">❌ ' + err.message + '</span>';
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    });
+}
+
+async function startImport() {
+  const btn = document.getElementById('importBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Importing...';
+  document.getElementById('log').innerHTML = '';
+  
+  log('Starting import...', 'info');
+  
+  if (typeof FIRST_AID_DATA === 'undefined') {
+    log('❌ FIRST_AID_DATA not loaded!', 'err');
+    setStatus('❌ first-aid-data.js load হয়নি', 'err');
+    btn.disabled = false;
+    btn.textContent = '📥 Start Import';
+    return;
+  }
+  
+  log('Total problems to import: ' + FIRST_AID_DATA.length, 'info');
+  
+  let success = 0;
+  let failed = 0;
+  
+  for (let i = 0; i < FIRST_AID_DATA.length; i++) {
+    const item = FIRST_AID_DATA[i];
+    try {
+      await db.collection('firstAid').doc(item.id).set({
+        icon: item.icon || '',
+        title_bn: item.title_bn || '',
+        title_en: item.title_en || '',
+        title_hi: item.title_hi || '',
+        whatIsIt_bn: item.whatIsIt_bn || '',
+        whatIsIt_en: item.whatIsIt_en || '',
+        whatIsIt_hi: item.whatIsIt_hi || '',
+        dos_bn: item.dos_bn || [],
+        dos_en: item.dos_en || [],
+        dos_hi: item.dos_hi || [],
+        donts_bn: item.donts_bn || [],
+        donts_en: item.donts_en || [],
+        donts_hi: item.donts_hi || [],
+        medicines: item.medicines || [],
+        redFlags_bn: item.redFlags_bn || [],
+        redFlags_en: item.redFlags_en || [],
+        redFlags_hi: item.redFlags_hi || [],
+        order: i + 1,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      success++;
+      log('✅ ' + (i+1) + '. ' + item.id + ' — ' + (item.title_bn || item.title_en), 'ok');
+    } catch(e) {
+      failed++;
+      log('❌ ' + item.id + ': ' + e.message, 'err');
+    }
+  }
+  
+  setStatus('✅ Import Complete! Success: ' + success + ' | Failed: ' + failed, failed > 0 ? 'err' : 'ok');
+  btn.disabled = false;
+  btn.textContent = '🔄 Import Again';
+  
+  if (failed === 0) {
+    log('🎉 All ' + success + ' problems imported successfully!', 'ok');
+  }
+}
+
+// Check if already logged in
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    document.getElementById('loginStatus').innerHTML = '<span style="color:#2E7D32;">✅ Already logged in as ' + user.email + '</span>';
+    document.getElementById('importCard').style.display = 'block';
+    document.getElementById('loginBtn').disabled = true;
+    document.getElementById('loginBtn').textContent = 'Logged in';
+    log('✅ Auth state: ' + user.email, 'ok');
+  }
+});
+</script>
+
+</body>
+</html>
