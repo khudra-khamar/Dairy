@@ -1162,7 +1162,22 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <button class="btn-primary" onclick="openLicenseInput()" style="margin-top:12px;">🔑 Enter License Code</button>
       <button class="btn-danger" onclick="removeTrial()" style="margin-top:8px;">🚫 Remove Trial</button>
     </div>
-
+<div class="summary-box" id="notifSettingsBox">
+  <h3>🔔 Push Notifications</h3>
+  <div class="summary-row">
+    <span>Status</span>
+    <span id="notifStatus" style="font-weight:bold;color:#888;">—</span>
+  </div>
+  <div id="notifDesc" style="font-size:12px;color:#666;margin:8px 0;line-height:1.5;">
+    সময়মতো Heat, PD, প্রসবের Alert পেতে Notification চালু করুন।
+  </div>
+  <button class="btn-primary" id="notifBtn" onclick="enableNotifications()" style="margin-top:8px;">
+    🔔 Enable Notifications
+  </button>
+  <button class="btn-danger" id="notifDisableBtn" onclick="disableNotifications()" style="margin-top:8px;display:none;">
+    🔕 Disable Notifications
+  </button>
+</div>
   </div>
 
   <!-- CONTACTS PAGE -->
@@ -1299,6 +1314,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 
 <!-- Firebase Init (wait for deferred SDK) -->
 <script>
@@ -1320,6 +1336,14 @@ window.addEventListener('load', function(){
     });
     window._fbAnalytics = firebase.analytics();
     window._db = firebase.firestore();
+    // Firebase Messaging
+try {
+  window._messaging = firebase.messaging();
+  console.log('✅ Firebase Messaging ready');
+} catch(e) {
+  console.warn('⚠️ Messaging failed:', e.message);
+  window._messaging = null;
+}
     window._fbReady = true;
     console.log('✅ Firebase ready');
     
@@ -2150,6 +2174,166 @@ function updateHeaderSubtitle() {
   const countText = l === 'bn' ? count + 'টি পশু' : l === 'hi' ? count + ' पशु' : count + ' animals';
   const activeText = l === 'bn' ? 'সক্রিয়' : l === 'hi' ? 'सक्रिय' : 'active';
   el.textContent = countText + ' · ' + activeText;
+}
+
+// ========== PUSH NOTIFICATION ==========
+
+async function enableNotifications() {
+  const btn = document.getElementById('notifBtn');
+  const statusEl = document.getElementById('notifStatus');
+  
+  // Check support
+  if (!('Notification' in window)) {
+    showAlert('❌ Not Supported', 'আপনার browser Notification support করে না।');
+    return;
+  }
+  
+  if (!window._messaging) {
+    showAlert('❌ Not Ready', 'Firebase Messaging এখনো ready হয়নি। একটু পরে try করুন।');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ Requesting...';
+  
+  try {
+    // Step 1: Request permission
+    const permission = await Notification.requestPermission();
+    
+    if (permission !== 'granted') {
+      showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।\n\nBrowser settings থেকে আবার enable করতে পারবেন।');
+      btn.disabled = false;
+      btn.textContent = '🔔 Enable Notifications';
+      return;
+    }
+    
+    // Step 2: Get FCM Token
+    btn.textContent = '⏳ Getting token...';
+    const token = await window._messaging.getToken({ vapidKey: VAPID_KEY });
+    
+    if (!token) {
+      throw new Error('Token পাওয়া যায়নি');
+    }
+    
+    console.log('✅ FCM Token:', token);
+    
+    // Step 3: Save to Firestore
+    btn.textContent = '⏳ Saving...';
+    await saveFCMToken(token);
+    
+    // Step 4: Save locally
+    DB.fcmToken = token;
+    DB.notifEnabled = true;
+    saveDB();
+    
+    toast('✅ Notifications চালু হয়েছে!');
+    updateNotificationUI();
+    
+  } catch(e) {
+    console.error('❌ enableNotifications error:', e);
+    showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
+    btn.disabled = false;
+    btn.textContent = '🔔 Enable Notifications';
+  }
+}
+
+async function saveFCMToken(token) {
+  try {
+    if (!window._db || !DB.deviceId) return false;
+    
+    await window._db.collection('fcmTokens').doc(DB.deviceId).set({
+      token: token,
+      deviceId: DB.deviceId,
+      farmName: DB.settings.farmName || '',
+      ownerName: DB.settings.ownerName || '',
+      phone: DB.settings.phone || '',
+      lang: DB.settings.lang || 'bn',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      active: true
+    });
+    
+    console.log('✅ FCM Token saved to Firestore');
+    return true;
+  } catch(e) {
+    console.error('❌ Save token error:', e);
+    return false;
+  }
+}
+
+async function disableNotifications() {
+  if (!confirm('Notification বন্ধ করবেন?')) return;
+  
+  try {
+    if (window._messaging) {
+      await window._messaging.deleteToken();
+    }
+    
+    // Remove from Firestore
+    if (window._db && DB.deviceId) {
+      await window._db.collection('fcmTokens').doc(DB.deviceId).delete();
+    }
+    
+    DB.fcmToken = '';
+    DB.notifEnabled = false;
+    saveDB();
+    
+    toast('🔕 Notifications বন্ধ হয়েছে');
+    updateNotificationUI();
+  } catch(e) {
+    console.error('disableNotifications error:', e);
+    toast('❌ Error');
+  }
+}
+
+function updateNotificationUI() {
+  const statusEl = document.getElementById('notifStatus');
+  const btn = document.getElementById('notifBtn');
+  const disableBtn = document.getElementById('notifDisableBtn');
+  const desc = document.getElementById('notifDesc');
+  
+  if (!statusEl) return;
+  
+  const granted = ('Notification' in window) && Notification.permission === 'granted';
+  const enabled = DB.notifEnabled && granted;
+  
+  if (enabled) {
+    statusEl.textContent = '✅ ON';
+    statusEl.style.color = '#2E7D32';
+    if (btn) btn.style.display = 'none';
+    if (disableBtn) disableBtn.style.display = 'block';
+    if (desc) desc.textContent = 'সময়মতো Heat, PD, প্রসবের Alert আপনার phone এ আসবে।';
+  } else if (granted) {
+    statusEl.textContent = '⚠️ Permission দেওয়া আছে';
+    statusEl.style.color = '#E65100';
+    if (btn) { btn.style.display = 'block'; btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
+    if (disableBtn) disableBtn.style.display = 'none';
+    if (desc) desc.textContent = 'Notification চালু করতে নিচের button চাপুন।';
+  } else {
+    statusEl.textContent = '❌ OFF';
+    statusEl.style.color = '#C62828';
+    if (btn) { btn.style.display = 'block'; btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
+    if (disableBtn) disableBtn.style.display = 'none';
+    if (desc) desc.textContent = 'সময়মতো Alert পেতে Notification চালু করুন।';
+  }
+}
+
+// Foreground notification handler
+if (window._messaging) {
+  window._messaging.onMessage(function(payload) {
+    console.log('🔔 Foreground message:', payload);
+    const title = payload.notification?.title || '🐄 Dairy Manager';
+    const body = payload.notification?.body || 'New alert!';
+    
+    if (Notification.permission === 'granted') {
+      new Notification(title, {
+        body: body,
+        icon: './icon-192.png',
+        badge: './icon-192.png',
+        tag: payload.data?.tag || 'dairy-foreground',
+        vibrate: [200, 100, 200]
+      });
+    }
+  });
 }
 
 function setLang(l) {
@@ -7063,6 +7247,9 @@ function generateDeviceId() {
 
 // ========== LICENSE ==========
 // SECRET removed in Phase 3 — security upgrade
+// ========== FCM VAPID KEY ==========
+const VAPID_KEY = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
+
 const TRIAL_DAYS = 7;
 const GRACE_DAYS = 7;
 
