@@ -225,8 +225,8 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   cursor:pointer;
   font-weight:600;
 }
-.btn-edit { background:#1976D2; color:#fff; font-size:11px; letter-spacing:0.5px; min-width:52px; }
-.btn-del { background:#C62828; color:#fff; font-size:11px; letter-spacing:0.5px; min-width:52px; }
+.btn-edit { background:#1976D2; color:#fff; font-size:11px; font-weight:700; letter-spacing:0.5px; min-width:50px; }
+.btn-del { background:#C62828; color:#fff; font-size:11px; font-weight:700; letter-spacing:0.5px; min-width:50px; }
 
 /* Empty State */
 .empty-state {
@@ -810,8 +810,8 @@ function renderList() {
         '<p>' + escapeHtml(subtitle) + '  ' + dosCount + ' steps  ' + dontsCount + ' warnings</p>' +
       '</div>' +
       '<div class="actions">' +
-       '<button class="btn-edit" onclick="openEdit(\'' + p.id + '\')">EDIT</button>' +
-       '<button class="btn-del" onclick="confirmDelete(\'' + p.id + '\', \'' + escapeHtml(title).replace(/'/g, '') + '\')">DEL</button>' +
+      '<button class="btn-edit" onclick="openEdit(\'' + p.id + '\')">EDIT</button>' +
+      '<button class="btn-del" onclick="confirmDelete(\'' + p.id + '\', \'' + escapeHtml(title).replace(/'/g, '') + '\')">DEL</button>' +
       '</div>' +
     '</div>';
   }).join('');
