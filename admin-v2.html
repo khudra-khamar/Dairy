@@ -895,12 +895,12 @@ function buildForm(problem, isNew) {
   '</div>';
   
   // Tabs
-  html += '<div class="form-tabs">' +
-    '<button class="form-tab active" onclick="switchFormTab(\'bn\')" id="tab-bn"> </button>' +
-    '<button class="form-tab" onclick="switchFormTab(\'en\')" id="tab-en"> English</button>' +
-    '<button class="form-tab" onclick="switchFormTab(\'hi\')" id="tab-hi"> </button>' +
-    '<button class="form-tab" onclick="switchFormTab(\'med\')" id="tab-med"> Medicine</button>' +
-  '</div>';
+html += '<div class="form-tabs">' +
+  '<button class="form-tab active" onclick="switchFormTab(\'bn\')" id="tab-bn">BN | </button>' +
+  '<button class="form-tab" onclick="switchFormTab(\'en\')" id="tab-en">EN | English</button>' +
+  '<button class="form-tab" onclick="switchFormTab(\'hi\')" id="tab-hi">HI | </button>' +
+  '<button class="form-tab" onclick="switchFormTab(\'med\')" id="tab-med">MED | Medicine</button>' +
+'</div>';
   
   html += '<div class="form-tab-content active" id="content-bn">' + buildLangFields(problem, 'bn') + '</div>';
   html += '<div class="form-tab-content" id="content-en">' + buildLangFields(problem, 'en') + '</div>';
