@@ -2245,8 +2245,10 @@ const tokenOptions = { vapidKey: VAPID_KEY };
 if (window._fcmSWReg) {
   tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
 }
-    
-    console.log('✅ FCM Token:', token);
+
+const token = await window._messaging.getToken(tokenOptions);
+
+console.log('✅ FCM Token:', token);
     
     // Step 3: Save to Firestore
     btn.textContent = '⏳ Saving...';
