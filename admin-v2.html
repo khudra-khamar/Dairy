@@ -551,16 +551,11 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   display:flex;
   align-items:center;
   justify-content:center;
-  position:relative;
-  font-size:0;
 }
-.btn-remove-item::after {
-  content:"\\00D7";
-  color:#ffffff;
-  font-size:22px;
-  font-weight:900;
-  line-height:1;
-  font-family:Arial, sans-serif;
+.btn-remove-item svg {
+  width:14px;
+  height:14px;
+  display:block;
 }
 .btn-add-item {
   background:#E3F2FD;
@@ -977,7 +972,7 @@ const flagsLbl = 'RED FLAGS';
 function dynamicItemHTML(value) {
   return '<div class="dynamic-item">' +
     '<input type="text" value="' + escapeAttr(value || '') + '" placeholder="...">' +
-    '<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)"></button>' +
+'<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
   '</div>';
 }
 
@@ -1009,7 +1004,7 @@ function medicineItemHTML(med) {
       '<input type="text" class="med-name" value="' + escapeAttr(med.name) + '" placeholder="Name">' +
       '<input type="text" class="med-dose" value="' + escapeAttr(med.dose) + '" placeholder="Dose">' +
       '<input type="text" class="med-route-bn" value="' + escapeAttr(med.route_bn) + '" placeholder="Route ">' +
-      '<button type="button" class="btn-remove-item" onclick="removeMedicine(this)"></button>' +
+      '<button type="button" class="btn-remove-item" onclick="removeMedicine(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'i
     '</div>' +
     '<div class="med-row">' +
       '<input type="text" class="med-route-en" value="' + escapeAttr(med.route_en) + '" placeholder="Route EN">' +
@@ -1040,7 +1035,7 @@ function addDynamicItem(key) {
   const div = document.createElement('div');
   div.className = 'dynamic-item';
   div.innerHTML = '<input type="text" value="" placeholder="...">' +
-    '<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)"></button>';
+   '<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
   list.appendChild(div);
 }
 
