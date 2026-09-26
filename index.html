@@ -1316,15 +1316,17 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 
-<!-- Firebase Init (wait for deferred SDK) -->
+<!-- Firebase Init -->
 <script>
-window.addEventListener('load', function(){
+(function initFirebase() {
+  // Wait for firebase to be available (deferred SDK)
+  if (typeof firebase === 'undefined' || typeof firebase.messaging === 'undefined') {
+    console.log('⏳ Waiting for Firebase SDK...');
+    setTimeout(initFirebase, 100);
+    return;
+  }
+  
   try {
-    if (typeof firebase === 'undefined') {
-      console.warn('⚠️ Firebase SDK not loaded');
-      window._fbReady = false;
-      return;
-    }
     firebase.initializeApp({
       apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
       authDomain: "dairy-manager-1.firebaseapp.com",
@@ -1334,52 +1336,47 @@ window.addEventListener('load', function(){
       appId: "1:724466410200:web:14f91a33287e95d8b1edad",
       measurementId: "G-ETEEL2QSNY"
     });
+    
     window._fbAnalytics = firebase.analytics();
     window._db = firebase.firestore();
-    // Firebase Messaging
-try {
-
-// Firebase Messaging with custom SW
-try {
-  if (typeof firebase === 'undefined' || typeof firebase.messaging === 'undefined') {
-    alert('DEBUG: firebase.messaging undefined! firebase=' + typeof firebase + ' messaging=' + typeof firebase.messaging);
-    window._messaging = null;
-  } else {
     window._messaging = firebase.messaging();
     
-    navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-      scope: './'
-    }).then(function(registration) {
-      console.log('✅ FCM SW registered:', registration.scope);
-      window._fcmSWReg = registration;
-      window._messaging.useServiceWorker(registration);
-      console.log('✅ Firebase using custom SW');
-    }).catch(function(err) {
-      alert('DEBUG SW: ' + err.message);
-      console.warn('⚠️ FCM SW registration failed:', err.message);
-    });
+    // Register Firebase Messaging Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./firebase-messaging-sw.js', {
+        scope: './'
+      }).then(function(registration) {
+        console.log('✅ FCM SW registered:', registration.scope);
+        window._fcmSWReg = registration;
+        try {
+          window._messaging.useServiceWorker(registration);
+          console.log('✅ Firebase using custom SW');
+        } catch(e) {
+          console.warn('useServiceWorker failed:', e.message);
+        }
+      }).catch(function(err) {
+        console.warn('⚠️ FCM SW registration failed:', err.message);
+      });
+    }
     
-    console.log('✅ Firebase Messaging ready');
-  }
-} catch(e) {
-  alert('DEBUG MSG: ' + e.message + '\nCode: ' + (e.code || 'none'));
-  console.warn('⚠️ Messaging failed:', e.message);
-  window._messaging = null;
-}
-
     window._fbReady = true;
     console.log('✅ Firebase ready');
     
     // Track app open
-    window._fbAnalytics.logEvent('app_open', {
-      platform: 'pwa',
-      timestamp: Date.now()
-    });
+    try {
+      window._fbAnalytics.logEvent('app_open', {
+        platform: 'pwa',
+        timestamp: Date.now()
+      });
+    } catch(e) {
+      console.warn('Analytics event failed:', e);
+    }
+    
   } catch(e) {
     console.warn('⚠️ Firebase failed:', e.message);
     window._fbReady = false;
   }
-});
+})();
 </script>
 
 
