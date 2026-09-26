@@ -1338,7 +1338,20 @@ window.addEventListener('load', function(){
     window._db = firebase.firestore();
     // Firebase Messaging
 try {
+// Firebase Messaging with custom SW
+try {
   window._messaging = firebase.messaging();
+  
+  // Register custom service worker at correct path
+  navigator.serviceWorker.register('./firebase-messaging-sw.js', {
+    scope: './'
+  }).then(function(registration) {
+    console.log('✅ FCM Service Worker registered:', registration.scope);
+    window._fcmSWReg = registration;
+  }).catch(function(err) {
+    console.warn('⚠️ FCM SW registration failed:', err.message);
+  });
+  
   console.log('✅ Firebase Messaging ready');
 } catch(e) {
   console.warn('⚠️ Messaging failed:', e.message);
@@ -2209,7 +2222,11 @@ async function enableNotifications() {
     
     // Step 2: Get FCM Token
     btn.textContent = '⏳ Getting token...';
-    const token = await window._messaging.getToken({ vapidKey: VAPID_KEY });
+    const tokenOptions = { vapidKey: VAPID_KEY };
+if (window._fcmSWReg) {
+  tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+}
+const token = await window._messaging.getToken(tokenOptions);
     
     if (!token) {
       throw new Error('Token পাওয়া যায়নি');
