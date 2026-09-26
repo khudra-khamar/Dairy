@@ -1342,12 +1342,16 @@ try {
 try {
   window._messaging = firebase.messaging();
   
-  // Register custom service worker at correct path
+  // Register custom service worker at /Dairy/ scope
   navigator.serviceWorker.register('./firebase-messaging-sw.js', {
     scope: './'
   }).then(function(registration) {
-    console.log('✅ FCM Service Worker registered:', registration.scope);
+    console.log('✅ FCM SW registered:', registration.scope);
     window._fcmSWReg = registration;
+    
+    // ⚠️ IMPORTANT: Tell Firebase to use OUR registration
+    window._messaging.useServiceWorker(registration);
+    console.log('✅ Firebase using custom SW');
   }).catch(function(err) {
     console.warn('⚠️ FCM SW registration failed:', err.message);
   });
@@ -2222,15 +2226,16 @@ async function enableNotifications() {
     
     // Step 2: Get FCM Token
     btn.textContent = '⏳ Getting token...';
-    const tokenOptions = { vapidKey: VAPID_KEY };
+    
+// Wait for SW registration if not ready
+if (!window._fcmSWReg) {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+}
+
+const tokenOptions = { vapidKey: VAPID_KEY };
 if (window._fcmSWReg) {
   tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
 }
-const token = await window._messaging.getToken(tokenOptions);
-    
-    if (!token) {
-      throw new Error('Token পাওয়া যায়নি');
-    }
     
     console.log('✅ FCM Token:', token);
     
@@ -4747,7 +4752,7 @@ function renderMedStock() {
 
   const items = DB.medStock || [];
   if (items.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="icon">📦</div><p>No medicine stock yet</p></div>`;
+    list.innerHTML = `<div class="empty"><div class="icon">??</div><p>No medicine stock yet</p></div>`;
     if (summary) summary.innerHTML = '';
     return;
   }
