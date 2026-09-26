@@ -4422,8 +4422,9 @@ function renderMedAll() {
   }).join('');
 }
 
-function openFirstAidDetail(id) {
-  const item = FIRST_AID_DATA.find(x => x.id === id);
+async function openFirstAidDetail(id) {
+  const data = await getFirstAidData();
+  const item = data.find(x => x.id === id);
   if (!item) return;
   
   const l = DB.settings.lang || 'en';
@@ -4623,18 +4624,194 @@ function faTitle(item) {
   return item['title_' + l] || item['title_en'] || item['title_bn'] || '';
 }
 
-function renderFirstAid() {
+// ========== FIRST AID DATA LOADER ==========
+async function getFirstAidData() {
+  // Step 1: Try Firestore first (with 3s timeout)
+  if (window._fbReady && window._db) {
+    try {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 3000)
+      );
+      const fetch = window._db.collection('firstAid').orderBy('order').get();
+      const snap = await Promise.race([fetch, timeout]);
+      
+      if (!snap.empty) {
+        const arr = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          data.id = doc.id;
+          arr.push(data);
+        });
+        console.log('✅ First Aid loaded from Firestore:', arr.length);
+        
+        // Cache for offline
+        try {
+          localStorage.setItem('firstAidCache', JSON.stringify({
+            data: arr,
+            ts: Date.now()
+          }));
+        } catch(e) {}
+        
+        return arr;
+      }
+    } catch(e) {
+      console.warn('⚠️ Firestore fetch failed, using cache:', e.message);
+    }
+  }
+  
+  // Step 2: Try cached data
+  try {
+    const cached = localStorage.getItem('firstAidCache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed.data && parsed.data.length > 0) {
+        console.log('✅ First Aid loaded from cache:', parsed.data.length);
+        return parsed.data;
+      }
+    }
+  } catch(e) {}
+  
+  // Step 3: Fallback to bundled first-aid-data.js
+  if (typeof FIRST_AID_DATA !== 'undefined') {
+    console.log('✅ First Aid loaded from bundled file:', FIRST_AID_DATA.length);
+    return FIRST_AID_DATA;
+  }
+  
+  console.warn('❌ No First Aid data available');
+  return [];
+}
+
+// ========== FIRST AID DATA LOADER ==========
+async function getFirstAidData() {
+  // Step 1: Try Firestore first (with 3s timeout)
+  if (window._fbReady && window._db) {
+    try {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 3000)
+      );
+      const fetch = window._db.collection('firstAid').orderBy('order').get();
+      const snap = await Promise.race([fetch, timeout]);
+      
+      if (!snap.empty) {
+        const arr = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          data.id = doc.id;
+          arr.push(data);
+        });
+        console.log('✅ First Aid loaded from Firestore:', arr.length);
+        
+        try {
+          localStorage.setItem('firstAidCache', JSON.stringify({
+            data: arr,
+            ts: Date.now()
+          }));
+        } catch(e) {}
+        
+        return arr;
+      }
+    } catch(e) {
+      console.warn('⚠️ Firestore fetch failed, using cache:', e.message);
+    }
+  }
+  
+  // Step 2: Try cached data
+  try {
+    const cached = localStorage.getItem('firstAidCache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed.data && parsed.data.length > 0) {
+        console.log('✅ First Aid loaded from cache:', parsed.data.length);
+        return parsed.data;
+      }
+    }
+  } catch(e) {}
+  
+  // Step 3: Fallback to bundled first-aid-data.js
+  if (typeof FIRST_AID_DATA !== 'undefined') {
+    console.log('✅ First Aid loaded from bundled file:', FIRST_AID_DATA.length);
+    return FIRST_AID_DATA;
+  }
+  
+  console.warn('❌ No First Aid data available');
+  return [];
+}
+
+// ========== FIRST AID DATA LOADER ==========
+async function getFirstAidData() {
+  // Step 1: Try Firestore first (with 3s timeout)
+  if (window._fbReady && window._db) {
+    try {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 3000)
+      );
+      const fetch = window._db.collection('firstAid').orderBy('order').get();
+      const snap = await Promise.race([fetch, timeout]);
+      
+      if (!snap.empty) {
+        const arr = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          data.id = doc.id;
+          arr.push(data);
+        });
+        console.log('✅ First Aid loaded from Firestore:', arr.length);
+        
+        try {
+          localStorage.setItem('firstAidCache', JSON.stringify({
+            data: arr,
+            ts: Date.now()
+          }));
+        } catch(e) {}
+        
+        return arr;
+      }
+    } catch(e) {
+      console.warn('⚠️ Firestore fetch failed, using cache:', e.message);
+    }
+  }
+  
+  // Step 2: Try cached data
+  try {
+    const cached = localStorage.getItem('firstAidCache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed.data && parsed.data.length > 0) {
+        console.log('✅ First Aid loaded from cache:', parsed.data.length);
+        return parsed.data;
+      }
+    }
+  } catch(e) {}
+  
+  // Step 3: Fallback to bundled first-aid-data.js
+  if (typeof FIRST_AID_DATA !== 'undefined') {
+    console.log('✅ First Aid loaded from bundled file:', FIRST_AID_DATA.length);
+    return FIRST_AID_DATA;
+  }
+  
+  console.warn('❌ No First Aid data available');
+  return [];
+}
+
+
+async function renderFirstAid() {
   const list = document.getElementById('firstAidList');
   if (!list) return;
-  if (typeof FIRST_AID_DATA === 'undefined') {
-    list.innerHTML = '<div class="empty"><div class="icon">⚠️</div><p>Data loading...</p></div>';
+  
+  list.innerHTML = '<div class="empty"><div class="icon">⏳</div><p>Loading...</p></div>';
+  
+  const data = await getFirstAidData();
+  
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="icon">⚠️</div><p>Data unavailable</p></div>';
     return;
   }
+  
   const l = DB.settings.lang || 'en';
   const stepsLabel = l === 'bn' ? 'ধাপ' : l === 'hi' ? 'चरण' : 'steps';
   const warningsLabel = l === 'bn' ? 'সতর্কতা' : l === 'hi' ? 'चेतावनी' : 'warnings';
   
-  list.innerHTML = FIRST_AID_DATA.map(item => {
+  list.innerHTML = data.map(item => {
     const dos = faField(item, 'dos');
     const donts = faField(item, 'donts');
     return `<div class="contact-card" style="cursor:pointer;" onclick="openFirstAidDetail('${item.id}')">
