@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2E7D32">
+<title>🔐 Admin — First Aid Manager</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color:transparent; }
+body { background:#F5F5F0; color:#333; line-height:1.5; }
+
+/* Header */
+.admin-header {
+  background:linear-gradient(135deg,#1B5E20,#2E7D32);
+  color:#fff;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+.admin-header h1 {
+  font-size:15px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.admin-user {
+  font-size:11px;
+  background:rgba(255,255,255,0.2);
+  padding:4px 10px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.admin-user button {
+  background:rgba(255,255,255,0.25);
+  border:none;
+  color:#fff;
+  padding:3px 8px;
+  border-radius:8px;
+  font-size:10px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* Login Screen */
+.login-overlay {
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:linear-gradient(135deg,#1B5E20,#2E7D32);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:200;
+}
+.login-box {
+  background:#fff;
+  border-radius:20px;
+  padding:28px 24px;
+  width:100%;
+  max-width:400px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.login-box .login-icon {
+  font-size:56px;
+  text-align:center;
+  margin-bottom:12px;
+}
+.login-box h2 {
+  font-size:20px;
+  color:#1B5E20;
+  text-align:center;
+  margin-bottom:6px;
+}
+.login-box .sub {
+  font-size:12px;
+  color:#888;
+  text-align:center;
+  margin-bottom:24px;
+}
+.login-box input {
+  width:100%;
+  padding:14px;
+  border:2px solid #E0E0E0;
+  border-radius:12px;
+  font-size:14px;
+  margin-bottom:12px;
+  background:#FAFAFA;
+}
+.login-box input:focus {
+  outline:none;
+  border-color:#2E7D32;
+  background:#fff;
+}
+.login-box button {
+  width:100%;
+  padding:14px;
+  background:#2E7D32;
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:6px;
+}
+.login-box button:disabled {
+  opacity:0.5;
+}
+.login-err {
+  background:#FFEBEE;
+  color:#C62828;
+  padding:10px;
+  border-radius:10px;
+  font-size:12px;
+  margin-bottom:12px;
+  text-align:center;
+  display:none;
+}
+
+/* Container */
+.container {
+  max-width:600px;
+  margin:0 auto;
+  padding:16px;
+}
+
+/* Top Bar */
+.top-bar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+  gap:10px;
+}
+.top-bar h2 {
+  font-size:17px;
+  color:#1B5E20;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.top-bar .count {
+  background:#E8F5E9;
+  color:#1B5E20;
+  padding:4px 10px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:700;
+}
+
+/* Add Button */
+.btn-add {
+  background:#2E7D32;
+  color:#fff;
+  border:none;
+  padding:12px 16px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  box-shadow:0 4px 12px rgba(46,125,50,0.3);
+}
+.btn-add:active { transform:scale(0.98); }
+
+/* List Card */
+.fa-card {
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  border-left:4px solid #2E7D32;
+}
+.fa-card .icon {
+  font-size:28px;
+  flex-shrink:0;
+}
+.fa-card .info {
+  flex:1;
+  min-width:0;
+}
+.fa-card .info h4 {
+  font-size:14px;
+  font-weight:700;
+  color:#1B5E20;
+  margin-bottom:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.fa-card .info p {
+  font-size:11px;
+  color:#888;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.fa-card .actions {
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+}
+.fa-card .actions button {
+  border:none;
+  padding:8px 10px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+  font-weight:600;
+}
+.btn-edit { background:#1976D2; color:#fff; }
+.btn-del { background:#C62828; color:#fff; }
+
+/* Empty State */
+.empty-state {
+  text-align:center;
+  padding:60px 20px;
+  color:#888;
+}
+.empty-state .icon {
+  font-size:60px;
+  margin-bottom:12px;
+}
+.empty-state p {
+  font-size:14px;
+}
+
+/* Loading */
+.loading {
+  text-align:center;
+  padding:40px;
+  color:#888;
+  font-size:14px;
+}
+
+/* Footer */
+.admin-footer {
+  text-align:center;
+  padding:24px 16px;
+  font-size:11px;
+  color:#999;
+}
+
+/* Toast */
+.toast {
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:#333;
+  color:#fff;
+  padding:12px 24px;
+  border-radius:24px;
+  font-size:13px;
+  font-weight:600;
+  z-index:9999;
+  transition:transform 0.3s;
+  max-width:90%;
+  text-align:center;
+}
+.toast.show {
+  transform:translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <h2>Admin Login</h2>
+    <p class="sub">First Aid Manager</p>
+    
+    <div class="login-err" id="loginErr"></div>
+    
+    <input type="email" id="loginEmail" placeholder="Email" autocomplete="email" value="matiur49@gmail.com">
+    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    
+    <button id="loginBtn" onclick="doLogin()">Login</button>
+  </div>
+</div>
+
+<!-- ==================== ADMIN HEADER ==================== -->
+<div class="admin-header" id="adminHeader" style="display:none;">
+  <h1>🔐 First Aid Admin</h1>
+  <div class="admin-user">
+    <span id="userEmail">—</span>
+    <button onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- ==================== MAIN CONTAINER ==================== -->
+<div class="container" id="mainContainer" style="display:none;">
+
+  <div class="top-bar">
+    <h2>📋 First Aid Problems</h2>
+    <span class="count" id="problemCount">0</span>
+  </div>
+
+  <button class="btn-add" onclick="openAddNew()">
+    ➕ নতুন সমস্যা যোগ করুন
+  </button>
+
+  <div id="firstAidList">
+    <div class="loading">⏳ Loading problems...</div>
+  </div>
+
+</div>
+
+<div class="admin-footer" id="adminFooter" style="display:none;">
+  🐄 Dairy Manager Admin Panel
+</div>
+
+<!-- ==================== EDIT/ADD MODAL ==================== -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    
+    <div class="modal-header">
+      <h3 id="modalTitle">Edit Problem</h3>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+
+    <div class="modal-body" id="modalBody">
+      <!-- Dynamic form will be inserted here -->
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn-cancel" onclick="closeEditModal()">❌ Cancel</button>
+      <button class="modal-btn-save" id="saveBtn" onclick="saveProblem()">💾 Save</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== CONFIRM MODAL ==================== -->
+<div class="confirm-overlay" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmMsg">This action cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm(false)">Cancel</button>
+      <button class="confirm-ok" id="confirmOkBtn" onclick="closeConfirm(true)">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST ==================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== MODAL CSS ==================== -->
+<style>
+.modal-overlay {
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  align-items:flex-start;
+  justify-content:center;
+  padding:16px;
+  z-index:300;
+  overflow-y:auto;
+}
+.modal-overlay.show {
+  display:flex;
+}
+.modal-box {
+  background:#fff;
+  border-radius:16px;
+  width:100%;
+  max-width:600px;
+  margin:20px auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  display:flex;
+  flex-direction:column;
+  max-height:calc(100vh - 40px);
+}
+.modal-header {
+  padding:16px 20px;
+  border-bottom:2px solid #E8F5E9;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-shrink:0;
+}
+.modal-header h3 {
+  font-size:16px;
+  color:#1B5E20;
+  font-weight:700;
+}
+.modal-close {
+  background:none;
+  border:none;
+  font-size:20px;
+  color:#888;
+  cursor:pointer;
+  padding:4px 8px;
+}
+.modal-body {
+  padding:20px;
+  overflow-y:auto;
+  flex:1;
+}
+.modal-footer {
+  padding:14px 20px;
+  border-top:2px solid #E8F5E9;
+  display:flex;
+  gap:10px;
+  flex-shrink:0;
+}
+.modal-btn-cancel {
+  flex:1;
+  padding:12px;
+  background:#F5F5F5;
+  color:#666;
+  border:none;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+}
+.modal-btn-save {
+  flex:2;
+  padding:12px;
+  background:#2E7D32;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+}
+.modal-btn-save:disabled {
+  opacity:0.5;
+}
+
+/* Form Fields */
+.form-group {
+  margin-bottom:14px;
+}
+.form-group label {
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  color:#555;
+  margin-bottom:6px;
+}
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+  width:100%;
+  padding:11px 12px;
+  border:2px solid #E0E0E0;
+  border-radius:10px;
+  font-size:13px;
+  font-family:inherit;
+  background:#FAFAFA;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  outline:none;
+  border-color:#2E7D32;
+  background:#fff;
+}
+.form-group textarea {
+  resize:vertical;
+  min-height:60px;
+}
+.form-row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.form-tabs {
+  display:flex;
+  gap:6px;
+  margin-bottom:14px;
+  border-bottom:2px solid #E0E0E0;
+}
+.form-tab {
+  padding:8px 14px;
+  background:none;
+  border:none;
+  font-size:12px;
+  font-weight:600;
+  color:#888;
+  cursor:pointer;
+  border-bottom:3px solid transparent;
+  margin-bottom:-2px;
+}
+.form-tab.active {
+  color:#2E7D32;
+  border-bottom-color:#2E7D32;
+}
+.form-tab-content {
+  display:none;
+}
+.form-tab-content.active {
+  display:block;
+}
+
+/* Dynamic List Items */
+.dynamic-item {
+  display:flex;
+  gap:8px;
+  margin-bottom:8px;
+  align-items:flex-start;
+}
+.dynamic-item input,
+.dynamic-item textarea {
+  flex:1;
+  padding:9px 12px;
+  border:2px solid #E0E0E0;
+  border-radius:8px;
+  font-size:12px;
+  font-family:inherit;
+}
+.dynamic-item textarea {
+  min-height:50px;
+  resize:vertical;
+}
+.btn-remove-item {
+  background:#FFEBEE;
+  color:#C62828;
+  border:none;
+  width:36px;
+  height:36px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:700;
+  flex-shrink:0;
+}
+.btn-add-item {
+  background:#E3F2FD;
+  color:#1976D2;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:4px;
+}
+
+/* Medicine Item */
+.med-item {
+  background:#F5F5F5;
+  border-radius:10px;
+  padding:10px;
+  margin-bottom:8px;
+}
+.med-item .med-row {
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr auto;
+  gap:6px;
+  margin-bottom:6px;
+}
+.med-item .med-row:last-child {
+  margin-bottom:0;
+}
+.med-item input {
+  padding:8px;
+  border:2px solid #E0E0E0;
+  border-radius:6px;
+  font-size:11px;
+}
+
+/* Confirm Modal */
+.confirm-overlay {
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:400;
+}
+.confirm-overlay.show {
+  display:flex;
+}
+.confirm-box {
+  background:#fff;
+  border-radius:16px;
+  padding:24px;
+  width:100%;
+  max-width:360px;
+  text-align:center;
+}
+.confirm-icon {
+  font-size:48px;
+  margin-bottom:10px;
+}
+.confirm-box h3 {
+  font-size:16px;
+  color:#1B5E20;
+  margin-bottom:6px;
+}
+.confirm-box p {
+  font-size:13px;
+  color:#666;
+  margin-bottom:20px;
+}
+.confirm-btns {
+  display:flex;
+  gap:10px;
+}
+.confirm-cancel {
+  flex:1;
+  padding:11px;
+  background:#F5F5F5;
+  color:#666;
+  border:none;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+}
+.confirm-ok {
+  flex:1;
+  padding:11px;
+  background:#C62828;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+</style>
+
+<!-- ==================== PART 3A: MAIN JAVASCRIPT ==================== -->
+<script>
+// ========== FIREBASE INIT ==========
+let auth, db;
+let currentUser = null;
+let currentEditId = null;
+let allProblems = [];
+
+try {
+  firebase.initializeApp({
+    apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
+    authDomain: "dairy-manager-1.firebaseapp.com",
+    projectId: "dairy-manager-1",
+    storageBucket: "dairy-manager-1.firebasestorage.app",
+    messagingSenderId: "724466410200",
+    appId: "1:724466410200:web:14f91a33287e95d8b1edad",
+    measurementId: "G-ETEEL2QSNY"
+  });
+  auth = firebase.auth();
+  db = firebase.firestore();
+  console.log(' Firebase initialized');
+} catch(e) {
+  console.error('Firebase init failed:', e);
+  alert('Firebase Init Failed: ' + e.message);
+}
+
+// ========== TOAST ==========
+function toast(msg, duration) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), duration || 2500);
+}
+
+// ========== LOGIN ==========
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginErr');
+  
+  if (!email || !password) {
+    errEl.textContent = ' Email  Password ';
+    errEl.style.display = 'block';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = ' Logging in...';
+  errEl.style.display = 'none';
+  
+  auth.signInWithEmailAndPassword(email, password)
+    .then(function(cred) {
+      console.log(' Logged in:', cred.user.email);
+    })
+    .catch(function(err) {
+      errEl.textContent = ' ' + err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    });
+}
+
+function doLogout() {
+  if (!confirm('Logout ?')) return;
+  auth.signOut().then(function() {
+    console.log(' Logged out');
+    toast(' Logged out');
+  });
+}
+
+// ========== AUTH STATE ==========
+auth.onAuthStateChanged(function(user) {
+  currentUser = user;
+  
+  const loginOverlay = document.getElementById('loginOverlay');
+  const adminHeader = document.getElementById('adminHeader');
+  const mainContainer = document.getElementById('mainContainer');
+  const adminFooter = document.getElementById('adminFooter');
+  const userEmail = document.getElementById('userEmail');
+  const loginBtn = document.getElementById('loginBtn');
+  
+  if (user) {
+    // Logged in
+    if (loginOverlay) loginOverlay.style.display = 'none';
+    if (adminHeader) adminHeader.style.display = 'flex';
+    if (mainContainer) mainContainer.style.display = 'block';
+    if (adminFooter) adminFooter.style.display = 'block';
+    if (userEmail) userEmail.textContent = user.email.split('@')[0];
+    
+    loadProblems();
+  } else {
+    // Logged out
+    if (loginOverlay) loginOverlay.style.display = 'flex';
+    if (adminHeader) adminHeader.style.display = 'none';
+    if (mainContainer) mainContainer.style.display = 'none';
+    if (adminFooter) adminFooter.style.display = 'none';
+    if (loginBtn) {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Login';
+    }
+    document.getElementById('loginPassword').value = '';
+  }
+});
+
+// ========== LOAD PROBLEMS ==========
+async function loadProblems() {
+  const listEl = document.getElementById('firstAidList');
+  const countEl = document.getElementById('problemCount');
+  
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading"> Loading...</div>';
+  
+  try {
+    const snap = await db.collection('firstAid').orderBy('order').get();
+    allProblems = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allProblems.push(data);
+    });
+    
+    console.log(' Loaded', allProblems.length, 'problems');
+    
+    if (countEl) countEl.textContent = allProblems.length;
+    
+    if (allProblems.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><div class="icon"></div><p>  </p></div>';
+      return;
+    }
+    
+    renderList();
+  } catch(e) {
+    console.error('Load failed:', e);
+    listEl.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Load failed: ' + e.message + '</p></div>';
+  }
+}
+
+// ========== RENDER LIST ==========
+function renderList() {
+  const listEl = document.getElementById('firstAidList');
+  if (!listEl) return;
+  
+  listEl.innerHTML = allProblems.map(p => {
+    const title = p.title_bn || p.title_en || p.id;
+    const subtitle = p.title_en || p.id;
+    const dosCount = (p.dos_bn || []).length;
+    const dontsCount = (p.donts_bn || []).length;
+    
+    return '<div class="fa-card">' +
+      '<div class="icon">' + (p.icon || '') + '</div>' +
+      '<div class="info">' +
+        '<h4>' + escapeHtml(title) + '</h4>' +
+        '<p>' + escapeHtml(subtitle) + '  ' + dosCount + ' steps  ' + dontsCount + ' warnings</p>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn-edit" onclick="openEdit(\'' + p.id + '\')"></button>' +
+        '<button class="btn-del" onclick="confirmDelete(\'' + p.id + '\', \'' + escapeHtml(title).replace(/'/g, '') + '\')"></button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+console.log(' Admin App Part 3A loaded');
+</script>
+
+<!-- ==================== FIREBASE SDK ==================== -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<!-- ==================== PART 3B: EDIT / ADD / DELETE ==================== -->
+<script>
+
+// ========== OPEN EDIT ==========
+function openEdit(id) {
+  const problem = allProblems.find(p => p.id === id);
+  if (!problem) {
+    toast(' Problem not found');
+    return;
+  }
+  
+  currentEditId = id;
+  document.getElementById('modalTitle').textContent = ' Edit: ' + (problem.title_bn || problem.title_en || id);
+  buildForm(problem, false);
+  document.getElementById('editModal').classList.add('show');
+}
+
+// ========== OPEN ADD NEW ==========
+function openAddNew() {
+  currentEditId = null;
+  document.getElementById('modalTitle').textContent = ' Add New Problem';
+  
+  const emptyProblem = {
+    id: '',
+    icon: '',
+    title_bn: '', title_en: '', title_hi: '',
+    whatIsIt_bn: '', whatIsIt_en: '', whatIsIt_hi: '',
+    dos_bn: [''], dos_en: [''], dos_hi: [''],
+    donts_bn: [''], donts_en: [''], donts_hi: [''],
+    redFlags_bn: [''], redFlags_en: [''], redFlags_hi: [''],
+    medicines: [],
+    order: allProblems.length + 1
+  };
+  
+  buildForm(emptyProblem, true);
+  document.getElementById('editModal').classList.add('show');
+}
+
+// ========== BUILD FORM ==========
+function buildForm(problem, isNew) {
+  const body = document.getElementById('modalBody');
+  if (!body) return;
+  
+  let html = '';
+  
+  // Basic
+  html += '<div class="form-group">' +
+    '<label> Icon (Emoji)</label>' +
+    '<input type="text" id="f-icon" value="' + escapeAttr(problem.icon || '') + '" placeholder="" maxlength="5">' +
+  '</div>';
+  
+  html += '<div class="form-row">' +
+    '<div class="form-group">' +
+      '<label> ID' + (isNew ? ' (  )' : '') + '</label>' +
+      '<input type="text" id="f-id" value="' + escapeAttr(problem.id || '') + '" placeholder="fever" ' + (isNew ? '' : 'readonly') + '>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label> Order</label>' +
+      '<input type="number" id="f-order" value="' + (problem.order || 1) + '" min="1">' +
+    '</div>' +
+  '</div>';
+  
+  // Tabs
+  html += '<div class="form-tabs">' +
+    '<button class="form-tab active" onclick="switchFormTab(\'bn\')" id="tab-bn"> </button>' +
+    '<button class="form-tab" onclick="switchFormTab(\'en\')" id="tab-en"> English</button>' +
+    '<button class="form-tab" onclick="switchFormTab(\'hi\')" id="tab-hi"> </button>' +
+    '<button class="form-tab" onclick="switchFormTab(\'med\')" id="tab-med"> Medicine</button>' +
+  '</div>';
+  
+  html += '<div class="form-tab-content active" id="content-bn">' + buildLangFields(problem, 'bn') + '</div>';
+  html += '<div class="form-tab-content" id="content-en">' + buildLangFields(problem, 'en') + '</div>';
+  html += '<div class="form-tab-content" id="content-hi">' + buildLangFields(problem, 'hi') + '</div>';
+  html += '<div class="form-tab-content" id="content-med">' + buildMedFields(problem) + '</div>';
+  
+  body.innerHTML = html;
+}
+
+function buildLangFields(problem, lang) {
+  const titleKey = 'title_' + lang;
+  const whatKey = 'whatIsIt_' + lang;
+  const dosKey = 'dos_' + lang;
+  const dontsKey = 'donts_' + lang;
+  const flagsKey = 'redFlags_' + lang;
+  
+  const titleLbl = lang === 'bn' ? '' : lang === 'en' ? 'Title' : '';
+  const whatLbl = lang === 'bn' ? ' ?' : lang === 'en' ? 'What is it?' : '  ?';
+  const dosLbl = lang === 'bn' ? '  ' : lang === 'en' ? ' Do Now' : '  ';
+  const dontsLbl = lang === 'bn' ? '  ' : lang === 'en' ? " Don't Do" : '  ';
+  const flagsLbl = lang === 'bn' ? ' Red Flags' : lang === 'en' ? ' Red Flags' : ' ';
+  
+  let h = '';
+  
+  h += '<div class="form-group">' +
+    '<label>' + titleLbl + '</label>' +
+    '<input type="text" id="f-' + titleKey + '" value="' + escapeAttr(problem[titleKey] || '') + '">' +
+  '</div>';
+  
+  h += '<div class="form-group">' +
+    '<label>' + whatLbl + '</label>' +
+    '<textarea id="f-' + whatKey + '" rows="3">' + escapeHtml(problem[whatKey] || '') + '</textarea>' +
+  '</div>';
+  
+  h += '<div class="form-group">' +
+    '<label>' + dosLbl + '</label>' +
+    '<div id="list-' + dosKey + '">';
+  (problem[dosKey] || ['']).forEach(item => { h += dynamicItemHTML(item); });
+  h += '</div>' +
+    '<button type="button" class="btn-add-item" onclick="addDynamicItem(\'' + dosKey + '\')"> Add Step</button>' +
+  '</div>';
+  
+  h += '<div class="form-group">' +
+    '<label>' + dontsLbl + '</label>' +
+    '<div id="list-' + dontsKey + '">';
+  (problem[dontsKey] || ['']).forEach(item => { h += dynamicItemHTML(item); });
+  h += '</div>' +
+    '<button type="button" class="btn-add-item" onclick="addDynamicItem(\'' + dontsKey + '\')"> Add Warning</button>' +
+  '</div>';
+  
+  h += '<div class="form-group">' +
+    '<label>' + flagsLbl + '</label>' +
+    '<div id="list-' + flagsKey + '">';
+  (problem[flagsKey] || ['']).forEach(item => { h += dynamicItemHTML(item); });
+  h += '</div>' +
+    '<button type="button" class="btn-add-item" onclick="addDynamicItem(\'' + flagsKey + '\')"> Add Red Flag</button>' +
+  '</div>';
+  
+  return h;
+}
+
+function dynamicItemHTML(value) {
+  return '<div class="dynamic-item">' +
+    '<input type="text" value="' + escapeAttr(value || '') + '" placeholder="...">' +
+    '<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)"></button>' +
+  '</div>';
+}
+
+function buildMedFields(problem) {
+  let h = '';
+  h += '<div class="form-group">' +
+    '<label> Medicines</label>' +
+    '<div id="list-medicines">';
+  (problem.medicines || []).forEach((m) => { h += medicineItemHTML(m); });
+  h += '</div>' +
+    '<button type="button" class="btn-add-item" onclick="addMedicine()"> Add Medicine</button>' +
+  '</div>';
+  
+  h += '<div style="background:#FFF3E0;padding:12px;border-radius:10px;font-size:11px;color:#E65100;line-height:1.6;margin-top:14px;">' +
+    '<b> Route Examples:</b><br>' +
+    '  /   / Oral<br>' +
+    '  (IM) /  (IM) / IM<br>' +
+    ' IV / IV / IV<br>' +
+    '  /   / Topical<br>' +
+    ' SC' +
+  '</div>';
+  return h;
+}
+
+function medicineItemHTML(med) {
+  med = med || { name: '', dose: '', route_bn: '', route_en: '', route_hi: '' };
+  return '<div class="med-item">' +
+    '<div class="med-row">' +
+      '<input type="text" class="med-name" value="' + escapeAttr(med.name) + '" placeholder="Name">' +
+      '<input type="text" class="med-dose" value="' + escapeAttr(med.dose) + '" placeholder="Dose">' +
+      '<input type="text" class="med-route-bn" value="' + escapeAttr(med.route_bn) + '" placeholder="Route ">' +
+      '<button type="button" class="btn-remove-item" onclick="removeMedicine(this)"></button>' +
+    '</div>' +
+    '<div class="med-row">' +
+      '<input type="text" class="med-route-en" value="' + escapeAttr(med.route_en) + '" placeholder="Route EN">' +
+      '<input type="text" class="med-route-hi" value="' + escapeAttr(med.route_hi) + '" placeholder="Route ">' +
+      '<div></div><div></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function escapeAttr(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function switchFormTab(lang) {
+  ['bn', 'en', 'hi', 'med'].forEach(l => {
+    const tab = document.getElementById('tab-' + l);
+    const content = document.getElementById('content-' + l);
+    if (tab) tab.classList.toggle('active', l === lang);
+    if (content) content.classList.toggle('active', l === lang);
+  });
+}
+
+function addDynamicItem(key) {
+  const list = document.getElementById('list-' + key);
+  if (!list) return;
+  const div = document.createElement('div');
+  div.className = 'dynamic-item';
+  div.innerHTML = '<input type="text" value="" placeholder="...">' +
+    '<button type="button" class="btn-remove-item" onclick="removeDynamicItem(this)"></button>';
+  list.appendChild(div);
+}
+
+function removeDynamicItem(btn) {
+  const item = btn.closest('.dynamic-item');
+  const list = item.parentElement;
+  if (list.children.length > 1) {
+    item.remove();
+  } else {
+    item.querySelector('input').value = '';
+  }
+}
+
+function addMedicine() {
+  const list = document.getElementById('list-medicines');
+  if (!list) return;
+  const div = document.createElement('div');
+  div.innerHTML = medicineItemHTML({});
+  list.appendChild(div.firstElementChild);
+}
+
+function removeMedicine(btn) {
+  const item = btn.closest('.med-item');
+  if (item) item.remove();
+}
+
+async function saveProblem() {
+  if (!currentUser) { toast(' Not logged in'); return; }
+  
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = ' Saving...';
+  
+  try {
+    const isNew = !currentEditId;
+    const id = document.getElementById('f-id').value.trim().toLowerCase();
+    const icon = document.getElementById('f-icon').value.trim();
+    const order = parseInt(document.getElementById('f-order').value) || 1;
+    
+    if (!id) { toast(' ID '); saveBtn.disabled = false; saveBtn.textContent = ' Save'; return; }
+    
+    if (isNew && !/^[a-z0-9]+$/.test(id)) {
+      toast(' ID      ');
+      saveBtn.disabled = false; saveBtn.textContent = ' Save';
+      return;
+    }
+    
+    const data = {
+      icon: icon,
+      order: order,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    ['bn', 'en', 'hi'].forEach(lang => {
+      data['title_' + lang] = getVal('f-title_' + lang);
+      data['whatIsIt_' + lang] = getVal('f-whatIsIt_' + lang);
+      data['dos_' + lang] = getDynamicList('dos_' + lang);
+      data['donts_' + lang] = getDynamicList('donts_' + lang);
+      data['redFlags_' + lang] = getDynamicList('redFlags_' + lang);
+    });
+    
+    data.medicines = getMedicines();
+    
+    if (isNew) {
+      const existing = await db.collection('firstAid').doc(id).get();
+      if (existing.exists) {
+        toast('  ID  ');
+        saveBtn.disabled = false; saveBtn.textContent = ' Save';
+        return;
+      }
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('firstAid').doc(id).set(data);
+      toast('    ');
+    } else {
+      await db.collection('firstAid').doc(currentEditId).update(data);
+      toast('  ');
+    }
+    
+    closeEditModal();
+    await loadProblems();
+    
+  } catch(e) {
+    console.error('Save failed:', e);
+    toast(' Save failed: ' + e.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = ' Save';
+  }
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function getDynamicList(key) {
+  const list = document.getElementById('list-' + key);
+  if (!list) return [];
+  const arr = [];
+  list.querySelectorAll('.dynamic-item input').forEach(inp => {
+    const val = inp.value.trim();
+    if (val) arr.push(val);
+  });
+  return arr;
+}
+
+function getMedicines() {
+  const list = document.getElementById('list-medicines');
+  if (!list) return [];
+  const arr = [];
+  list.querySelectorAll('.med-item').forEach(item => {
+    const name = item.querySelector('.med-name').value.trim();
+    if (!name) return;
+    arr.push({
+      name: name,
+      dose: item.querySelector('.med-dose').value.trim(),
+      route_bn: item.querySelector('.med-route-bn').value.trim(),
+      route_en: item.querySelector('.med-route-en').value.trim(),
+      route_hi: item.querySelector('.med-route-hi').value.trim()
+    });
+  });
+  return arr;
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editModal');
+  if (modal) modal.classList.remove('show');
+  currentEditId = null;
+}
+
+let _confirmCallback = null;
+
+function confirmDelete(id, name) {
+  document.getElementById('confirmIcon').textContent = '';
+  document.getElementById('confirmTitle').textContent = 'Delete?';
+  document.getElementById('confirmMsg').textContent = '"' + name + '"  ?    ';
+  document.getElementById('confirmModal').classList.add('show');
+  
+  _confirmCallback = async function() {
+    try {
+      await db.collection('firstAid').doc(id).delete();
+      toast('   ');
+      await loadProblems();
+    } catch(e) {
+      console.error('Delete failed:', e);
+      toast(' Delete failed: ' + e.message);
+    }
+  };
+}
+
+function closeConfirm(result) {
+  document.getElementById('confirmModal').classList.remove('show');
+  if (result && _confirmCallback) _confirmCallback();
+  _confirmCallback = null;
+}
+
+console.log(' Admin App Part 3B loaded');
+</script>
+
+</body>
+</html>
+
