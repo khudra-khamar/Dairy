@@ -917,11 +917,11 @@ function buildLangFields(problem, lang) {
   const dontsKey = 'donts_' + lang;
   const flagsKey = 'redFlags_' + lang;
   
-  const titleLbl = lang === 'bn' ? '' : lang === 'en' ? 'Title' : '';
-  const whatLbl = lang === 'bn' ? ' ?' : lang === 'en' ? 'What is it?' : '  ?';
-  const dosLbl = lang === 'bn' ? '  ' : lang === 'en' ? ' Do Now' : '  ';
-  const dontsLbl = lang === 'bn' ? '  ' : lang === 'en' ? " Don't Do" : '  ';
-  const flagsLbl = lang === 'bn' ? ' Red Flags' : lang === 'en' ? ' Red Flags' : ' ';
+const titleLbl = 'TITLE';
+const whatLbl = 'WHAT IS IT?';
+const dosLbl = 'DO NOW (Steps)';
+const dontsLbl = 'DONT DO (Warnings)';
+const flagsLbl = 'RED FLAGS';
   
   let h = '';
   
