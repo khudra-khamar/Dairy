@@ -1263,7 +1263,10 @@ alert('DEBUG: switchAdminTab called with: ' + tab);
     if (licensesBtn) licensesBtn.classList.add('active');
     if (licensesContainer) licensesContainer.style.display = 'block';
     loadLicenses();
-    alert('DEBUG: loadLicenses called | container: ' + (document.getElementById('licensesContainer') ? 'EXISTS' : 'NULL') + ' | display: ' + (document.getElementById('licensesContainer') ? document.getElementById('licensesContainer').style.display : 'N/A'));
+var p = document.getElementById('licensesContainer');
+var parent = p ? p.parentElement : null;
+var parentTag = parent ? parent.tagName + '#' + parent.id + '.' + parent.className : 'NULL';
+alert('DEBUG: loadLicenses | container display: ' + (p ? p.style.display : 'NULL') + ' | parent: ' + parentTag + ' | parentDisplay: ' + (parent ? parent.style.display : 'NULL') + ' | parentVisible: ' + (parent ? parent.offsetHeight : 'NULL'));
   } else if (tab === 'notif') {
     if (notifBtn) notifBtn.classList.add('active');
     if (notifContainer) notifContainer.style.display = 'block';
