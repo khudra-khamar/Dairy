@@ -250,6 +250,95 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   font-size:14px;
 }
 
+.tab-bar {
+  display: flex;
+  background: #fff;
+  border-bottom: 2px solid #E0E0E0;
+  position: sticky;
+  top: 56px;
+  z-index: 90;
+}
+.tab-bar button {
+  flex: 1;
+  padding: 14px 8px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-family: inherit;
+}
+.tab-bar button.active {
+  color: #1B5E20;
+  border-bottom-color: #2E7D32;
+}
+.user-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 4px solid #2E7D32;
+}
+.user-card .u-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.user-card .u-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #E8F5E9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.user-card .u-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1B5E20;
+  margin-bottom: 2px;
+}
+.user-card .u-device {
+  font-size: 10px;
+  color: #888;
+  font-family: monospace;
+  word-break: break-all;
+}
+.user-card .u-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 4px 0;
+  border-top: 1px solid #F0F0F0;
+}
+.user-card .u-row:first-of-type {
+  border-top: none;
+}
+.user-card .u-label {
+  color: #888;
+}
+.user-card .u-value {
+  color: #333;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-all;
+  max-width: 60%;
+}
+.user-card .u-active {
+  color: #2E7D32;
+}
+.user-card .u-inactive {
+  color: #C62828;
+}
+
 /* Footer */
 .admin-footer {
   text-align:center;
@@ -306,6 +395,11 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
     <button onclick="doLogout()">Logout</button>
   </div>
 </div>
+<!-- ==================== TAB BAR ==================== -->
+<div class="tab-bar" id="adminTabBar" style="display:none;">
+  <button id="tabFirstAid" class="active" onclick="switchAdminTab('firstaid')">📋 First Aid</button>
+  <button id="tabUsers" onclick="switchAdminTab('users')">👥 Users</button>
+</div>
 
 <!-- ==================== MAIN CONTAINER ==================== -->
 <div class="container" id="mainContainer" style="display:none;">
@@ -323,6 +417,18 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
     <div class="loading">⏳ Loading problems...</div>
   </div>
 
+</div>
+
+<!-- ==================== USERS SECTION ==================== -->
+<div class="container" id="usersContainer" style="display:none;">
+  <div class="top-bar">
+    <h2>👥 Registered Users</h2>
+    <span class="count" id="userCount">0</span>
+  </div>
+  
+  <div id="userList">
+    <div class="loading">⏳ Loading users...</div>
+  </div>
 </div>
 
 <div class="admin-footer" id="adminFooter" style="display:none;">
@@ -756,6 +862,10 @@ auth.onAuthStateChanged(function(user) {
     if (adminFooter) adminFooter.style.display = 'block';
     if (userEmail) userEmail.textContent = user.email.split('@')[0];
     
+const adminTabBar = document.getElementById('adminTabBar');
+if (adminTabBar) adminTabBar.style.display = 'flex';
+switchAdminTab('firstaid');
+    
     loadProblems();
   } else {
     // Logged out
@@ -840,6 +950,125 @@ function escapeHtml(str) {
 }
 
 console.log(' Admin App Part 3A loaded');
+
+// ========== ADMIN TAB SWITCH ==========
+function switchAdminTab(tab) {
+  const firstAidBtn = document.getElementById('tabFirstAid');
+  const usersBtn = document.getElementById('tabUsers');
+  const mainContainer = document.getElementById('mainContainer');
+  const usersContainer = document.getElementById('usersContainer');
+  
+  if (tab === 'users') {
+    if (firstAidBtn) {
+      firstAidBtn.classList.remove('active');
+    }
+    if (usersBtn) {
+      usersBtn.classList.add('active');
+    }
+    if (mainContainer) mainContainer.style.display = 'none';
+    if (usersContainer) usersContainer.style.display = 'block';
+    loadUsers();
+  } else {
+    if (firstAidBtn) {
+      firstAidBtn.classList.add('active');
+    }
+    if (usersBtn) {
+      usersBtn.classList.remove('active');
+    }
+    if (mainContainer) mainContainer.style.display = 'block';
+    if (usersContainer) usersContainer.style.display = 'none';
+  }
+}
+
+// ========== LOAD USERS ==========
+async function loadUsers() {
+  const listEl = document.getElementById('userList');
+  const countEl = document.getElementById('userCount');
+  
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">⏳ Loading users...</div>';
+  
+  try {
+    const snap = await db.collection('fcmTokens').get();
+    const users = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      users.push(data);
+    });
+    
+    console.log('✅ Loaded', users.length, 'users');
+    
+    if (countEl) countEl.textContent = users.length;
+    
+    if (users.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>এখনো কোনো user নেই</p></div>';
+      return;
+    }
+    
+    users.sort((a, b) => {
+      const aTime = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0;
+      const bTime = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0;
+      return bTime - aTime;
+    });
+    
+    listEl.innerHTML = users.map(u => {
+      const name = u.ownerName || u.farmName || 'Unknown User';
+      const device = u.deviceId || u.id || '—';
+      const phone = u.phone || '—';
+      const farm = u.farmName || '—';
+      const lang = u.lang || 'bn';
+      const isActive = u.active !== false;
+      
+      let lastSeen = '—';
+      if (u.updatedAt?.toDate) {
+        const d = u.updatedAt.toDate();
+        lastSeen = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+      
+      return '<div class="user-card">' +
+        '<div class="u-header">' +
+          '<div class="u-avatar">🐄</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div class="u-name">' + escapeHtml(name) + '</div>' +
+            '<div class="u-device">📱 ' + escapeHtml(device) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="u-row">' +
+          '<span class="u-label">📞 Phone</span>' +
+          '<span class="u-value">' + escapeHtml(phone) + '</span>' +
+        '</div>' +
+        '<div class="u-row">' +
+          '<span class="u-label">🏠 Farm</span>' +
+          '<span class="u-value">' + escapeHtml(farm) + '</span>' +
+        '</div>' +
+        '<div class="u-row">' +
+          '<span class="u-label">🌐 Language</span>' +
+          '<span class="u-value">' + lang.toUpperCase() + '</span>' +
+        '</div>' +
+        '<div class="u-row">' +
+          '<span class="u-label">📅 Last Seen</span>' +
+          '<span class="u-value">' + lastSeen + '</span>' +
+        '</div>' +
+        '<div class="u-row">' +
+          '<span class="u-label">Status</span>' +
+          '<span class="u-value ' + (isActive ? 'u-active' : 'u-inactive') + '">' +
+            (isActive ? '✅ Active' : '❌ Inactive') +
+          '</span>' +
+        '</div>' +
+        '<a href="https://wa.me/91' + escapeHtml(phone).replace(/[^0-9]/g, '') + '" target="_blank" ' +
+          'style="display:block;margin-top:10px;padding:10px;background:#25D366;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-size:12px;font-weight:700;">' +
+          '💬 WhatsApp' +
+        '</a>' +
+      '</div>';
+    }).join('');
+    
+  } catch(e) {
+    console.error('Load users failed:', e);
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>Load failed: ' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
 </script>
 
 
