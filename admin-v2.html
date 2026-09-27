@@ -431,6 +431,129 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   background: #2E7D32;
   color: #fff;
 }
+.notif-form {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.notif-form label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+.notif-form label:first-of-type {
+  margin-top: 0;
+}
+.notif-form input,
+.notif-form textarea {
+  width: 100%;
+  padding: 11px;
+  border: 2px solid #E0E0E0;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #FAFAFA;
+}
+.notif-form input:focus,
+.notif-form textarea:focus {
+  outline: none;
+  border-color: #2E7D32;
+  background: #fff;
+}
+.notif-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.notif-counter {
+  text-align: right;
+  font-size: 10px;
+  color: #888;
+  margin-top: 4px;
+}
+.notif-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.notif-btn {
+  flex: 1;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.notif-btn-copy {
+  background: #1976D2;
+  color: #fff;
+}
+.notif-btn-console {
+  background: #2E7D32;
+  color: #fff;
+}
+.notif-btn-save {
+  background: #E65100;
+  color: #fff;
+  width: 100%;
+  margin-top: 8px;
+}
+.notif-guide {
+  background: #FFF3E0;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  color: #E65100;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.template-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #F5F5F5;
+  border: 2px solid #E0E0E0;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #333;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.template-btn:active {
+  background: #E8F5E9;
+  border-color: #2E7D32;
+}
+.history-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-left: 4px solid #2E7D32;
+}
+.history-item .h-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1B5E20;
+  margin-bottom: 4px;
+}
+.history-item .h-body {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 6px;
+}
+.history-item .h-meta {
+  font-size: 10px;
+  color: #888;
+}
 /* Footer */
 .admin-footer {
   text-align:center;
@@ -491,7 +614,8 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
 <div class="tab-bar" id="adminTabBar" style="display:none;">
   <button id="tabFirstAid" class="active" onclick="switchAdminTab('firstaid')">📋 First Aid</button>
 <button id="tabLicenses" onclick="switchAdminTab('licenses')">🎫 Licenses</button>
-  <button id="tabUsers" onclick="switchAdminTab('users')">👥 Users</button>
+  <button id="tabNotif" onclick="switchAdminTab('notif')">📢 Send</button>
+<button id="tabUsers" onclick="switchAdminTab('users')">👥 Users</button>
 </div>
 
 <!-- ==================== MAIN CONTAINER ==================== -->
@@ -510,6 +634,51 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
     <div class="loading">⏳ Loading problems...</div>
   </div>
 
+</div>
+
+<!-- ==================== NOTIFICATIONS SECTION ==================== -->
+<div class="container" id="notifContainer" style="display:none;">
+  <div class="top-bar">
+    <h2>📢 Send Notification</h2>
+    <span class="count" id="notifRecipients">0</span>
+  </div>
+  
+  <div class="notif-guide">
+    <b>How to Send:</b><br>
+    1. Type Title + Message below<br>
+    2. Tap "Copy Tokens"<br>
+    3. Tap "Open Console"<br>
+    4. In Console: Create campaign - Send test message - Paste tokens - Send
+  </div>
+  
+  <div class="notif-form">
+    <label>Title (max 60)</label>
+    <input type="text" id="notifTitle" placeholder="e.g. Rain Alert" maxlength="60" oninput="updateNotifCounter()">
+    <div class="notif-counter" id="notifTitleCounter">0 / 60</div>
+    
+    <label>Message (max 200)</label>
+    <textarea id="notifMsg" placeholder="e.g. Keep cows inside today" maxlength="200" oninput="updateNotifCounter()"></textarea>
+    <div class="notif-counter" id="notifMsgCounter">0 / 200</div>
+    
+    <div class="notif-actions">
+      <button class="notif-btn notif-btn-copy" onclick="copyAllTokens()">📋 Copy Tokens</button>
+      <button class="notif-btn notif-btn-console" onclick="openFirebaseConsole()">🔗 Open Console</button>
+    </div>
+    
+    <button class="notif-btn notif-btn-save" onclick="saveToHistory()">💾 Save to History</button>
+  </div>
+  
+  <h3 style="font-size:14px;color:#1B5E20;margin:20px 0 10px;">⚡ Quick Templates</h3>
+  <button class="template-btn" onclick="useTemplate('rain')">🌧️ Rain Alert - Keep cows inside</button>
+  <button class="template-btn" onclick="useTemplate('newfa')">🆕 New First Aid added</button>
+  <button class="template-btn" onclick="useTemplate('license')">🎁 License expiring soon</button>
+  <button class="template-btn" onclick="useTemplate('vaccine')">💉 Vaccine reminder</button>
+  <button class="template-btn" onclick="useTemplate('weather')">☀️ Weather update</button>
+  
+  <h3 style="font-size:14px;color:#1B5E20;margin:20px 0 10px;">📜 History</h3>
+  <div id="notifHistory">
+    <div class="loading">Loading history...</div>
+  </div>
 </div>
 
 <!-- ==================== LICENSES SECTION ==================== -->
@@ -1067,19 +1236,21 @@ function switchAdminTab(tab) {
   const firstAidBtn = document.getElementById('tabFirstAid');
   const usersBtn = document.getElementById('tabUsers');
   const licensesBtn = document.getElementById('tabLicenses');
+  const notifBtn = document.getElementById('tabNotif');
   const mainContainer = document.getElementById('mainContainer');
   const usersContainer = document.getElementById('usersContainer');
   const licensesContainer = document.getElementById('licensesContainer');
+  const notifContainer = document.getElementById('notifContainer');
   
-  // Reset all
   if (firstAidBtn) firstAidBtn.classList.remove('active');
   if (usersBtn) usersBtn.classList.remove('active');
   if (licensesBtn) licensesBtn.classList.remove('active');
+  if (notifBtn) notifBtn.classList.remove('active');
   if (mainContainer) mainContainer.style.display = 'none';
   if (usersContainer) usersContainer.style.display = 'none';
   if (licensesContainer) licensesContainer.style.display = 'none';
+  if (notifContainer) notifContainer.style.display = 'none';
   
-  // Activate
   if (tab === 'users') {
     if (usersBtn) usersBtn.classList.add('active');
     if (usersContainer) usersContainer.style.display = 'block';
@@ -1088,11 +1259,203 @@ function switchAdminTab(tab) {
     if (licensesBtn) licensesBtn.classList.add('active');
     if (licensesContainer) licensesContainer.style.display = 'block';
     loadLicenses();
+  } else if (tab === 'notif') {
+    if (notifBtn) notifBtn.classList.add('active');
+    if (notifContainer) notifContainer.style.display = 'block';
+    loadNotifData();
+    loadHistory();
   } else {
     if (firstAidBtn) firstAidBtn.classList.add('active');
     if (mainContainer) mainContainer.style.display = 'block';
   }
 }
+
+// ========== NOTIFICATIONS ==========
+let allTokens = [];
+
+async function loadNotifData() {
+  const countEl = document.getElementById('notifRecipients');
+  if (!countEl) return;
+  
+  try {
+    const snap = await db.collection('fcmTokens').get();
+    allTokens = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      if (data.token) {
+        allTokens.push({
+          id: doc.id,
+          token: data.token,
+          name: data.ownerName || data.farmName || 'User'
+        });
+      }
+    });
+    countEl.textContent = allTokens.length;
+    console.log('Loaded', allTokens.length, 'tokens');
+  } catch(e) {
+    console.error('Load notif data failed:', e);
+    countEl.textContent = '0';
+  }
+}
+
+function updateNotifCounter() {
+  const title = document.getElementById('notifTitle');
+  const msg = document.getElementById('notifMsg');
+  const tCount = document.getElementById('notifTitleCounter');
+  const mCount = document.getElementById('notifMsgCounter');
+  
+  if (title && tCount) tCount.textContent = title.value.length + ' / 60';
+  if (msg && mCount) mCount.textContent = msg.value.length + ' / 200';
+}
+
+function copyAllTokens() {
+  if (allTokens.length === 0) {
+    toast('No tokens available. Users must enable notifications first.');
+    return;
+  }
+  
+  const tokenList = allTokens.map(t => t.token).join('\n');
+  
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(tokenList)
+      .then(() => toast('Copied ' + allTokens.length + ' tokens'))
+      .catch(() => fallbackCopyTokens(tokenList));
+  } else {
+    fallbackCopyTokens(tokenList);
+  }
+}
+
+function fallbackCopyTokens(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    toast('Copied ' + allTokens.length + ' tokens');
+  } catch(e) {
+    toast('Copy failed. Long press to copy manually.');
+  }
+  document.body.removeChild(ta);
+}
+
+function openFirebaseConsole() {
+  const url = 'https://console.firebase.google.com/project/dairy-manager-1/notification';
+  window.open(url, '_blank');
+  toast('In Console: Create campaign -> Send test message');
+}
+
+function useTemplate(key) {
+  const templates = {
+    rain: {
+      title: 'Rain Alert',
+      msg: 'Keep cows inside today. Heavy rain expected.'
+    },
+    newfa: {
+      title: 'New First Aid Added',
+      msg: 'A new First Aid problem has been added. Open the app to learn.'
+    },
+    license: {
+      title: 'License Expiring Soon',
+      msg: 'Your license will expire in 7 days. Please renew to continue using the app.'
+    },
+    vaccine: {
+      title: 'Vaccine Reminder',
+      msg: 'Vaccination is due for one or more animals. Please check the app.'
+    },
+    weather: {
+      title: 'Weather Update',
+      msg: 'Weather update: Check the app for today\'s forecast and tips.'
+    }
+  };
+  
+  const t = templates[key];
+  if (!t) return;
+  
+  const titleEl = document.getElementById('notifTitle');
+  const msgEl = document.getElementById('notifMsg');
+  if (titleEl) titleEl.value = t.title;
+  if (msgEl) msgEl.value = t.msg;
+  updateNotifCounter();
+  toast('Template loaded');
+}
+
+async function saveToHistory() {
+  const titleEl = document.getElementById('notifTitle');
+  const msgEl = document.getElementById('notifMsg');
+  
+  if (!titleEl || !msgEl) return;
+  
+  const title = titleEl.value.trim();
+  const msg = msgEl.value.trim();
+  
+  if (!title || !msg) {
+    toast('Enter title and message');
+    return;
+  }
+  
+  try {
+    await db.collection('notifHistory').add({
+      title: title,
+      message: msg,
+      sentTo: allTokens.length,
+      sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+      sentBy: currentUser ? currentUser.email : 'admin'
+    });
+    toast('Saved to history');
+    titleEl.value = '';
+    msgEl.value = '';
+    updateNotifCounter();
+    loadHistory();
+  } catch(e) {
+    console.error('Save history failed:', e);
+    toast('Save failed: ' + e.message);
+  }
+}
+
+async function loadHistory() {
+  const histEl = document.getElementById('notifHistory');
+  if (!histEl) return;
+  
+  histEl.innerHTML = '<div class="loading">Loading history...</div>';
+  
+  try {
+    const snap = await db.collection('notifHistory')
+      .orderBy('sentAt', 'desc')
+      .limit(20)
+      .get();
+    
+    if (snap.empty) {
+      histEl.innerHTML = '<div class="empty-state"><div class="icon">No history</div><p>No notifications sent yet</p></div>';
+      return;
+    }
+    
+    let html = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      let dateStr = '';
+      if (d.sentAt && d.sentAt.toDate) {
+        const dt = d.sentAt.toDate();
+        dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
+                  ' ' + dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      html += '<div class="history-item">' +
+        '<div class="h-title">' + escapeHtml(d.title || 'No title') + '</div>' +
+        '<div class="h-body">' + escapeHtml(d.message || '') + '</div>' +
+        '<div class="h-meta">Sent to ' + (d.sentTo || 0) + ' users - ' + escapeHtml(dateStr) + '</div>' +
+      '</div>';
+    });
+    
+    histEl.innerHTML = html;
+  } catch(e) {
+    console.error('Load history failed:', e);
+    histEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
 
 // ========== LICENSE MANAGER ==========
 let allLicenses = [];
