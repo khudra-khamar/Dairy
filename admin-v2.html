@@ -1236,6 +1236,7 @@ console.log(' Admin App Part 3A loaded');
 
 // ========== ADMIN TAB SWITCH ==========
 function switchAdminTab(tab) {
+alert('DEBUG: switchAdminTab called with: ' + tab);
   const firstAidBtn = document.getElementById('tabFirstAid');
   const usersBtn = document.getElementById('tabUsers');
   const licensesBtn = document.getElementById('tabLicenses');
@@ -1262,6 +1263,7 @@ function switchAdminTab(tab) {
     if (licensesBtn) licensesBtn.classList.add('active');
     if (licensesContainer) licensesContainer.style.display = 'block';
     loadLicenses();
+    alert('DEBUG: loadLicenses called | container: ' + (document.getElementById('licensesContainer') ? 'EXISTS' : 'NULL') + ' | display: ' + (document.getElementById('licensesContainer') ? document.getElementById('licensesContainer').style.display : 'N/A'));
   } else if (tab === 'notif') {
     if (notifBtn) notifBtn.classList.add('active');
     if (notifContainer) notifContainer.style.display = 'block';
