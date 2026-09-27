@@ -339,6 +339,98 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   color: #C62828;
 }
 
+.lic-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 4px solid #2E7D32;
+}
+.lic-card.expired {
+  border-left-color: #C62828;
+}
+.lic-card.expiring {
+  border-left-color: #E65100;
+}
+.lic-card .l-code {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1B5E20;
+  word-break: break-all;
+  margin-bottom: 4px;
+}
+.lic-card .l-device {
+  font-size: 10px;
+  color: #888;
+  font-family: monospace;
+  margin-bottom: 10px;
+}
+.lic-card .l-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 5px 0;
+  border-top: 1px solid #F0F0F0;
+}
+.lic-card .l-row:first-of-type {
+  border-top: none;
+}
+.lic-card .l-label {
+  color: #888;
+}
+.lic-card .l-value {
+  color: #333;
+  font-weight: 600;
+  text-align: right;
+}
+.lic-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.badge-active {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+.badge-expired {
+  background: #FFEBEE;
+  color: #C62828;
+}
+.badge-expiring {
+  background: #FFF3E0;
+  color: #E65100;
+}
+.lic-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.lic-actions button {
+  flex: 1;
+  padding: 9px 6px;
+  border: none;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.lic-btn-extend {
+  background: #1976D2;
+  color: #fff;
+}
+.lic-btn-revoke {
+  background: #C62828;
+  color: #fff;
+}
+.lic-btn-restore {
+  background: #2E7D32;
+  color: #fff;
+}
 /* Footer */
 .admin-footer {
   text-align:center;
@@ -398,6 +490,7 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
 <!-- ==================== TAB BAR ==================== -->
 <div class="tab-bar" id="adminTabBar" style="display:none;">
   <button id="tabFirstAid" class="active" onclick="switchAdminTab('firstaid')">📋 First Aid</button>
+<button id="tabLicenses" onclick="switchAdminTab('licenses')">🎫 Licenses</button>
   <button id="tabUsers" onclick="switchAdminTab('users')">👥 Users</button>
 </div>
 
@@ -417,6 +510,24 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
     <div class="loading">⏳ Loading problems...</div>
   </div>
 
+</div>
+
+<!-- ==================== LICENSES SECTION ==================== -->
+<div class="container" id="licensesContainer" style="display:none;">
+  <div class="top-bar">
+    <h2>🎫 Licenses</h2>
+    <span class="count" id="licenseCount">0</span>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button onclick="filterLicenses('all')" id="filterAll" style="flex:1;padding:10px;border:2px solid #2E7D32;background:#2E7D32;color:#fff;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">All</button>
+    <button onclick="filterLicenses('active')" id="filterActive" style="flex:1;padding:10px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Active</button>
+    <button onclick="filterLicenses('expired')" id="filterExpired" style="flex:1;padding:10px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Expired</button>
+  </div>
+  
+  <div id="licenseList">
+    <div class="loading">⏳ Loading licenses...</div>
+  </div>
 </div>
 
 <!-- ==================== USERS SECTION ==================== -->
@@ -955,30 +1066,261 @@ console.log(' Admin App Part 3A loaded');
 function switchAdminTab(tab) {
   const firstAidBtn = document.getElementById('tabFirstAid');
   const usersBtn = document.getElementById('tabUsers');
+  const licensesBtn = document.getElementById('tabLicenses');
   const mainContainer = document.getElementById('mainContainer');
   const usersContainer = document.getElementById('usersContainer');
+  const licensesContainer = document.getElementById('licensesContainer');
   
+  // Reset all
+  if (firstAidBtn) firstAidBtn.classList.remove('active');
+  if (usersBtn) usersBtn.classList.remove('active');
+  if (licensesBtn) licensesBtn.classList.remove('active');
+  if (mainContainer) mainContainer.style.display = 'none';
+  if (usersContainer) usersContainer.style.display = 'none';
+  if (licensesContainer) licensesContainer.style.display = 'none';
+  
+  // Activate
   if (tab === 'users') {
-    if (firstAidBtn) {
-      firstAidBtn.classList.remove('active');
-    }
-    if (usersBtn) {
-      usersBtn.classList.add('active');
-    }
-    if (mainContainer) mainContainer.style.display = 'none';
+    if (usersBtn) usersBtn.classList.add('active');
     if (usersContainer) usersContainer.style.display = 'block';
     loadUsers();
+  } else if (tab === 'licenses') {
+    if (licensesBtn) licensesBtn.classList.add('active');
+    if (licensesContainer) licensesContainer.style.display = 'block';
+    loadLicenses();
   } else {
-    if (firstAidBtn) {
-      firstAidBtn.classList.add('active');
-    }
-    if (usersBtn) {
-      usersBtn.classList.remove('active');
-    }
+    if (firstAidBtn) firstAidBtn.classList.add('active');
     if (mainContainer) mainContainer.style.display = 'block';
-    if (usersContainer) usersContainer.style.display = 'none';
   }
 }
+
+// ========== LICENSE MANAGER ==========
+let allLicenses = [];
+let currentLicenseFilter = 'all';
+
+async function loadLicenses() {
+  const listEl = document.getElementById('licenseList');
+  const countEl = document.getElementById('licenseCount');
+  
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">Loading licenses...</div>';
+  
+  try {
+    const snap = await db.collection('licenses').get();
+    allLicenses = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allLicenses.push(data);
+    });
+    
+    console.log('Loaded', allLicenses.length, 'licenses');
+    
+    if (countEl) countEl.textContent = allLicenses.length;
+    
+    renderLicenses();
+  } catch(e) {
+    console.error('Load licenses failed:', e);
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
+function getLicenseStatus(lic) {
+  if (lic.active === false) return 'revoked';
+  if (!lic.expiry) return 'active';
+  
+  const expDate = new Date(lic.expiry + 'T23:59:59');
+  const now = new Date();
+  const daysLeft = Math.ceil((expDate - now) / 86400000);
+  
+  if (daysLeft < 0) return 'expired';
+  if (daysLeft <= 7) return 'expiring';
+  return 'active';
+}
+
+function getDaysLeft(lic) {
+  if (!lic.expiry) return 0;
+  const expDate = new Date(lic.expiry + 'T23:59:59');
+  const now = new Date();
+  return Math.ceil((expDate - now) / 86400000);
+}
+
+function renderLicenses() {
+  const listEl = document.getElementById('licenseList');
+  if (!listEl) return;
+  
+  let filtered = allLicenses;
+  if (currentLicenseFilter === 'active') {
+    filtered = allLicenses.filter(l => {
+      const st = getLicenseStatus(l);
+      return st === 'active' || st === 'expiring';
+    });
+  } else if (currentLicenseFilter === 'expired') {
+    filtered = allLicenses.filter(l => getLicenseStatus(l) === 'expired');
+  }
+  
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">No licenses</div><p>No licenses found</p></div>';
+    return;
+  }
+  
+  filtered.sort((a, b) => {
+    const aExp = a.expiry || '0000-00-00';
+    const bExp = b.expiry || '0000-00-00';
+    return aExp.localeCompare(bExp);
+  });
+  
+  listEl.innerHTML = filtered.map(lic => {
+    const status = getLicenseStatus(lic);
+    const daysLeft = getDaysLeft(lic);
+    const device = lic.deviceId || '—';
+    const createdBy = lic.createdBy || '—';
+    const expiry = lic.expiry || '—';
+    
+    let statusBadge = '';
+    let cardClass = '';
+    let daysText = '';
+    
+    if (status === 'revoked') {
+      statusBadge = '<span class="lic-badge badge-expired">REVOKED</span>';
+      cardClass = 'expired';
+      daysText = 'Revoked';
+    } else if (status === 'expired') {
+      statusBadge = '<span class="lic-badge badge-expired">EXPIRED</span>';
+      cardClass = 'expired';
+      daysText = Math.abs(daysLeft) + ' days ago';
+    } else if (status === 'expiring') {
+      statusBadge = '<span class="lic-badge badge-expiring">EXPIRING</span>';
+      cardClass = 'expiring';
+      daysText = daysLeft + ' days';
+    } else {
+      statusBadge = '<span class="lic-badge badge-active">ACTIVE</span>';
+      daysText = daysLeft + ' days';
+    }
+    
+    const showRevoke = status !== 'revoked';
+    const showRestore = status === 'revoked';
+    
+    return '<div class="lic-card ' + cardClass + '">' +
+      '<div class="l-code">' + escapeHtml(lic.id) + '</div>' +
+      '<div class="l-device">Device: ' + escapeHtml(device) + '</div>' +
+      '<div class="l-row">' +
+        '<span class="l-label">Status</span>' +
+        '<span class="l-value">' + statusBadge + '</span>' +
+      '</div>' +
+      '<div class="l-row">' +
+        '<span class="l-label">Expiry</span>' +
+        '<span class="l-value">' + escapeHtml(expiry) + '</span>' +
+      '</div>' +
+      '<div class="l-row">' +
+        '<span class="l-label">Days</span>' +
+        '<span class="l-value">' + daysText + '</span>' +
+      '</div>' +
+      '<div class="l-row">' +
+        '<span class="l-label">Created By</span>' +
+        '<span class="l-value">' + escapeHtml(createdBy) + '</span>' +
+      '</div>' +
+      '<div class="lic-actions">' +
+        '<button class="lic-btn-extend" onclick="extendLicense(\'' + lic.id + '\')">+ Extend</button>' +
+        (showRevoke ? '<button class="lic-btn-revoke" onclick="revokeLicense(\'' + lic.id + '\')">Revoke</button>' : '') +
+        (showRestore ? '<button class="lic-btn-restore" onclick="restoreLicense(\'' + lic.id + '\')">Restore</button>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function filterLicenses(filter) {
+  currentLicenseFilter = filter;
+  
+  ['all', 'active', 'expired'].forEach(f => {
+    const btn = document.getElementById('filter' + f.charAt(0).toUpperCase() + f.slice(1));
+    if (!btn) return;
+    if (f === filter) {
+      btn.style.background = '#2E7D32';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#2E7D32';
+    } else {
+      btn.style.background = '#fff';
+      btn.style.color = '#666';
+      btn.style.borderColor = '#E0E0E0';
+    }
+  });
+  
+  renderLicenses();
+}
+
+function extendLicense(licenseId) {
+  const options = 'Extend by how many days?\n\n1 = 30 days\n2 = 90 days\n3 = 180 days\n4 = 365 days\n\nEnter 1, 2, 3, or 4:';
+  const choice = prompt(options, '1');
+  
+  let days = 0;
+  if (choice === '1') days = 30;
+  else if (choice === '2') days = 90;
+  else if (choice === '3') days = 180;
+  else if (choice === '4') days = 365;
+  else return;
+  
+  const lic = allLicenses.find(l => l.id === licenseId);
+  if (!lic) return;
+  
+  const now = new Date();
+  const currentExpiry = lic.expiry ? new Date(lic.expiry + 'T00:00:00') : now;
+  const startDate = currentExpiry > now ? currentExpiry : now;
+  startDate.setDate(startDate.getDate() + days);
+  
+  const y = startDate.getFullYear();
+  const m = String(startDate.getMonth() + 1).padStart(2, '0');
+  const d = String(startDate.getDate()).padStart(2, '0');
+  const newExpiry = y + '-' + m + '-' + d;
+  
+  if (!confirm('Extend license by ' + days + ' days?\n\nNew expiry: ' + newExpiry)) return;
+  
+  db.collection('licenses').doc(licenseId).update({
+    expiry: newExpiry,
+    active: true,
+    lastExtendedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastExtendedBy: currentUser ? currentUser.email : 'admin'
+  }).then(() => {
+    toast('Extended by ' + days + ' days');
+    loadLicenses();
+  }).catch(e => {
+    console.error('Extend failed:', e);
+    toast('Extend failed: ' + e.message);
+  });
+}
+
+function revokeLicense(licenseId) {
+  if (!confirm('Revoke this license?\n\nUser will not be able to use the app after their cache expires (30 days).')) return;
+  
+  db.collection('licenses').doc(licenseId).update({
+    active: false,
+    revokedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    revokedBy: currentUser ? currentUser.email : 'admin'
+  }).then(() => {
+    toast('License revoked');
+    loadLicenses();
+  }).catch(e => {
+    console.error('Revoke failed:', e);
+    toast('Revoke failed: ' + e.message);
+  });
+}
+
+function restoreLicense(licenseId) {
+  if (!confirm('Restore this license?\n\nUser will be able to use the app again.')) return;
+  
+  db.collection('licenses').doc(licenseId).update({
+    active: true,
+    restoredAt: firebase.firestore.FieldValue.serverTimestamp(),
+    restoredBy: currentUser ? currentUser.email : 'admin'
+  }).then(() => {
+    toast('License restored');
+    loadLicenses();
+  }).catch(e => {
+    console.error('Restore failed:', e);
+    toast('Restore failed: ' + e.message);
+  });
+}
+
 
 // ========== LOAD USERS ==========
 async function loadUsers() {
