@@ -666,6 +666,27 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   color: #2E7D32;
 }
 
+.notif-form input[type="number"] {
+  width: 100%;
+  padding: 11px;
+  border: 2px solid #E0E0E0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #FAFAFA;
+  font-weight: 700;
+  color: #1B5E20;
+}
+.notif-form input[type="number"]:focus {
+  outline: none;
+  border-color: #2E7D32;
+  background: #fff;
+}
+.tab-bar button {
+  padding: 12px 4px;
+  font-size: 11px;
+}
+
 /* Footer */
 .admin-footer {
   text-align:center;
@@ -729,6 +750,7 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   <button id="tabNotif" onclick="switchAdminTab('notif')">📢 Send</button>
   <button id="tabUsers" onclick="switchAdminTab('users')">👥 Users</button>
   <button id="tabFeedback" onclick="switchAdminTab('feedback')">💬 Feedback</button>
+  <button id="tabSettings" onclick="switchAdminTab('settings')">⚙️ Alerts</button>
 </div>
 
 <!-- ==================== MAIN CONTAINER ==================== -->
@@ -831,6 +853,64 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   
   <div id="feedbackList">
     <div class="loading">⏳ Loading feedback...</div>
+  </div>
+</div>
+
+<!-- ==================== SETTINGS SECTION ==================== -->
+<div class="container" id="settingsContainer" style="display:none;">
+  <div class="top-bar">
+    <h2>⚙️ Alert Settings</h2>
+  </div>
+  
+  <div class="notif-guide">
+    🔔 এখান থেকে Alert এর সময়সীমা পরিবর্তন করতে পারবেন। পরিবর্তন করলে সব user এর app এ apply হবে।
+  </div>
+  
+  <div class="notif-form">
+  <label>🥛 Prep Dry Cow (days after AI)</label>
+<input type="number" id="setPrepDryCow" min="150" max="220" value="180">
+
+<label>🥛 Prep Dry Buffalo (days after AI)</label>
+<input type="number" id="setPrepDryBuffalo" min="170" max="240" value="200">
+
+<label>🏠 Prep Calving Cow (days after AI)</label>
+<input type="number" id="setPrepCalvingCow" min="250" max="290" value="272">
+
+<label>🏠 Prep Calving Buffalo (days after AI)</label>
+<input type="number" id="setPrepCalvingBuffalo" min="280" max="320" value="300">
+
+  
+    <label>🔔 Heat Alert (days after AI)</label>
+    <input type="number" id="setHeat" min="15" max="30" value="21">
+    
+    <label>🩺 PD Alert (days after AI)</label>
+    <input type="number" id="setPd" min="40" max="90" value="60">
+    
+    <label>🍼 Dry-off Cow (days after AI)</label>
+    <input type="number" id="setDryCow" min="200" max="240" value="218">
+    
+    <label>🍼 Dry-off Buffalo (days after AI)</label>
+    <input type="number" id="setDryBuffalo" min="220" max="260" value="240">
+    
+    <label>🍼 Calving Cow (total days)</label>
+    <input type="number" id="setCalvingCow" min="270" max="290" value="282">
+    
+    <label>🍼 Calving Buffalo (total days)</label>
+    <input type="number" id="setCalvingBuffalo" min="300" max="320" value="310">
+    
+    <label>👀 Breeding 1st check (days after calving)</label>
+    <input type="number" id="setBreeding1" min="30" max="60" value="40">
+    
+    <label>👀 Breeding 2nd check</label>
+    <input type="number" id="setBreeding2" min="50" max="80" value="60">
+    
+    <label>👀 Breeding 3rd check</label>
+    <input type="number" id="setBreeding3" min="80" max="120" value="90">
+    
+    <div class="notif-actions" style="margin-top:20px;">
+      <button class="notif-btn notif-btn-console" onclick="resetAlertSettings()">↻ Reset Defaults</button>
+      <button class="notif-btn notif-btn-copy" onclick="saveAlertSettings()">💾 Save Settings</button>
+    </div>
   </div>
 </div>
 
@@ -1373,22 +1453,26 @@ function switchAdminTab(tab) {
   const licensesBtn = document.getElementById('tabLicenses');
   const notifBtn = document.getElementById('tabNotif');
   const feedbackBtn = document.getElementById('tabFeedback');
+  const settingsBtn = document.getElementById('tabSettings');
   const mainContainer = document.getElementById('mainContainer');
   const usersContainer = document.getElementById('usersContainer');
   const licensesContainer = document.getElementById('licensesContainer');
   const notifContainer = document.getElementById('notifContainer');
   const feedbackContainer = document.getElementById('feedbackContainer');
+  const settingsContainer = document.getElementById('settingsContainer');
   
   if (firstAidBtn) firstAidBtn.classList.remove('active');
   if (usersBtn) usersBtn.classList.remove('active');
   if (licensesBtn) licensesBtn.classList.remove('active');
   if (notifBtn) notifBtn.classList.remove('active');
   if (feedbackBtn) feedbackBtn.classList.remove('active');
+  if (settingsBtn) settingsBtn.classList.remove('active');
   if (mainContainer) mainContainer.style.display = 'none';
   if (usersContainer) usersContainer.style.display = 'none';
   if (licensesContainer) licensesContainer.style.display = 'none';
   if (notifContainer) notifContainer.style.display = 'none';
   if (feedbackContainer) feedbackContainer.style.display = 'none';
+  if (settingsContainer) settingsContainer.style.display = 'none';
   
   if (tab === 'users') {
     if (usersBtn) usersBtn.classList.add('active');
@@ -1407,10 +1491,88 @@ function switchAdminTab(tab) {
     if (feedbackBtn) feedbackBtn.classList.add('active');
     if (feedbackContainer) feedbackContainer.style.display = 'block';
     loadFeedback();
+  } else if (tab === 'settings') {
+    if (settingsBtn) settingsBtn.classList.add('active');
+    if (settingsContainer) settingsContainer.style.display = 'block';
+    loadAlertSettings();
   } else {
     if (firstAidBtn) firstAidBtn.classList.add('active');
     if (mainContainer) mainContainer.style.display = 'block';
   }
+}
+
+// ==================== ALERT SETTINGS ====================
+const DEFAULT_ALERTS = {
+  heat: 21,
+  pd: 60,
+  prepDryCow: 180,
+  prepDryBuffalo: 200,
+  dryCow: 218,
+  dryBuffalo: 240,
+  prepCalvingCow: 272,
+  prepCalvingBuffalo: 300,
+  calvingCow: 282,
+  calvingBuffalo: 310,
+  breeding1: 40,
+  breeding2: 60,
+  breeding3: 90
+};
+
+async function loadAlertSettings() {
+const fields = ['heat', 'pd', 'prepDryCow', 'prepDryBuffalo', 'dryCow', 'dryBuffalo', 'prepCalvingCow', 'prepCalvingBuffalo', 'calvingCow', 'calvingBuffalo', 'breeding1', 'breeding2', 'breeding3'];
+  
+  try {
+    const doc = await db.collection('settings').doc('alerts').get();
+    
+    if (doc.exists) {
+      const data = doc.data();
+      fields.forEach(f => {
+        const el = document.getElementById('set' + f.charAt(0).toUpperCase() + f.slice(1));
+        if (el && data[f]) el.value = data[f];
+      });
+      console.log('Loaded alert settings');
+    } else {
+      resetAlertSettings();
+    }
+  } catch(e) {
+    console.error('Load settings failed:', e);
+    resetAlertSettings();
+  }
+}
+
+async function saveAlertSettings() {
+const fields = ['heat', 'pd', 'prepDryCow', 'prepDryBuffalo', 'dryCow', 'dryBuffalo', 'prepCalvingCow', 'prepCalvingBuffalo', 'calvingCow', 'calvingBuffalo', 'breeding1', 'breeding2', 'breeding3'];
+  const data = {};
+  
+  for (const f of fields) {
+    const el = document.getElementById('set' + f.charAt(0).toUpperCase() + f.slice(1));
+    if (!el) continue;
+    const val = parseInt(el.value);
+    if (isNaN(val) || val <= 0) {
+      toast('❌ ' + f + ' valid number দিন');
+      return;
+    }
+    data[f] = val;
+  }
+  
+  data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+  data.updatedBy = currentUser ? currentUser.email : 'admin';
+  
+  try {
+    await db.collection('settings').doc('alerts').set(data, { merge: true });
+    toast('✅ Settings saved');
+  } catch(e) {
+    console.error('Save settings failed:', e);
+    toast('❌ Failed: ' + e.message);
+  }
+}
+
+function resetAlertSettings() {
+  Object.keys(DEFAULT_ALERTS).forEach(f => {
+    const el = document.getElementById('set' + f.charAt(0).toUpperCase() + f.slice(1));
+    if (el) el.value = DEFAULT_ALERTS[f];
+  });
+  toast('↻ Default values loaded');
 }
 
 // ==================== FEEDBACK ====================
