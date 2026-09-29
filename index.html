@@ -283,6 +283,18 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <div id="licenseScreen" class="lock-screen" style="display:none;">
   <h2>Dairy Manager</h2>
   <p id="licenseMsg">Enter License Code to Start</p>
+  <!-- ===== NEW: Login Section ===== -->
+<div id="loginSection" style="margin-bottom:20px;">
+  <p style="text-align:center;color:#666;margin:10px 0 16px;">🔐 Login করুন বা Trial শুরু করুন</p>
+  <button class="btn-white" onclick="loginWithGoogle()" style="width:100%;margin-bottom:10px;background:#fff;color:#333;border:1px solid #ddd;">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;vertical-align:middle;margin-right:8px;">
+    Google দিয়ে শুরু করুন
+  </button>
+  <button class="btn-white" onclick="loginWithPhone()" style="width:100%;background:#25D366;color:#fff;">
+    📱 Mobile Number দিয়ে শুরু করুন
+  </button>
+  <p style="text-align:center;color:#999;margin:16px 0;font-size:13px;">─── অথবা ───</p>
+</div>
   <div class="device-box">
     <p id="deviceLabel">📱 Your Device Code</p>
     <p id="deviceIdShow" class="dev-id">DEV-XXXXXXXX</p>
@@ -1348,12 +1360,13 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
 <!-- Firebase Init -->
 <script>
 (function initFirebase() {
   // Wait for firebase to be available (deferred SDK)
-  if (typeof firebase === 'undefined' || typeof firebase.messaging === 'undefined') {
+  if (typeof firebase === 'undefined' || typeof firebase.messaging === 'undefined' || typeof firebase.auth === 'undefined') {
     console.log('⏳ Waiting for Firebase SDK...');
     setTimeout(initFirebase, 100);
     return;
@@ -1373,6 +1386,16 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     window._fbAnalytics = firebase.analytics();
     window._db = firebase.firestore();
     window._messaging = firebase.messaging();
+    
+    // ===== NEW: Firebase Auth =====
+    window._auth = firebase.auth();
+    window._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+      .then(function() {
+        console.log('✅ Auth persistence: LOCAL');
+      })
+      .catch(function(e) {
+        console.warn('Auth persistence failed:', e.message);
+      });
     
     // Register Firebase Messaging Service Worker
     if ('serviceWorker' in navigator) {
@@ -7726,6 +7749,90 @@ async function verifyLicense(code, deviceId) {
   return null;
 }
 
+async function loginWithGoogle() {
+  try {
+    if (!window._auth) {
+      alert('Firebase load হয়নি। একটু অপেক্ষা করে আবার চেষ্টা করুন।');
+      return;
+    }
+    
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    toast('🔄 Google Login চালু হচ্ছে...');
+    const result = await window._auth.signInWithPopup(provider);
+    
+    console.log('✅ Google Login success:', result.user.uid);
+    toast('✅ Login সফল: ' + (result.user.displayName || result.user.email));
+    
+  } catch(e) {
+    console.error('❌ Google Login failed:', e);
+    if (e.code === 'auth/popup-closed-by-user') {
+      toast('Login বাতিল হয়েছে');
+    } else if (e.code === 'auth/popup-blocked') {
+      alert('Popup block হয়েছে। Chrome-এ popup allow করুন।');
+    } else {
+      alert('Login failed: ' + e.message);
+    }
+  }
+}
+
+async function loginWithPhone() {
+  try {
+    if (!window._auth) {
+      alert('Firebase load হয়নি। একটু অপেক্ষা করে আবার চেষ্টা করুন।');
+      return;
+    }
+    
+    // Step 1: Phone Number নিন
+    const phone = prompt(
+      '📱 Mobile Number দিন (দেশের কোড সহ)\n\n' +
+      'India: +91XXXXXXXXXX\n' +
+      'Bangladesh: +880XXXXXXXXXX'
+    );
+    if (!phone || !phone.trim()) return;
+    const phoneNumber = phone.trim();
+    
+    // Step 2: reCAPTCHA container তৈরি
+    if (!document.getElementById('recaptcha-container')) {
+      const div = document.createElement('div');
+      div.id = 'recaptcha-container';
+      document.body.appendChild(div);
+    }
+    
+    toast('🔄 OTP পাঠানো হচ্ছে...');
+    
+    const appVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible'
+    });
+    
+    const confirmation = await window._auth.signInWithPhoneNumber(phoneNumber, appVerifier);
+    
+    // Step 3: OTP নিন
+    const otp = prompt('📩 SMS-এ পাঠানো OTP দিন (৬ সংখ্যা)');
+    if (!otp || !otp.trim()) {
+      toast('OTP বাতিল হয়েছে');
+      return;
+    }
+    
+    // Step 4: Verify
+    const result = await confirmation.confirm(otp.trim());
+    console.log('✅ Phone Login success:', result.user.uid);
+    toast('✅ Login সফল: ' + result.user.phoneNumber);
+    
+  } catch(e) {
+    console.error('❌ Phone Login failed:', e);
+    if (e.code === 'auth/invalid-phone-number') {
+      alert('❌ ভুল phone format। +91 বা +880 সহ দিন।');
+    } else if (e.code === 'auth/invalid-verification-code') {
+      alert('❌ ভুল OTP। আবার চেষ্টা করুন।');
+    } else if (e.code === 'auth/too-many-requests') {
+      alert('⚠️ অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।');
+    } else {
+      alert('Phone Login failed: ' + e.message);
+    }
+  }
+}
 
 function continueWithTrial() {
   // If trial already active — just skip license screen
