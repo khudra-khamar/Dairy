@@ -7876,6 +7876,31 @@ async function logoutUser() {
 }
 
 function updateAccountUI() {
+  // HTML-এ accountSection না থাকলে dynamic ভাবে তৈরি
+  let accountSection = document.getElementById('accountSection');
+  
+  if (!accountSection) {
+    // Farm Info box-এর পরে insert করব
+    const saveBtn = document.querySelector('[onclick="saveSettings()"]');
+    if (saveBtn) {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'accountSection';
+      wrapper.style.cssText = 'margin-top:24px;padding-top:20px;border-top:1px solid #eee;';
+      wrapper.innerHTML = 
+        '<h3 style="font-size:15px;color:#666;margin-bottom:12px;">🔐 Account</h3>' +
+        '<div id="accountInfo" style="background:#f5f5f5;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;color:#666;">' +
+          '<div id="accountStatus">চেক করা হচ্ছে...</div>' +
+        '</div>' +
+        '<button id="logoutBtn" onclick="logoutUser()" style="width:100%;background:#fff;color:#e53935;border:1.5px solid #e53935;padding:12px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:none;">🚪 Logout</button>';
+      
+      const parentBox = saveBtn.closest('.summary-box');
+      if (parentBox && parentBox.parentNode) {
+        parentBox.parentNode.insertBefore(wrapper, parentBox.nextSibling);
+      }
+      accountSection = wrapper;
+    }
+  }
+  
   const statusEl = document.getElementById('accountStatus');
   const logoutBtn = document.getElementById('logoutBtn');
   if (!statusEl || !logoutBtn) return;
