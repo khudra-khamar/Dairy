@@ -7763,6 +7763,7 @@ async function loginWithGoogle() {
     const result = await window._auth.signInWithPopup(provider);
     
     console.log('✅ Google Login success:', result.user.uid);
+    await saveUserAfterLogin(result.user, 'google');
     toast('✅ Login সফল: ' + (result.user.displayName || result.user.email));
     
   } catch(e) {
@@ -7776,6 +7777,75 @@ async function loginWithGoogle() {
     }
   }
 }
+
+async function saveUserAfterLogin(user, method) {
+  try {
+    if (!window._db) return;
+    
+    const uid = user.uid;
+    const now = Date.now();
+    
+    const userRef = window._db.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+    
+    const userData = {
+      uid: uid,
+      authMethod: method,
+      email: user.email || '',
+      phone: user.phoneNumber || '',
+      displayName: user.displayName || '',
+      photoURL: user.photoURL || '',
+      deviceId: DB.deviceId || '',
+      lastSeen: now
+    };
+    
+    if (!userSnap.exists) {
+      userData.firstSeen = now;
+      userData.farmerName = DB.settings.farmName || '';
+      userData.ownerName = DB.settings.ownerName || user.displayName || '';
+      userData.appVersion = '2026.09';
+      await userRef.set(userData);
+      console.log('✅ New user doc created:', uid);
+    } else {
+      await userRef.update({
+        lastSeen: now,
+        deviceId: DB.deviceId || '',
+        authMethod: method
+      });
+      console.log('✅ Existing user updated:', uid);
+    }
+    
+    const trialRef = window._db.collection('trialUsers').doc(uid);
+    const trialSnap = await trialRef.get();
+    
+    if (!trialSnap.exists) {
+      await trialRef.set({
+        type: 'auth',
+        uid: uid,
+        authMethod: method,
+        deviceId: DB.deviceId || '',
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        farmerName: DB.settings.farmName || '',
+        ownerName: user.displayName || DB.settings.ownerName || '',
+        firstSeen: now,
+        lastSeen: now,
+        appVersion: '2026.09',
+        converted: false
+      });
+      console.log('✅ Trial user doc created');
+    } else {
+      await trialRef.update({
+        lastSeen: now,
+        deviceId: DB.deviceId || ''
+      });
+    }
+    
+  } catch(e) {
+    console.error('❌ saveUserAfterLogin failed:', e);
+  }
+}
+
 
 async function loginWithPhone() {
   try {
@@ -7818,6 +7888,7 @@ async function loginWithPhone() {
     // Step 4: Verify
     const result = await confirmation.confirm(otp.trim());
     console.log('✅ Phone Login success:', result.user.uid);
+    await saveUserAfterLogin(result.user, 'phone');
     toast('✅ Login সফল: ' + result.user.phoneNumber);
     
   } catch(e) {
