@@ -2022,6 +2022,8 @@ function renderLicenses() {
     const daysLeft = getDaysLeft(lic);
     const device = lic.deviceId || '—';
     const createdBy = lic.createdBy || '—';
+    const farmerName = lic.farmerName || lic.ownerName || '—';
+    const ownerPhone = lic.phone || '—';
     const expiry = lic.expiry || '—';
     
     let statusBadge = '';
@@ -2051,6 +2053,7 @@ function renderLicenses() {
     return '<div class="lic-card ' + cardClass + '">' +
       '<div class="l-code">' + escapeHtml(lic.id) + '</div>' +
       '<div class="l-device">Device: ' + escapeHtml(device) + '</div>' +
+      '<div class="l-device">👤 ' + escapeHtml(farmerName) + (ownerPhone !== '—' ? ' · 📞 ' + escapeHtml(ownerPhone) : '') + '</div>' +
       '<div class="l-row">' +
         '<span class="l-label">Status</span>' +
         '<span class="l-value">' + statusBadge + '</span>' +

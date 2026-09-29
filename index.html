@@ -7593,6 +7593,20 @@ if (f.size > 5 * 1024 * 1024) {
   r.readAsDataURL(f);
 }
 
+async function syncNameToLicense() {
+  try {
+    if (!window._fbReady || !window._db) return;
+    const code = (DB.settings.licenseCode || '').trim().toUpperCase();
+    if (!code) return;
+    await window._db.collection('licenses').doc(code).update({
+      farmerName: DB.settings.farmName || '',
+      ownerName: DB.settings.ownerName || '',
+      phone: DB.settings.phone || ''
+    });
+    console.log('✅ Name synced to license:', code);
+  } catch(e) { console.warn('⚠️ Sync failed:', e); }
+}
+
 function saveSettings() {
   DB.settings.farmName = document.getElementById('setFarmName').value.trim();
   DB.settings.ownerName = document.getElementById('setOwnerName').value.trim();
@@ -7602,6 +7616,7 @@ function saveSettings() {
   saveDB();
   applyLang();
   toast(t('settings_saved'));
+  syncNameToLicense(); 
 }
 
 // ========== DEVICE ID ==========
