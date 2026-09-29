@@ -1160,6 +1160,16 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <div id="logoPreview" style="text-align:center;margin-bottom:12px;"></div>
       <button class="btn-primary" data-t="save_settings" onclick="saveSettings()">💾 Save</button>
     </div>
+    <!-- ===== NEW: Logout Section ===== -->
+<div id="accountSection" style="margin-top:24px;padding-top:20px;border-top:1px solid #eee;">
+  <h3 style="font-size:15px;color:#666;margin-bottom:12px;">🔐 Account</h3>
+  <div id="accountInfo" style="background:#f5f5f5;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;color:#666;">
+    <div id="accountStatus">চেক করা হচ্ছে...</div>
+  </div>
+  <button id="logoutBtn" onclick="logoutUser()" style="width:100%;background:#fff;color:#e53935;border:1.5px solid #e53935;padding:12px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:none;">
+    🚪 Logout
+  </button>
+</div>
 
     <div class="summary-box">
       <h3 data-t="security">🔒 Security</h3>
@@ -1502,7 +1512,7 @@ const T = {
     nav_med:'Medicine', nav_feed:'Feed', nav_note:'Notes', nav_set:'Settings',
     greeting_morning:'Good Morning 🌅', greeting_noon:'Good Afternoon ☀️',
     greeting_evening:'Good Evening 🌆', greeting_night:'Good Night 🌙',
-    saved:'✅ Saved', deleted:'🗑️ Deleted', updated:'✅ Updated',
+    saved:'✅ Saved', deleted:'??️ Deleted', updated:'✅ Updated',
     confirm_del:'Are you sure? This cannot be undone.',
     enter_name:'❌ Enter name', enter_tag:'❌ Enter Tag No',
     enter_qty:'❌ Enter quantity', enter_amount:'❌ Enter amount',
@@ -7593,6 +7603,7 @@ function loadSettings() {
 
     renderFeatureToggles();
   updatePresetSection();
+  updateAccountUI();
 }
 
 let tempLogo = null;
@@ -7844,6 +7855,56 @@ function showOtpModal() {
       input.style.borderColor = '#ddd';
     };
   });
+}
+
+async function logoutUser() {
+  if (!confirm('Logout করবেন?\n\nTrial লাইসেন্স থাকলে App চলবে, তবে Login feature বন্ধ হবে।')) return;
+  
+  try {
+    if (window._auth) {
+      await window._auth.signOut();
+      console.log('✅ Logged out');
+    }
+    toast('✅ Logout সফল');
+    
+    // 1 সেকেন্ড পর reload
+    setTimeout(() => location.reload(), 1000);
+  } catch(e) {
+    console.error('❌ Logout failed:', e);
+    alert('Logout failed: ' + e.message);
+  }
+}
+
+function updateAccountUI() {
+  const statusEl = document.getElementById('accountStatus');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (!statusEl || !logoutBtn) return;
+  
+  if (!window._auth) {
+    statusEl.textContent = '⏳ Firebase loading...';
+    return;
+  }
+  
+  const user = window._auth.currentUser;
+  
+  if (!user) {
+    statusEl.innerHTML = '⚠️ Login করা নেই<br><span style="font-size:12px;color:#999;">Trial চালু আছে</span>';
+    logoutBtn.style.display = 'none';
+    return;
+  }
+  
+  const method = user.providerData && user.providerData[0] ? user.providerData[0].providerId : 'unknown';
+  const identifier = user.email || user.phoneNumber || 'Unknown';
+  
+  let icon = '🔐';
+  if (method === 'google.com') icon = '🔵';
+  else if (method === 'phone') icon = '📱';
+  
+  statusEl.innerHTML = 
+    icon + ' <strong>Login করা আছে</strong><br>' +
+    '<span style="font-size:12px;color:#2E7D32;">' + identifier + '</span>';
+  
+  logoutBtn.style.display = 'block';
 }
 
 async function saveUserAfterLogin(user, method) {
