@@ -7596,7 +7596,7 @@ if (f.size > 5 * 1024 * 1024) {
 async function syncNameToLicense() {
   try {
     if (!window._fbReady || !window._db) return;
-    const code = (DB.settings.licenseCode || '').trim().toUpperCase();
+   const code = (DB.license && DB.license.code ? DB.license.code : '').trim().toUpperCase();
     if (!code) return;
     await window._db.collection('licenses').doc(code).update({
       farmerName: DB.settings.farmName || '',
