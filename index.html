@@ -7793,6 +7793,59 @@ function goToAppAfterLogin() {
   }
 }
 
+function showOtpModal() {
+  return new Promise((resolve) => {
+    const modal = document.createElement('div');
+    modal.id = 'otpModal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+    
+    modal.innerHTML = 
+      '<div style="background:#fff;padding:24px;border-radius:14px;width:100%;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3);">' +
+        '<div style="font-size:36px;margin-bottom:8px;">📩</div>' +
+        '<h3 style="margin:0 0 6px;color:#2E7D32;font-size:18px;">OTP দিন</h3>' +
+        '<p style="margin:0 0 16px;color:#888;font-size:13px;">SMS-এ পাঠানো ৬ সংখ্যার কোড</p>' +
+        '<input type="tel" id="otpInputBox" maxlength="6" inputmode="numeric" placeholder="● ● ● ● ● ●" style="width:100%;padding:14px;font-size:24px;text-align:center;letter-spacing:8px;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;margin-bottom:16px;outline:none;">' +
+        '<div style="display:flex;gap:10px;">' +
+          '<button id="otpCancel" style="flex:1;background:#f0f0f0;color:#333;border:none;padding:12px;border-radius:10px;font-size:15px;font-weight:600;">বাতিল</button>' +
+          '<button id="otpVerify" style="flex:2;background:#2E7D32;color:#fff;border:none;padding:12px;border-radius:10px;font-size:15px;font-weight:700;">✅ Verify</button>' +
+        '</div>' +
+      '</div>';
+    
+    document.body.appendChild(modal);
+    
+    const input = document.getElementById('otpInputBox');
+    const verifyBtn = document.getElementById('otpVerify');
+    const cancelBtn = document.getElementById('otpCancel');
+    
+    setTimeout(() => input.focus(), 100);
+    
+    function close(val) {
+      if (document.body.contains(modal)) document.body.removeChild(modal);
+      resolve(val);
+    }
+    
+    verifyBtn.onclick = () => {
+      const v = input.value.trim();
+      if (v.length !== 6) {
+        input.style.borderColor = '#e53935';
+        input.placeholder = '৬ সংখ্যা দিন';
+        return;
+      }
+      close(v);
+    };
+    
+    cancelBtn.onclick = () => close(null);
+    
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') verifyBtn.click();
+    };
+    
+    input.oninput = () => {
+      input.style.borderColor = '#ddd';
+    };
+  });
+}
+
 async function saveUserAfterLogin(user, method) {
   try {
     if (!window._db) return;
@@ -7894,7 +7947,7 @@ async function loginWithPhone() {
     const confirmation = await window._auth.signInWithPhoneNumber(phoneNumber, appVerifier);
     
     // Step 3: OTP নিন
-    const otp = prompt('📩 SMS-এ পাঠানো OTP দিন (৬ সংখ্যা)');
+    const otp = await showOtpModal();
     if (!otp || !otp.trim()) {
       toast('OTP বাতিল হয়েছে');
       return;
