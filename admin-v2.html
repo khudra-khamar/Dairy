@@ -1323,6 +1323,19 @@ function toast(msg, duration) {
 }
 
 // ========== LOGIN ==========
+function getFriendlyAuthError(err) {
+  const code = err.code || '';
+  if (code === 'auth/invalid-email') return '❌ Email format ভুল হয়েছে';
+  if (code === 'auth/user-disabled') return '⚠️ এই account বন্ধ করা হয়েছে';
+  if (code === 'auth/user-not-found') return '❌ এই email-এ কোনো account নেই';
+  if (code === 'auth/wrong-password') return '❌ Password ভুল হয়েছে';
+  if (code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials') return '❌ Email বা Password ভুল হয়েছে';
+  if (code === 'auth/too-many-requests') return '⚠️ অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন';
+  if (code === 'auth/network-request-failed') return '📡 Internet সংযোগ নেই';
+  if (code === 'auth/missing-password') return '❌ Password দিন';
+  return '❌ Login failed। আবার চেষ্টা করুন';
+}
+
 function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
@@ -1330,21 +1343,22 @@ function doLogin() {
   const errEl = document.getElementById('loginErr');
   
   if (!email || !password) {
-    errEl.textContent = ' Email  Password ';
+    errEl.textContent = '⚠️ Email ও Password দুটোই দিন';
     errEl.style.display = 'block';
     return;
   }
   
   btn.disabled = true;
-  btn.textContent = ' Logging in...';
+  btn.textContent = '⏳ Logging in...';
   errEl.style.display = 'none';
   
   auth.signInWithEmailAndPassword(email, password)
     .then(function(cred) {
-      console.log(' Logged in:', cred.user.email);
+      console.log('✅ Logged in:', cred.user.email);
     })
     .catch(function(err) {
-      errEl.textContent = ' ' + err.message;
+      console.error('Login error:', err);
+      errEl.textContent = getFriendlyAuthError(err);
       errEl.style.display = 'block';
       btn.disabled = false;
       btn.textContent = 'Login';
@@ -1352,10 +1366,10 @@ function doLogin() {
 }
 
 function doLogout() {
-  if (!confirm('Logout ?')) return;
+  if (!confirm('Logout করবেন?')) return;
   auth.signOut().then(function() {
-    console.log(' Logged out');
-    toast(' Logged out');
+    console.log('✅ Logged out');
+    toast('✅ Logout সফল');
   });
 }
 
