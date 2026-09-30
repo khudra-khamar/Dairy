@@ -1000,6 +1000,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <div style="display:flex;gap:8px;margin:14px 0;">
   <button id="feedSubTabStock" onclick="switchFeedSubTab('stock')" style="flex:1;padding:11px;border:2px solid #2E7D32;background:#2E7D32;color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📦 Stock</button>
   <button id="feedSubTabInfo" onclick="switchFeedSubTab('info')" style="flex:1;padding:11px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📚 Feed Info</button>
+  <button id="feedSubTabCalc" onclick="switchFeedSubTab('calc')" style="flex:1;padding:11px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🧮 Calc</button>
 </div>
     <div id="feedSubStock">
     <div class="calc-card" style="background:#FFF9C4;border-color:#F9A825;">
@@ -1035,6 +1036,27 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <div style="text-align:center;padding:30px;color:#999;">⏳ Loading...</div>
   </div>
 </div>
+</div>
+
+<!-- ===== FEED CALCULATOR ===== -->
+<div id="feedSubCalc" style="display:none;">
+  <div style="background:#FFF9C4;border:2px solid #F9A825;border-radius:12px;padding:12px;margin-bottom:14px;">
+    <div style="font-size:12px;color:#555;line-height:1.6;">
+      <b>🧮 কীভাবে ব্যবহার করবেন:</b><br>
+      ১. নিচে ফিড সিলেক্ট করুন<br>
+      ২. পরিমাণ (kg) লিখুন<br>
+      ৩. <b>হিসাব করুন</b> চাপুন<br>
+      ৪. মোট পুষ্টি দেখুন
+    </div>
+  </div>
+  
+  <div id="calcRows"></div>
+  
+  <button onclick="addCalcRow()" style="width:100%;padding:12px;background:#1976D2;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;">➕ আরেকটা ফিড যোগ করুন</button>
+  
+  <button onclick="calculateFeed()" style="width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;">🧮 হিসাব করুন</button>
+  
+  <div id="calcResult" style="margin-top:16px;"></div>
 </div>
 
   <!-- NOTES PAGE -->
@@ -3125,20 +3147,40 @@ let currentFeedInfoCat = 'all';
 function switchFeedSubTab(tab) {
   const stockBtn = document.getElementById('feedSubTabStock');
   const infoBtn = document.getElementById('feedSubTabInfo');
+  const calcBtn = document.getElementById('feedSubTabCalc');
   const stockEl = document.getElementById('feedSubStock');
   const infoEl = document.getElementById('feedSubInfo');
+  const calcEl = document.getElementById('feedSubCalc');
+  
+  const resetStyle = (btn) => {
+    if (!btn) return;
+    btn.style.background = '#fff';
+    btn.style.color = '#666';
+    btn.style.borderColor = '#E0E0E0';
+  };
+  const activeStyle = (btn) => {
+    if (!btn) return;
+    btn.style.background = '#2E7D32';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#2E7D32';
+  };
+  
+  resetStyle(stockBtn); resetStyle(infoBtn); resetStyle(calcBtn);
+  if (stockEl) stockEl.style.display = 'none';
+  if (infoEl) infoEl.style.display = 'none';
+  if (calcEl) calcEl.style.display = 'none';
   
   if (tab === 'info') {
-    if (stockBtn) { stockBtn.style.background = '#fff'; stockBtn.style.color = '#666'; stockBtn.style.borderColor = '#E0E0E0'; }
-    if (infoBtn) { infoBtn.style.background = '#2E7D32'; infoBtn.style.color = '#fff'; infoBtn.style.borderColor = '#2E7D32'; }
-    if (stockEl) stockEl.style.display = 'none';
+    activeStyle(infoBtn);
     if (infoEl) infoEl.style.display = 'block';
     loadFeedInfo();
+  } else if (tab === 'calc') {
+    activeStyle(calcBtn);
+    if (calcEl) calcEl.style.display = 'block';
+    loadFeedsForCalc();
   } else {
-    if (stockBtn) { stockBtn.style.background = '#2E7D32'; stockBtn.style.color = '#fff'; stockBtn.style.borderColor = '#2E7D32'; }
-    if (infoBtn) { infoBtn.style.background = '#fff'; infoBtn.style.color = '#666'; infoBtn.style.borderColor = '#E0E0E0'; }
+    activeStyle(stockBtn);
     if (stockEl) stockEl.style.display = 'block';
-    if (infoEl) infoEl.style.display = 'none';
   }
 }
 
@@ -3342,6 +3384,160 @@ function renderFeedInfo() {
       (desc ? '<div style="margin-top:8px;font-size:11px;color:#666;font-style:italic;">' + escapeHtml(desc) + '</div>' : '') +
     '</div>';
   }).join('');
+}
+
+// ========== FEED CALCULATOR ==========
+let calcRowCounter = 0;
+
+async function loadFeedsForCalc() {
+  if (allFeedInfo.length > 0) {
+    renderCalcRows();
+    return;
+  }
+  try {
+    if (!window._db) return;
+    const snap = await window._db.collection('feeds').get();
+    allFeedInfo = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allFeedInfo.push(data);
+    });
+    renderCalcRows();
+  } catch(e) {
+    console.error('Load feeds for calc failed:', e);
+  }
+}
+
+function getFeedOptionsHtml() {
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  const sorted = allFeedInfo.slice().sort((a, b) => {
+    const aN = (a.name && a.name[lang]) || (a.name && a.name.bn) || a.id;
+    const bN = (b.name && b.name[lang]) || (b.name && b.name.bn) || b.id;
+    return aN.localeCompare(bN);
+  });
+  return sorted.map(f => {
+    const name = (f.name && f.name[lang]) || (f.name && f.name.bn) || f.id;
+    return '<option value="' + f.id + '">' + escapeHtml(name) + '</option>';
+  }).join('');
+}
+
+function renderCalcRows() {
+  const container = document.getElementById('calcRows');
+  if (!container) return;
+  if (container.children.length === 0) {
+    addCalcRow();
+  }
+}
+
+function addCalcRow() {
+  const container = document.getElementById('calcRows');
+  if (!container) return;
+  
+  calcRowCounter++;
+  const idx = calcRowCounter;
+  
+  const row = document.createElement('div');
+  row.className = 'calc-row';
+  row.dataset.idx = idx;
+  row.style.cssText = 'display:flex;gap:5px;margin-bottom:8px;align-items:center;';
+  
+  row.innerHTML = 
+    '<select data-role="feed" style="flex:2;padding:10px 6px;border:2px solid #ddd;border-radius:10px;font-size:12px;background:#fff;font-family:inherit;outline:none;box-sizing:border-box;min-width:0;">' +
+      '<option value="">-- ফিড --</option>' +
+      getFeedOptionsHtml() +
+    '</select>' +
+    '<input type="number" data-role="qty" min="0" step="0.01" placeholder="পরিমাণ" style="flex:1;min-width:60px;padding:10px 6px;border:2px solid #ddd;border-radius:10px;font-size:12px;box-sizing:border-box;outline:none;">' +
+    '<select data-role="unit" style="padding:10px 4px;border:2px solid #ddd;border-radius:10px;font-size:12px;background:#fff;font-family:inherit;outline:none;width:58px;">' +
+      '<option value="kg">kg</option>' +
+      '<option value="g">g</option>' +
+    '</select>' +
+    '<button onclick="removeCalcRow(' + idx + ')" style="padding:10px 8px;background:#e53935;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;">🗑️</button>';
+  
+  container.appendChild(row);
+}
+
+function removeCalcRow(idx) {
+  const container = document.getElementById('calcRows');
+  if (!container) return;
+  const row = container.querySelector('[data-idx="' + idx + '"]');
+  if (row) row.remove();
+}
+
+function calculateFeed() {
+  const rows = document.querySelectorAll('#calcRows .calc-row');
+  const resultEl = document.getElementById('calcResult');
+  if (!resultEl) return;
+  
+  const totals = { fresh: 0, dm: 0, cp: 0, tdn: 0, me: 0, fiber: 0, ca: 0, p: 0, fat: 0 };
+  const items = [];
+  
+  rows.forEach(row => {
+    const feedId = row.querySelector('[data-role="feed"]').value;
+   const qtyRaw = row.querySelector('[data-role="qty"]').value;
+const qtyInput = parseFloat(qtyRaw);
+if (!feedId || !qtyInput || qtyInput <= 0) return;
+const unitEl = row.querySelector('[data-role="unit"]');
+const unit = unitEl ? unitEl.value : 'kg';
+const qty = (unit === 'g') ? (qtyInput / 1000) : qtyInput;
+    
+    const feed = allFeedInfo.find(f => f.id === feedId);
+    if (!feed) return;
+    
+    const dm = qty * ((feed.dm || 0) / 100);
+    
+    totals.fresh += qty;
+    totals.dm += dm;
+    totals.cp += dm * ((feed.cp || 0) / 100) * 1000;
+    totals.tdn += dm * ((feed.tdn || 0) / 100) * 1000;
+    totals.me += dm * (feed.me || 0);
+    totals.fiber += dm * ((feed.fiber || 0) / 100) * 1000;
+    totals.ca += dm * ((feed.ca || 0) / 100) * 1000;
+    totals.p += dm * ((feed.p || 0) / 100) * 1000;
+    totals.fat += dm * ((feed.fat || 0) / 100) * 1000;
+    
+    const lang = (DB.settings && DB.settings.lang) || 'bn';
+    const name = (feed.name && feed.name[lang]) || (feed.name && feed.name.bn) || feedId;
+    items.push({ name: name, qty: qtyInput, unit: unit });
+  });
+  
+  if (items.length === 0) {
+    resultEl.innerHTML = '<div style="padding:14px;background:#FFEBEE;border-radius:10px;color:#c62828;text-align:center;font-size:13px;">⚠️ আগে ফিড ও পরিমাণ দিন</div>';
+    return;
+  }
+  
+  const itemsHtml = items.map(it =>
+    '<div style="font-size:12px;color:#555;padding:3px 0;">• ' + escapeHtml(it.name) + ' — ' + it.qty + ' ' + (it.unit || 'kg') + '</div>'
+  ).join('');
+  
+  const rowHtml = (icon, label, val, unit) =>
+    '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f0f0f0;">' +
+      '<span style="font-size:13px;color:#333;">' + icon + ' ' + label + '</span>' +
+      '<span style="font-size:14px;font-weight:700;color:#2E7D32;">' + val + ' ' + unit + '</span>' +
+    '</div>';
+  
+  const gramOrKg = (g) => {
+    if (g >= 1000) return (g / 1000).toFixed(2) + ' kg';
+    return Math.round(g) + ' g';
+  };
+  
+  resultEl.innerHTML =
+    '<div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">' +
+      '<div style="font-size:15px;font-weight:700;color:#2E7D32;margin-bottom:10px;">📊 মোট পুষ্টি</div>' +
+      '<div style="padding:8px 10px;background:#f5f5f5;border-radius:8px;margin-bottom:12px;">' +
+        '<div style="font-size:11px;color:#999;margin-bottom:4px;">যোগ করা ফিড:</div>' +
+        itemsHtml +
+      '</div>' +
+      rowHtml('🌾', 'মোট ফিড', totals.fresh.toFixed(1), 'kg') +
+      rowHtml('💧', 'শুকনো পদার্থ (DM)', totals.dm.toFixed(2), 'kg') +
+      rowHtml('🥩', 'প্রোটিন (CP)', gramOrKg(totals.cp), '') +
+      rowHtml('🔥', 'হজমযোগ্য পুষ্টি (TDN)', gramOrKg(totals.tdn), '') +
+      rowHtml('⚡', 'শক্তি (ME)', totals.me.toFixed(1), 'MJ') +
+      rowHtml('🌿', 'আঁশ (Fiber)', gramOrKg(totals.fiber), '') +
+      rowHtml('🦴', 'ক্যালসিয়াম (Ca)', gramOrKg(totals.ca), '') +
+      rowHtml('⚗️', 'ফসফরাস (P)', gramOrKg(totals.p), '') +
+      rowHtml('🧈', 'চর্বি (Fat)', gramOrKg(totals.fat), '') +
+    '</div>';
 }
 
 function showPage(p) {
