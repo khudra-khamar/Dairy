@@ -2123,6 +2123,40 @@ function row(labelFull, labelShort, val, unit) {
     row('ক্যালসিয়াম', 'Calcium (Ca)', f.ca, '%') +
     row('ফসফরাস', 'Phosphorus (P)', f.p, '%') +
     row('চর্বি', 'Fat', f.fat, '%') +
+    (f.minerals ? 
+  '<div style="margin-top:12px;padding:10px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;">' +
+    '<div style="font-size:12px;font-weight:700;color:#E65100;margin-bottom:6px;">⚗️ খনিজ পদার্থ (mg/kg)</div>' +
+    '<div style="font-size:11px;color:#555;line-height:1.8;">' +
+      (f.minerals.zinc ? '• জিংক: ' + f.minerals.zinc + '<br>' : '') +
+      (f.minerals.manganese ? '• ম্যাঙ্গানিজ: ' + f.minerals.manganese + '<br>' : '') +
+      (f.minerals.copper ? '• কপার: ' + f.minerals.copper + '<br>' : '') +
+      (f.minerals.iron ? '• আয়রন: ' + f.minerals.iron + '<br>' : '') +
+      (f.minerals.cobalt ? '• কোবাল্ট: ' + f.minerals.cobalt + '<br>' : '') +
+      (f.minerals.iodine ? '• আয়োডিন: ' + f.minerals.iodine + '<br>' : '') +
+      (f.minerals.selenium ? '• সেলেনিয়াম: ' + f.minerals.selenium + '<br>' : '') +
+      (f.minerals.chromium ? '• ক্রোমিয়াম: ' + f.minerals.chromium + '<br>' : '') +
+      (f.minerals.magnesium ? '• ম্যাগনেসিয়াম: ' + f.minerals.magnesium + ' g/kg<br>' : '') +
+      (f.minerals.sulphur ? '• সালফার: ' + f.minerals.sulphur + ' g/kg<br>' : '') +
+    '</div>' +
+  '</div>' : '') +
+(f.vitamins ? 
+  '<div style="margin-top:8px;padding:10px;background:#E3F2FD;border-left:3px solid #1976D2;border-radius:6px;">' +
+    '<div style="font-size:12px;font-weight:700;color:#0D47A1;margin-bottom:6px;">💊 ভিটামিন (mg/kg)</div>' +
+    '<div style="font-size:11px;color:#555;line-height:1.8;">' +
+      (f.vitamins.a ? '• ভিটামিন A: ' + f.vitamins.a + '<br>' : '') +
+      (f.vitamins.d ? '• ভিটামিন D: ' + f.vitamins.d + '<br>' : '') +
+      (f.vitamins.e ? '• ভিটামিন E: ' + f.vitamins.e + '<br>' : '') +
+    '</div>' +
+  '</div>' : '') +
+(f.chelated ? 
+  '<div style="margin-top:8px;font-size:11px;color:#2E7D32;font-weight:700;">✨ Chelated (Organic) Form</div>' : '') +
+(f.dose ? 
+  '<div style="margin-top:8px;padding:10px;background:#E8F5E9;border-left:3px solid #2E7D32;border-radius:6px;">' +
+    '<div style="font-size:12px;font-weight:700;color:#1B5E20;margin-bottom:4px;">📏 ডোজ</div>' +
+    '<div style="font-size:11px;color:#333;line-height:1.6;white-space:pre-line;">' + (f.dose.bn || f.dose.en || '') + '</div>' +
+  '</div>' : '') +
+(f.description ? 
+  '<div style="margin-top:8px;font-size:11px;color:#666;font-style:italic;">' + escapeHtml(f.description.bn || f.description.en || '') + '</div>' : '') +
       '<div style="display:flex;gap:6px;margin-top:10px;">' +
         '<button onclick="editFeed(\'' + f.id + '\')" style="flex:1;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✏️ Edit</button>' +
         '<button onclick="deleteFeed(\'' + f.id + '\')" style="flex:1;padding:9px;background:#e53935;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ Delete</button>' +

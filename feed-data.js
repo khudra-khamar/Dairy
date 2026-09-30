@@ -41,9 +41,68 @@ window.FEED_DATABASE = [
   { id:'veg_waste', name:{bn:'সবজির বর্জ্য',en:'Vegetable Waste',hi:'सब्जी का कचरा'}, category:'byproduct', dm:15, cp:12, tdn:50, me:7.5, fiber:20, ca:0.5, p:0.3, fat:1.0 },
 
   // ============ MINERALS (খনিজ) ============
-  { id:'mineral_mix', name:{bn:'খনিজ মিশ্রণ',en:'Mineral Mixture',hi:'खनिज मिश्रण'}, category:'mineral', dm:95, cp:0, tdn:0, me:0, fiber:0, ca:20, p:12, fat:0 },
-  { id:'salt', name:{bn:'লবণ',en:'Salt',hi:'नमक'}, category:'mineral', dm:100, cp:0, tdn:0, me:0, fiber:0, ca:0, p:0, fat:0 },
-  { id:'dcp', name:{bn:'ডিসিপি',en:'DCP',hi:'डीसीपी'}, category:'mineral', dm:98, cp:0, tdn:0, me:0, fiber:0, ca:22, p:18, fat:0 },
-  { id:'limestone', name:{bn:'চুনাপাথর গুঁড়ো',en:'Limestone Powder',hi:'चूना पत्थर पाउडर'}, category:'mineral', dm:100, cp:0, tdn:0, me:0, fiber:0, ca:38, p:0, fat:0 }
+  { 
+    id:'mineral_mix', 
+    name:{bn:'সাধারণ মিনারেল মিশ্রণ',en:'Common Mineral Mixture',hi:'साधारण खनिज मिश्रण'}, 
+    category:'mineral', 
+    dm:95, cp:0, tdn:0, me:0, fiber:0, fat:0,
+    ca:20, p:12,
+    description:{bn:'নিয়মিত ব্যবহারের জন্য',en:'For regular use',hi:'नियमित उपयोग के लिए'}
+  },
+  { 
+    id:'premium_chelated_mineral', 
+    name:{bn:'প্রিমিয়াম চেলেটেড মিনারেল',en:'Premium Chelated Mineral',hi:'प्रीमियम चेलेटेड मिनरल'}, 
+    category:'mineral', 
+    dm:95, cp:0, tdn:0, me:0, fiber:0, fat:0,
+    ca:0, p:0,
+    minerals: {
+      zinc: 7000,
+      manganese: 14000,
+      copper: 1200,
+      iron: 600,
+      cobalt: 600,
+      iodine: 10,
+      selenium: 100,
+      chromium: 350,
+      magnesium: 8000,
+      sulphur: 6000
+    },
+    vitamins: {
+      a: 350,
+      d: 1250,
+      e: 286
+    },
+    chelated: true,
+    dose: {
+      bn: 'গরু: ৩০ গ্রাম/দিন\nবাছুর: ১৫ গ্রাম/দিন',
+      en: 'Cow: 30g/day\nCalf: 15g/day',
+      hi: 'गाय: 30 ग्राम/दिन\nबछड़ा: 15 ग्राम/दिन'
+    },
+    description:{bn:'চেলেটেড ফর্ম — উচ্চ শোষণক্ষমতা',en:'Chelated form — high absorption',hi:'चेलेटेड रूप — उच्च अवशोषण'}
+  },
+  { 
+    id:'salt', 
+    name:{bn:'লবণ',en:'Salt',hi:'नमक'}, 
+    category:'mineral', 
+    dm:100, cp:0, tdn:0, me:0, fiber:0, fat:0,
+    ca:0, p:0,
+    description:{bn:'সাধারণ খাবার লবণ',en:'Common table salt',hi:'साधारण नमक'}
+  },
+  { 
+    id:'dcp', 
+    name:{bn:'ডিসিপি (DCP)',en:'DCP',hi:'डीसीपी'}, 
+    category:'mineral', 
+    dm:98, cp:0, tdn:0, me:0, fiber:0, fat:0,
+    ca:22, p:18,
+    description:{bn:'ক্যালসিয়াম-ফসফরাস সাপ্লিমেন্ট',en:'Calcium-Phosphorus supplement',hi:'कैल्शियम-फॉस्फोरस' }
+  },
+  { 
+    id:'limestone', 
+    name:{bn:'চুনাপাথর গুঁড়ো',en:'Limestone Powder',hi:'चूना पत्थर पाउडर'}, 
+    category:'mineral', 
+    dm:100, cp:0, tdn:0, me:0, fiber:0, fat:0,
+    ca:38, p:0,
+    description:{bn:'ক্যালসিয়ামের প্রধান উৎস',en:'Main calcium source',hi:'मुख्य कैल्शियम स्रोत'}
+  }
 ];
 
