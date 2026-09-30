@@ -1051,13 +1051,23 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     </div>
   </div>
   
+
+  
+  <div id="calcRows"></div>
+  
+  <button onclick="addCalcRow()" style="width:100%;padding:12px;background:#1976D2;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;">➕ আরেকটা ফিড যোগ করুন</button>
+  
+  <button onclick="calculateFeed()" style="width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;">🧮 হিসাব করুন</button>
+  
+  <div id="calcResult" style="margin-top:16px;"></div>
+</div>
   <!-- ===== FEED RATION BALANCER ===== -->
 <div id="feedSubRation" style="display:none;">
   <div style="background:#E3F2FD;border:2px solid #1976D2;border-radius:12px;padding:12px;margin-bottom:14px;">
     <div style="font-size:12px;color:#555;line-height:1.6;">
       <b>⚖️ Ration Balancer</b><br>
       গরুর তথ্য দিন → প্রয়োজন হিসাব হবে<br>
-      তারপর খাদ্য তালিকা দিন → ঘাটতি দেখাবে
+      তারপর খাদ্য তালিকা দিন → ঘাটতি দেখাবে জিম্মি
     </div>
   </div>
   
@@ -1088,15 +1098,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   <button onclick="calculateRation()" style="width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">⚖️ হিসাব করুন</button>
   
   <div id="rationResult" style="margin-top:16px;"></div>
-</div>
-  
-  <div id="calcRows"></div>
-  
-  <button onclick="addCalcRow()" style="width:100%;padding:12px;background:#1976D2;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;">➕ আরেকটা ফিড যোগ করুন</button>
-  
-  <button onclick="calculateFeed()" style="width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;">🧮 হিসাব করুন</button>
-  
-  <div id="calcResult" style="margin-top:16px;"></div>
 </div>
 
   <!-- NOTES PAGE -->
@@ -1138,8 +1139,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <div class="summary-row"><span data-t="total_income">Total Income</span><span id="repTotalIncome">0</span></div>
       <div class="summary-row"><span data-t="total_expense">Total Expense</span><span id="repTotalExpense">0</span></div>
       <div class="summary-row"><span data-t="net_profit">Net Profit</span><span id="repProfit">0</span></div>
-    </div>
-
+    
     <div class="summary-box">
       <h3 data-t="pdf_section">📄 Milk Report PDF</h3>
       <div class="form-group"><label data-t="from_date">From Date</label><input type="date" id="pdfFrom"></div>
