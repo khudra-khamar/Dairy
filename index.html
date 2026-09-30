@@ -996,6 +996,12 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <h2 data-t="feed_title">🌾 Feed Management</h2>
     </div>
 
+<!-- ===== FEED SUB-TABS ===== -->
+<div style="display:flex;gap:8px;margin:14px 0;">
+  <button id="feedSubTabStock" onclick="switchFeedSubTab('stock')" style="flex:1;padding:11px;border:2px solid #2E7D32;background:#2E7D32;color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📦 Stock</button>
+  <button id="feedSubTabInfo" onclick="switchFeedSubTab('info')" style="flex:1;padding:11px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📚 Feed Info</button>
+</div>
+    <div id="feedSubStock">
     <div class="calc-card" style="background:#FFF9C4;border-color:#F9A825;">
       <div style="font-size:13px;color:#555;line-height:1.6;">
         <b>📌 Formula:</b><br>
@@ -1009,6 +1015,27 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <div id="feedList" style="margin-top:14px;"></div>
     <div id="feedSummary"></div>
   </div>
+  
+
+<!-- ===== FEED INFO SECTION ===== -->
+<div id="feedSubInfo" style="display:none;">
+  <input type="text" id="feedSearchBox" placeholder="🔍 Search feed..." oninput="filterFeedInfo()" style="width:100%;padding:12px;font-size:14px;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;outline:none;margin-bottom:12px;">
+  
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+    <button onclick="filterFeedInfoCat('all')" id="fifAll" style="flex:1;min-width:60px;padding:8px;border:2px solid #2E7D32;background:#2E7D32;color:#fff;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">All</button>
+    <button onclick="filterFeedInfoCat('green')" id="fifGreen" style="flex:1;min-width:60px;padding:8px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🌿</button>
+    <button onclick="filterFeedInfoCat('dry')" id="fifDry" style="flex:1;min-width:60px;padding:8px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🌾</button>
+    <button onclick="filterFeedInfoCat('concentrate')" id="fifCon" style="flex:1;min-width:60px;padding:8px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🌰</button>
+    <button onclick="filterFeedInfoCat('legume')" id="fifLeg" style="flex:1;min-width:60px;padding:8px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🥜</button>
+    <button onclick="filterFeedInfoCat('byproduct')" id="fifBy" style="flex:1;min-width:60px;padding:8px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🍯</button>
+    <button onclick="filterFeedInfoCat('mineral')" id="fifMin" style="flex:1;min-width:60px;padding:8px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">⚗️</button>
+  </div>
+  
+  <div id="feedInfoList">
+    <div style="text-align:center;padding:30px;color:#999;">⏳ Loading...</div>
+  </div>
+</div>
+</div>
 
   <!-- NOTES PAGE -->
   <div id="page-notes" class="page">
@@ -3079,6 +3106,232 @@ function renderManual() {
 }
 // ========== NAVIGATION ==========
 let pageStack = ['home'];
+
+// ========== FEED INFO (User View) ==========
+let allFeedInfo = [];
+let currentFeedInfoCat = 'all';
+
+function switchFeedSubTab(tab) {
+  const stockBtn = document.getElementById('feedSubTabStock');
+  const infoBtn = document.getElementById('feedSubTabInfo');
+  const stockEl = document.getElementById('feedSubStock');
+  const infoEl = document.getElementById('feedSubInfo');
+  
+  if (tab === 'info') {
+    if (stockBtn) { stockBtn.style.background = '#fff'; stockBtn.style.color = '#666'; stockBtn.style.borderColor = '#E0E0E0'; }
+    if (infoBtn) { infoBtn.style.background = '#2E7D32'; infoBtn.style.color = '#fff'; infoBtn.style.borderColor = '#2E7D32'; }
+    if (stockEl) stockEl.style.display = 'none';
+    if (infoEl) infoEl.style.display = 'block';
+    loadFeedInfo();
+  } else {
+    if (stockBtn) { stockBtn.style.background = '#2E7D32'; stockBtn.style.color = '#fff'; stockBtn.style.borderColor = '#2E7D32'; }
+    if (infoBtn) { infoBtn.style.background = '#fff'; infoBtn.style.color = '#666'; infoBtn.style.borderColor = '#E0E0E0'; }
+    if (stockEl) stockEl.style.display = 'block';
+    if (infoEl) infoEl.style.display = 'none';
+  }
+}
+
+async function loadFeedInfo() {
+  const listEl = document.getElementById('feedInfoList');
+  if (!listEl) return;
+  
+  if (allFeedInfo.length > 0) {
+    renderFeedInfo();
+    return;
+  }
+  
+  listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#999;">⏳ Loading...</div>';
+  
+  try {
+    if (!window._db) {
+      listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#e53935;">Firebase load হয়নি</div>';
+      return;
+    }
+    
+    const snap = await window._db.collection('feeds').get();
+    allFeedInfo = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allFeedInfo.push(data);
+    });
+    
+    console.log('Loaded', allFeedInfo.length, 'feeds for info');
+    renderFeedInfo();
+  } catch(e) {
+    console.error('Load feed info failed:', e);
+    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#e53935;">Load failed: ' + e.message + '</div>';
+  }
+}
+
+function getFeedLangName(f) {
+  const lang = (DB.settings.lang) || 'bn';
+  if (!f.name) return f.id || 'Unknown';
+  return f.name[lang] || f.name.bn || f.name.en || f.id;
+}
+
+function getFeedLangDesc(f) {
+  const lang = (DB.settings.lang) || 'bn';
+  if (!f.description) return '';
+  return f.description[lang] || f.description.bn || f.description.en || '';
+}
+
+function getFeedLangDose(f) {
+  const lang = (DB.settings.lang) || 'bn';
+  if (!f.dose) return '';
+  return f.dose[lang] || f.dose.bn || f.dose.en || '';
+}
+
+function filterFeedInfo() {
+  renderFeedInfo();
+}
+
+function filterFeedInfoCat(cat) {
+  currentFeedInfoCat = cat;
+  const map = {
+    all: 'fifAll', green: 'fifGreen', dry: 'fifDry',
+    concentrate: 'fifCon', legume: 'fifLeg',
+    byproduct: 'fifBy', mineral: 'fifMin'
+  };
+  Object.keys(map).forEach(k => {
+    const btn = document.getElementById(map[k]);
+    if (!btn) return;
+    if (k === cat) {
+      btn.style.background = '#2E7D32';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#2E7D32';
+    } else {
+      btn.style.background = '#fff';
+      btn.style.color = '#666';
+      btn.style.borderColor = '#E0E0E0';
+    }
+  });
+  renderFeedInfo();
+}
+
+function renderFeedInfo() {
+  const listEl = document.getElementById('feedInfoList');
+  if (!listEl) return;
+  
+  const searchBox = document.getElementById('feedSearchBox');
+  const q = searchBox ? searchBox.value.toLowerCase().trim() : '';
+  
+  let filtered = allFeedInfo.slice();
+  
+  if (currentFeedInfoCat !== 'all') {
+    filtered = filtered.filter(f => f.category === currentFeedInfoCat);
+  }
+  
+  if (q) {
+    filtered = filtered.filter(f => {
+      const nBn = (f.name && f.name.bn) || '';
+      const nEn = (f.name && f.name.en) || '';
+      const nHi = (f.name && f.name.hi) || '';
+      return nBn.toLowerCase().includes(q) ||
+             nEn.toLowerCase().includes(q) ||
+             nHi.toLowerCase().includes(q);
+    });
+  }
+  
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#999;">' +
+      '<div style="font-size:40px;margin-bottom:10px;">🔍</div>' +
+      '<p>' + (q ? 'কোনো feed পাওয়া যায়নি' : 'কোনো feed নেই') + '</p>' +
+      '</div>';
+    return;
+  }
+  
+  filtered.sort((a, b) => {
+    const aN = getFeedLangName(a);
+    const bN = getFeedLangName(b);
+    return aN.localeCompare(bN);
+  });
+  
+  const CAT_ICONS = {
+    green: '🌿', dry: '🌾', concentrate: '🌰',
+    legume: '🥜', byproduct: '🍯', mineral: '⚗️'
+  };
+  
+  listEl.innerHTML = filtered.map(f => {
+    const icon = CAT_ICONS[f.category] || '🌾';
+    const name = getFeedLangName(f);
+    const desc = getFeedLangDesc(f);
+    const dose = getFeedLangDose(f);
+    
+    function row(full, short, val, unit) {
+      if (val === undefined || val === null || val === '' || val === 0) return '';
+      return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;">' +
+        '<span style="font-size:12px;color:#555;">' + full + '<br><span style="font-size:10px;color:#999;">' + short + '</span></span>' +
+        '<span style="font-size:13px;font-weight:700;color:#2E7D32;">' + val + (unit || '') + '</span>' +
+      '</div>';
+    }
+    
+    let mineralsHtml = '';
+    if (f.minerals) {
+      const mn = f.minerals;
+      const items = [];
+      if (mn.zinc) items.push('জিংক: ' + mn.zinc);
+      if (mn.manganese) items.push('ম্যাঙ্গানিজ: ' + mn.manganese);
+      if (mn.copper) items.push('কপার: ' + mn.copper);
+      if (mn.iron) items.push('আয়রন: ' + mn.iron);
+      if (mn.cobalt) items.push('কোবাল্ট: ' + mn.cobalt);
+      if (mn.iodine) items.push('আয়োডিন: ' + mn.iodine);
+      if (mn.selenium) items.push('সেলেনিয়াম: ' + mn.selenium);
+      if (mn.chromium) items.push('ক্রোমিয়াম: ' + mn.chromium);
+      if (mn.magnesium) items.push('ম্যাগনেসিয়াম: ' + mn.magnesium + ' g/kg');
+      if (mn.sulphur) items.push('সালফার: ' + mn.sulphur + ' g/kg');
+      
+      if (items.length > 0) {
+        mineralsHtml = '<div style="margin-top:10px;padding:10px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;">' +
+          '<div style="font-size:12px;font-weight:700;color:#E65100;margin-bottom:4px;">⚗️ খনিজ (mg/kg)</div>' +
+          '<div style="font-size:11px;color:#555;line-height:1.7;">• ' + items.join('<br>• ') + '</div>' +
+        '</div>';
+      }
+    }
+    
+    let vitaminsHtml = '';
+    if (f.vitamins) {
+      const vt = f.vitamins;
+      const items = [];
+      if (vt.a) items.push('Vit A: ' + vt.a);
+      if (vt.d) items.push('Vit D: ' + vt.d);
+      if (vt.e) items.push('Vit E: ' + vt.e);
+      
+      if (items.length > 0) {
+        vitaminsHtml = '<div style="margin-top:8px;padding:10px;background:#E3F2FD;border-left:3px solid #1976D2;border-radius:6px;">' +
+          '<div style="font-size:12px;font-weight:700;color:#0D47A1;margin-bottom:4px;">💊 ভিটামিন (mg/kg)</div>' +
+          '<div style="font-size:11px;color:#555;line-height:1.7;">• ' + items.join('<br>• ') + '</div>' +
+        '</div>';
+      }
+    }
+    
+    let doseHtml = '';
+    if (dose) {
+      doseHtml = '<div style="margin-top:8px;padding:10px;background:#E8F5E9;border-left:3px solid #2E7D32;border-radius:6px;">' +
+        '<div style="font-size:12px;font-weight:700;color:#1B5E20;margin-bottom:4px;">📏 ডোজ</div>' +
+        '<div style="font-size:11px;color:#333;line-height:1.6;white-space:pre-line;">' + dose + '</div>' +
+      '</div>';
+    }
+    
+    return '<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">' +
+      '<div style="font-size:15px;font-weight:700;color:#2E7D32;margin-bottom:4px;">' + icon + ' ' + escapeHtml(name) + '</div>' +
+      (f.name && f.name.en && f.name.en !== name ? '<div style="font-size:11px;color:#999;margin-bottom:8px;">' + escapeHtml(f.name.en) + '</div>' : '') +
+      row('শুকনো পদার্থ', 'Dry Matter (DM)', f.dm, '%') +
+      row('প্রোটিন', 'Crude Protein (CP)', f.cp, '%') +
+      row('হজমযোগ্য পুষ্টি', 'TDN', f.tdn, '%') +
+      row('শক্তি', 'Energy (ME)', f.me, ' MJ/kg') +
+      row('আঁশ', 'Fiber', f.fiber, '%') +
+      row('ক্যালসিয়াম', 'Calcium (Ca)', f.ca, '%') +
+      row('ফসফরাস', 'Phosphorus (P)', f.p, '%') +
+      row('চর্বি', 'Fat', f.fat, '%') +
+      mineralsHtml +
+      vitaminsHtml +
+      (f.chelated ? '<div style="margin-top:8px;font-size:11px;color:#2E7D32;font-weight:700;">✨ Chelated (Organic) Form</div>' : '') +
+      doseHtml +
+      (desc ? '<div style="margin-top:8px;font-size:11px;color:#666;font-style:italic;">' + escapeHtml(desc) + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
 
 function showPage(p) {
   document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
