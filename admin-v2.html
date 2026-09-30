@@ -1805,6 +1805,21 @@ async function editFeed(id) {
   }
 }
 
+async function deleteFeed(id) {
+  const existing = allFeeds.find(f => f.id === id);
+  const name = existing && existing.name ? existing.name.bn : id;
+  if (!confirm('🗑️ "' + name + '" মুছে ফেলবেন?')) return;
+  
+  try {
+    await db.collection('feeds').doc(id).delete();
+    toast('🗑️ Deleted');
+    loadFeeds();
+  } catch(e) {
+    console.error('Delete feed failed:', e);
+    alert('Failed: ' + e.message);
+  }
+}
+
 async function deleteFeedback(id) {
   if (!confirm('Delete this feedback?')) return;
   try {
