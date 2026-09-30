@@ -7653,6 +7653,19 @@ function saveSettings() {
   syncNameToLicense(); 
 }
 
+function saveSettings() {
+  DB.settings.farmName = document.getElementById('setFarmName').value.trim();
+  DB.settings.ownerName = document.getElementById('setOwnerName').value.trim();
+  DB.settings.phone = document.getElementById('setPhone').value.trim();
+  DB.settings.price = Number(document.getElementById('setPrice').value) || 40;
+  if (tempLogo) DB.settings.logo = tempLogo;
+  saveDB();
+  applyLang();
+  toast(t('settings_saved'));
+  syncNameToLicense();
+  saveGuestTrialUser();
+}
+
 // ========== DEVICE ID ==========
 function generateDeviceId() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -7950,6 +7963,46 @@ return;
   
   const loginBtnHide = document.getElementById('accountLoginBtn');
   if (loginBtnHide) loginBtnHide.style.display = 'none';
+}
+
+async function saveGuestTrialUser() {
+  try {
+    if (!window._db) return;
+    if (!DB.deviceId) return;
+    
+    const deviceId = DB.deviceId;
+    const now = Date.now();
+    const ref = window._db.collection('trialUsers').doc(deviceId);
+    const snap = await ref.get();
+    
+    if (!snap.exists) {
+      // প্রথমবার — নতুন guest doc
+      await ref.set({
+        type: 'guest',
+        deviceId: deviceId,
+        farmerName: DB.settings.farmName || '',
+        ownerName: DB.settings.ownerName || '',
+        phone: DB.settings.phone || '',
+        email: '',
+        firstSeen: now,
+        lastSeen: now,
+        appVersion: '2026.09',
+        converted: false
+      });
+      console.log('✅ Guest trial user created:', deviceId);
+    } else {
+      // Already আছে — lastSeen update
+      await ref.update({
+  lastSeen: now,
+  farmerName: DB.settings.farmName || '',
+  ownerName: DB.settings.ownerName || '',
+  phone: DB.settings.phone || ''
+});
+      console.log('✅ Guest trial user updated:', deviceId);
+    }
+  } catch(e) {
+    console.warn('⚠️ Guest trial save failed:', e);
+  }
 }
 
 async function saveUserAfterLogin(user, method) {
@@ -8281,6 +8334,7 @@ function continueWithTrial() {
     document.getElementById('pinSetupScreen').style.display = 'flex';
   }
   toast('✅ Trial চালু হয়েছে');
+  saveGuestTrialUser();
 }
 
 async function checkLicense() {
