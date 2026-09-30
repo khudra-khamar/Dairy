@@ -747,6 +747,7 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
 <div class="tab-bar" id="adminTabBar" style="display:none;">
   <button id="tabFirstAid" class="active" onclick="switchAdminTab('firstaid')">📋 First Aid</button>
   <button id="tabLicenses" onclick="switchAdminTab('licenses')">🎫 Licenses</button>
+  <button id="tabTrialUsers" onclick="switchAdminTab('trialusers')">👥 Trial Users</button>
   <button id="tabNotif" onclick="switchAdminTab('notif')">📢 Send</button>
   <button id="tabUsers" onclick="switchAdminTab('users')">👥 Users</button>
   <button id="tabFeedback" onclick="switchAdminTab('feedback')">💬 Feedback</button>
@@ -834,6 +835,26 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
   
   <div id="licenseList">
     <div class="loading">⏳ Loading licenses...</div>
+  </div>
+</div>
+
+<!-- ==================== TRIAL USERS SECTION ==================== -->
+<div class="container" id="trialUsersContainer" style="display:none;">
+  <div class="top-bar">
+    <h2>👥 Trial Users</h2>
+    <span class="count" id="trialUserCount">0</span>
+  </div>
+  
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+    <button onclick="filterTrialUsers('all')" id="tfAll" style="flex:1;min-width:70px;padding:9px;border:2px solid #2E7D32;background:#2E7D32;color:#fff;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">All</button>
+    <button onclick="filterTrialUsers('google')" id="tfGoogle" style="flex:1;min-width:70px;padding:9px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔵 Google</button>
+    <button onclick="filterTrialUsers('phone')" id="tfPhone" style="flex:1;min-width:70px;padding:9px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">📱 Phone</button>
+    <button onclick="filterTrialUsers('guest')" id="tfGuest" style="flex:1;min-width:70px;padding:9px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">👤 Guest</button>
+    <button onclick="filterTrialUsers('converted')" id="tfConverted" style="flex:1;min-width:70px;padding:9px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">✅ Converted</button>
+  </div>
+  
+  <div id="trialUsersList">
+    <div class="loading">⏳ Loading trial users...</div>
   </div>
 </div>
 
@@ -1451,12 +1472,14 @@ function switchAdminTab(tab) {
   const firstAidBtn = document.getElementById('tabFirstAid');
   const usersBtn = document.getElementById('tabUsers');
   const licensesBtn = document.getElementById('tabLicenses');
+  const trialUsersBtn = document.getElementById('tabTrialUsers');
   const notifBtn = document.getElementById('tabNotif');
   const feedbackBtn = document.getElementById('tabFeedback');
   const settingsBtn = document.getElementById('tabSettings');
   const mainContainer = document.getElementById('mainContainer');
   const usersContainer = document.getElementById('usersContainer');
   const licensesContainer = document.getElementById('licensesContainer');
+  const trialUsersContainer = document.getElementById('trialUsersContainer');
   const notifContainer = document.getElementById('notifContainer');
   const feedbackContainer = document.getElementById('feedbackContainer');
   const settingsContainer = document.getElementById('settingsContainer');
@@ -1464,12 +1487,14 @@ function switchAdminTab(tab) {
   if (firstAidBtn) firstAidBtn.classList.remove('active');
   if (usersBtn) usersBtn.classList.remove('active');
   if (licensesBtn) licensesBtn.classList.remove('active');
+  if (trialUsersBtn) trialUsersBtn.classList.remove('active');
   if (notifBtn) notifBtn.classList.remove('active');
   if (feedbackBtn) feedbackBtn.classList.remove('active');
   if (settingsBtn) settingsBtn.classList.remove('active');
   if (mainContainer) mainContainer.style.display = 'none';
   if (usersContainer) usersContainer.style.display = 'none';
   if (licensesContainer) licensesContainer.style.display = 'none';
+  if (trialUsersContainer) trialUsersContainer.style.display = 'none';
   if (notifContainer) notifContainer.style.display = 'none';
   if (feedbackContainer) feedbackContainer.style.display = 'none';
   if (settingsContainer) settingsContainer.style.display = 'none';
@@ -1482,6 +1507,10 @@ function switchAdminTab(tab) {
     if (licensesBtn) licensesBtn.classList.add('active');
     if (licensesContainer) licensesContainer.style.display = 'block';
     loadLicenses();
+  } else if (tab === 'trialusers') {
+    if (trialUsersBtn) trialUsersBtn.classList.add('active');
+    if (trialUsersContainer) trialUsersContainer.style.display = 'block';
+    loadTrialUsers();
   } else if (tab === 'notif') {
     if (notifBtn) notifBtn.classList.add('active');
     if (notifContainer) notifContainer.style.display = 'block';
@@ -1945,6 +1974,36 @@ async function loadHistory() {
 let allLicenses = [];
 let currentLicenseFilter = 'all';
 
+// ========== TRIAL USERS ==========
+let allTrialUsers = [];
+let currentTrialFilter = 'all';
+
+async function loadTrialUsers() {
+  const listEl = document.getElementById('trialUsersList');
+  const countEl = document.getElementById('trialUserCount');
+  
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">⏳ Loading trial users...</div>';
+  
+  try {
+    const snap = await db.collection('trialUsers').get();
+    allTrialUsers = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allTrialUsers.push(data);
+    });
+    
+    console.log('Loaded', allTrialUsers.length, 'trial users');
+    if (countEl) countEl.textContent = allTrialUsers.length;
+    
+    renderTrialUsers();
+  } catch(e) {
+    console.error('Load trial users failed:', e);
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
 async function loadLicenses() {
   const listEl = document.getElementById('licenseList');
   const countEl = document.getElementById('licenseCount');
@@ -2077,6 +2136,120 @@ function renderLicenses() {
       '</div>' +
     '</div>';
   }).join('');
+}
+
+function formatRelativeTime(ts) {
+  if (!ts) return '—';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'এইমাত্র';
+  if (mins < 60) return mins + ' মিনিট আগে';
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + ' ঘণ্টা আগে';
+  const days = Math.floor(hours / 24);
+  if (days < 30) return days + ' দিন আগে';
+  const months = Math.floor(days / 30);
+  return months + ' মাস আগে';
+}
+
+function renderTrialUsers() {
+  const listEl = document.getElementById('trialUsersList');
+  if (!listEl) return;
+  
+  let filtered = allTrialUsers.slice();
+  
+  if (currentTrialFilter === 'google') {
+    filtered = filtered.filter(u => u.authMethod === 'google');
+  } else if (currentTrialFilter === 'phone') {
+    filtered = filtered.filter(u => u.authMethod === 'phone');
+  } else if (currentTrialFilter === 'guest') {
+    filtered = filtered.filter(u => u.type === 'guest' || !u.authMethod);
+  } else if (currentTrialFilter === 'converted') {
+    filtered = filtered.filter(u => u.converted === true);
+  }
+  
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">No users</div><p>No trial users found</p></div>';
+    return;
+  }
+  
+  filtered.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+  
+  listEl.innerHTML = filtered.map(u => {
+    const type = u.authMethod || 'guest';
+    let typeIcon = '👤';
+    let typeLabel = 'Guest';
+    if (type === 'google') { typeIcon = '🔵'; typeLabel = 'Google'; }
+    else if (type === 'phone') { typeIcon = '📱'; typeLabel = 'Phone'; }
+    
+    const name = u.farmerName || u.ownerName || u.displayName || 'নাম নেই';
+    const contact = u.email || u.phone || '';
+    const device = u.deviceId || '—';
+    const firstSeen = formatRelativeTime(u.firstSeen);
+    const lastSeen = formatRelativeTime(u.lastSeen);
+    const converted = u.converted === true;
+    
+    const statusBadge = converted 
+      ? '<span class="lic-badge badge-active">✅ CONVERTED</span>'
+      : '<span class="lic-badge badge-expiring">⏳ TRIAL</span>';
+    
+    let actions = '';
+    if (u.phone) {
+      const phoneClean = u.phone.replace(/\D/g, '');
+      actions += '<button onclick="window.open(\'https://wa.me/' + phoneClean + '\', \'_blank\')" style="flex:1;min-width:90px;padding:9px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>';
+    }
+    if (u.email) {
+      actions += '<button onclick="window.location.href=\'mailto:' + escapeHtml(u.email) + '\'" style="flex:1;min-width:90px;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📧 Email</button>';
+    }
+    if (!converted) {
+      actions += '<button onclick="markTrialConverted(\'' + u.id + '\')" style="flex:1;min-width:90px;padding:9px;background:#2E7D32;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✅ Converted</button>';
+    }
+    
+    return '<div class="lic-card">' +
+      '<div class="l-code">' + typeIcon + ' ' + escapeHtml(name) + '</div>' +
+      '<div class="l-device">' + typeLabel + (contact ? ' · ' + escapeHtml(contact) : '') + '</div>' +
+      '<div class="l-device">📱 ' + escapeHtml(device) + '</div>' +
+      '<div class="l-row"><span class="l-label">Status</span><span class="l-value">' + statusBadge + '</span></div>' +
+      '<div class="l-row"><span class="l-label">First seen</span><span class="l-value">' + firstSeen + '</span></div>' +
+      '<div class="l-row"><span class="l-label">Last seen</span><span class="l-value">' + lastSeen + '</span></div>' +
+      (actions ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">' + actions + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function filterTrialUsers(filter) {
+  currentTrialFilter = filter;
+  const map = { all: 'tfAll', google: 'tfGoogle', phone: 'tfPhone', guest: 'tfGuest', converted: 'tfConverted' };
+  Object.keys(map).forEach(k => {
+    const btn = document.getElementById(map[k]);
+    if (!btn) return;
+    if (k === filter) {
+      btn.style.background = '#2E7D32';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#2E7D32';
+    } else {
+      btn.style.background = '#fff';
+      btn.style.color = '#666';
+      btn.style.borderColor = '#E0E0E0';
+    }
+  });
+  renderTrialUsers();
+}
+
+async function markTrialConverted(id) {
+  if (!confirm('এই user কে Converted হিসেবে mark করবেন?')) return;
+  try {
+    await db.collection('trialUsers').doc(id).update({
+      converted: true,
+      convertedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      convertedBy: currentUser ? currentUser.email : 'admin'
+    });
+    toast('✅ Converted marked');
+    loadTrialUsers();
+  } catch(e) {
+    console.error('Mark converted failed:', e);
+    toast('Failed: ' + e.message);
+  }
 }
 
 function filterLicenses(filter) {
