@@ -1768,6 +1768,43 @@ async function markFeedbackRead(id) {
   }
 }
 
+async function addNewFeed() {
+  const data = await showFeedFormModal(null);
+  if (!data) return;
+  
+  try {
+    const id = 'custom_' + Date.now();
+    data.id = id;
+    data.createdAt = Date.now();
+    data.createdBy = currentUser ? currentUser.email : 'admin';
+    await db.collection('feeds').doc(id).set(data);
+    toast('✅ Feed যোগ হয়েছে');
+    loadFeeds();
+  } catch(e) {
+    console.error('Add feed failed:', e);
+    alert('Failed: ' + e.message);
+  }
+}
+
+async function editFeed(id) {
+  const existing = allFeeds.find(f => f.id === id);
+  if (!existing) return;
+  
+  const data = await showFeedFormModal(existing);
+  if (!data) return;
+  
+  try {
+    data.updatedAt = Date.now();
+    data.updatedBy = currentUser ? currentUser.email : 'admin';
+    await db.collection('feeds').doc(id).set(data, { merge: true });
+    toast('✅ Feed update হয়েছে');
+    loadFeeds();
+  } catch(e) {
+    console.error('Edit feed failed:', e);
+    alert('Failed: ' + e.message);
+  }
+}
+
 async function deleteFeedback(id) {
   if (!confirm('Delete this feedback?')) return;
   try {
