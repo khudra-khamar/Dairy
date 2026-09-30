@@ -7967,8 +7967,9 @@ return;
 
 async function saveGuestTrialUser() {
   try {
-    if (!window._db) return;
-    if (!DB.deviceId) return;
+    if (!window._db) { toast('❌ DB ready না'); return; }
+    if (!DB.deviceId) { toast('❌ Device ID নেই'); return; }
+    toast('🔄 Guest save শুরু...');
     
     const deviceId = DB.deviceId;
     const now = Date.now();
@@ -7998,10 +7999,13 @@ async function saveGuestTrialUser() {
   ownerName: DB.settings.ownerName || '',
   phone: DB.settings.phone || ''
 });
+
       console.log('✅ Guest trial user updated:', deviceId);
     }
+    toast('✅ Guest saved: ' + deviceId.slice(0, 10));
   } catch(e) {
     console.warn('⚠️ Guest trial save failed:', e);
+    toast('❌ Save failed: ' + (e.message || 'unknown').slice(0, 40));
   }
 }
 
