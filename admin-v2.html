@@ -2222,6 +2222,10 @@ function showFeedFormModal(existing) {
     const isEdit = !!existing;
     const f = existing || {};
     const nm = f.name || { bn: '', en: '', hi: '' };
+    const mn = f.minerals || {};
+    const vt = f.vitamins || {};
+    const ds = f.dose || { bn: '', en: '', hi: '' };
+    const dc = f.description || { bn: '', en: '', hi: '' };
     
     const modal = document.createElement('div');
     modal.id = 'feedFormModal';
@@ -2229,6 +2233,7 @@ function showFeedFormModal(existing) {
     
     const inputStyle = 'width:100%;padding:9px;font-size:14px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;outline:none;';
     const labelStyle = 'font-size:12px;color:#666;font-weight:700;display:block;margin:10px 0 4px;';
+    const sectionStyle = 'margin-top:16px;padding:12px;background:#f9f9f9;border-radius:8px;border-left:3px solid #2E7D32;';
     
     const catOptions = ['green','dry','concentrate','legume','byproduct','mineral'].map(c => {
       const sel = (f.category === c) ? ' selected' : '';
@@ -2236,9 +2241,10 @@ function showFeedFormModal(existing) {
     }).join('');
     
     modal.innerHTML = 
-      '<div style="background:#fff;padding:20px;border-radius:14px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.3);margin:20px 0;">' +
+      '<div style="background:#fff;padding:20px;border-radius:14px;width:100%;max-width:440px;box-shadow:0 8px 32px rgba(0,0,0,0.3);margin:20px 0;">' +
         '<h3 style="margin:0 0 12px;color:#2E7D32;font-size:17px;text-align:center;">' + (isEdit ? '✏️ Edit Feed' : '➕ Add New Feed') + '</h3>' +
         
+        // Basic Info
         '<label style="' + labelStyle + '">নাম (বাংলা) *</label>' +
         '<input type="text" id="ffBn" value="' + escapeHtml(nm.bn || '') + '" style="' + inputStyle + '">' +
         
@@ -2251,15 +2257,68 @@ function showFeedFormModal(existing) {
         '<label style="' + labelStyle + '">Category</label>' +
         '<select id="ffCat" style="' + inputStyle + 'background:#fff;">' + catOptions + '</select>' +
         
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-          '<div><label style="' + labelStyle + '">DM %</label><input type="number" step="0.1" id="ffDm" value="' + (f.dm || '') + '" style="' + inputStyle + '"></div>' +
-          '<div><label style="' + labelStyle + '">CP %</label><input type="number" step="0.1" id="ffCp" value="' + (f.cp || '') + '" style="' + inputStyle + '"></div>' +
-          '<div><label style="' + labelStyle + '">TDN %</label><input type="number" step="0.1" id="ffTdn" value="' + (f.tdn || '') + '" style="' + inputStyle + '"></div>' +
-          '<div><label style="' + labelStyle + '">ME (MJ/kg)</label><input type="number" step="0.1" id="ffMe" value="' + (f.me || '') + '" style="' + inputStyle + '"></div>' +
-          '<div><label style="' + labelStyle + '">Fiber %</label><input type="number" step="0.1" id="ffFiber" value="' + (f.fiber || '') + '" style="' + inputStyle + '"></div>' +
-          '<div><label style="' + labelStyle + '">Fat %</label><input type="number" step="0.1" id="ffFat" value="' + (f.fat || '') + '" style="' + inputStyle + '"></div>' +
-          '<div><label style="' + labelStyle + '">Ca %</label><input type="number" step="0.01" id="ffCa" value="' + (f.ca || '') + '" style="' + inputStyle + '"></div>' +
-          '<div><label style="' + labelStyle + '">P %</label><input type="number" step="0.01" id="ffP" value="' + (f.p || '') + '" style="' + inputStyle + '"></div>' +
+        // Nutrition
+        '<div style="' + sectionStyle + '">' +
+          '<div style="font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:4px;">📊 পুষ্টি তথ্য</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+            '<div><label style="' + labelStyle + '">DM %</label><input type="number" step="0.1" id="ffDm" value="' + (f.dm || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">CP %</label><input type="number" step="0.1" id="ffCp" value="' + (f.cp || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">TDN %</label><input type="number" step="0.1" id="ffTdn" value="' + (f.tdn || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">ME (MJ/kg)</label><input type="number" step="0.1" id="ffMe" value="' + (f.me || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">Fiber %</label><input type="number" step="0.1" id="ffFiber" value="' + (f.fiber || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">Fat %</label><input type="number" step="0.1" id="ffFat" value="' + (f.fat || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">Ca %</label><input type="number" step="0.01" id="ffCa" value="' + (f.ca || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">P %</label><input type="number" step="0.01" id="ffP" value="' + (f.p || '') + '" style="' + inputStyle + '"></div>' +
+          '</div>' +
+        '</div>' +
+        
+        // Minerals (mg/kg)
+        '<div style="' + sectionStyle + '">' +
+          '<div style="font-size:13px;font-weight:700;color:#E65100;margin-bottom:4px;">⚗️ খনিজ পদার্থ (mg/kg) — ঐচ্ছিক</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+            '<div><label style="' + labelStyle + '">জিংক (Zn)</label><input type="number" id="ffZinc" value="' + (mn.zinc || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">ম্যাঙ্গানিজ (Mn)</label><input type="number" id="ffManganese" value="' + (mn.manganese || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">কপার (Cu)</label><input type="number" id="ffCopper" value="' + (mn.copper || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">আয়রন (Fe)</label><input type="number" id="ffIron" value="' + (mn.iron || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">কোবাল্ট (Co)</label><input type="number" id="ffCobalt" value="' + (mn.cobalt || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">আয়োডিন (I)</label><input type="number" id="ffIodine" value="' + (mn.iodine || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">সেলেনিয়াম (Se)</label><input type="number" id="ffSelenium" value="' + (mn.selenium || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">ক্রোমিয়াম (Cr)</label><input type="number" id="ffChromium" value="' + (mn.chromium || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">ম্যাগনেসিয়াম (g/kg)</label><input type="number" id="ffMagnesium" value="' + (mn.magnesium || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">সালফার (g/kg)</label><input type="number" id="ffSulphur" value="' + (mn.sulphur || '') + '" style="' + inputStyle + '"></div>' +
+          '</div>' +
+        '</div>' +
+        
+        // Vitamins
+        '<div style="' + sectionStyle + '">' +
+          '<div style="font-size:13px;font-weight:700;color:#0D47A1;margin-bottom:4px;">💊 ভিটামিন (mg/kg) — ঐচ্ছিক</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">' +
+            '<div><label style="' + labelStyle + '">Vit A</label><input type="number" id="ffVitA" value="' + (vt.a || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">Vit D</label><input type="number" id="ffVitD" value="' + (vt.d || '') + '" style="' + inputStyle + '"></div>' +
+            '<div><label style="' + labelStyle + '">Vit E</label><input type="number" id="ffVitE" value="' + (vt.e || '') + '" style="' + inputStyle + '"></div>' +
+          '</div>' +
+        '</div>' +
+        
+        // Chelated checkbox
+        '<div style="' + sectionStyle + '">' +
+          '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:#2E7D32;">' +
+            '<input type="checkbox" id="ffChelated" ' + (f.chelated ? 'checked' : '') + ' style="width:18px;height:18px;">' +
+            '✨ Chelated (Organic) Form' +
+          '</label>' +
+        '</div>' +
+        
+        // Dose
+        '<div style="' + sectionStyle + '">' +
+          '<div style="font-size:13px;font-weight:700;color:#1B5E20;margin-bottom:4px;">📏 ডোজ (প্রতিদিন)</div>' +
+          '<textarea id="ffDoseBn" placeholder="গরু: ৩০ গ্রাম/দিন\nবাছুর: ১৫ গ্রাম/দিন" style="' + inputStyle + 'height:70px;resize:vertical;">' + escapeHtml(ds.bn || '') + '</textarea>' +
+          '<label style="' + labelStyle + '">Dose (English)</label>' +
+          '<textarea id="ffDoseEn" placeholder="Cow: 30g/day" style="' + inputStyle + 'height:50px;resize:vertical;">' + escapeHtml(ds.en || '') + '</textarea>' +
+        '</div>' +
+        
+        // Description
+        '<div style="' + sectionStyle + '">' +
+          '<div style="font-size:13px;font-weight:700;color:#555;margin-bottom:4px;">📝 বিবরণ (ঐচ্ছিক)</div>' +
+          '<input type="text" id="ffDescBn" placeholder="যেমন: চেলেটেড ফর্ম — উচ্চ শোষণক্ষমতা" value="' + escapeHtml(dc.bn || '') + '" style="' + inputStyle + '">' +
         '</div>' +
         
         '<div style="display:flex;gap:10px;margin-top:20px;">' +
@@ -2285,12 +2344,13 @@ function showFeedFormModal(existing) {
         const v = parseFloat(document.getElementById(id).value);
         return isNaN(v) ? 0 : v;
       };
+      const txt = (id) => document.getElementById(id).value.trim();
       
       const data = {
         name: {
           bn: nameBn,
-          en: document.getElementById('ffEn').value.trim() || nameBn,
-          hi: document.getElementById('ffHi').value.trim() || nameBn
+          en: txt('ffEn') || nameBn,
+          hi: txt('ffHi') || nameBn
         },
         category: document.getElementById('ffCat').value,
         dm: num('ffDm'),
@@ -2303,61 +2363,52 @@ function showFeedFormModal(existing) {
         p: num('ffP')
       };
       
+      // Minerals (শুধু যেগুলো > 0)
+      const minerals = {
+        zinc: num('ffZinc'),
+        manganese: num('ffManganese'),
+        copper: num('ffCopper'),
+        iron: num('ffIron'),
+        cobalt: num('ffCobalt'),
+        iodine: num('ffIodine'),
+        selenium: num('ffSelenium'),
+        chromium: num('ffChromium'),
+        magnesium: num('ffMagnesium'),
+        sulphur: num('ffSulphur')
+      };
+      const hasMinerals = Object.values(minerals).some(v => v > 0);
+      if (hasMinerals) data.minerals = minerals;
+      
+      // Vitamins
+      const vitamins = {
+        a: num('ffVitA'),
+        d: num('ffVitD'),
+        e: num('ffVitE')
+      };
+      const hasVitamins = Object.values(vitamins).some(v => v > 0);
+      if (hasVitamins) data.vitamins = vitamins;
+      
+      // Chelated
+      if (document.getElementById('ffChelated').checked) {
+        data.chelated = true;
+      }
+      
+      // Dose
+      const doseBn = txt('ffDoseBn');
+      const doseEn = txt('ffDoseEn');
+      if (doseBn || doseEn) {
+        data.dose = { bn: doseBn, en: doseEn, hi: doseBn };
+      }
+      
+      // Description
+      const descBn = txt('ffDescBn');
+      if (descBn) {
+        data.description = { bn: descBn, en: descBn, hi: descBn };
+      }
+      
       close(data);
     };
   });
-}
-
-async function addNewFeed() {
-  const data = await showFeedFormModal(null);
-  if (!data) return;
-  
-  try {
-    const id = 'custom_' + Date.now();
-    data.id = id;
-    data.createdAt = Date.now();
-    data.createdBy = currentUser ? currentUser.email : 'admin';
-    await db.collection('feeds').doc(id).set(data);
-    toast('✅ Feed যোগ হয়েছে');
-    loadFeeds();
-  } catch(e) {
-    console.error('Add feed failed:', e);
-    alert('Failed: ' + e.message);
-  }
-}
-
-async function editFeed(id) {
-  const existing = allFeeds.find(f => f.id === id);
-  if (!existing) return;
-  
-  const data = await showFeedFormModal(existing);
-  if (!data) return;
-  
-  try {
-    data.updatedAt = Date.now();
-    data.updatedBy = currentUser ? currentUser.email : 'admin';
-    await db.collection('feeds').doc(id).set(data, { merge: true });
-    toast('✅ Feed update হয়েছে');
-    loadFeeds();
-  } catch(e) {
-    console.error('Edit feed failed:', e);
-    alert('Failed: ' + e.message);
-  }
-}
-
-async function deleteFeed(id) {
-  const existing = allFeeds.find(f => f.id === id);
-  const name = existing && existing.name ? existing.name.bn : id;
-  if (!confirm('🗑️ "' + name + '" মুছে ফেলবেন?')) return;
-  
-  try {
-    await db.collection('feeds').doc(id).delete();
-    toast('🗑️ Deleted');
-    loadFeeds();
-  } catch(e) {
-    console.error('Delete feed failed:', e);
-    alert('Failed: ' + e.message);
-  }
 }
 
 // ========== TRIAL USERS ==========
