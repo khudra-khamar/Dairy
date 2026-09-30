@@ -1806,17 +1806,23 @@ async function editFeed(id) {
 }
 
 async function deleteFeed(id) {
+  toast('🔍 Delete চাপা হয়েছে: ' + id);
+  
   const existing = allFeeds.find(f => f.id === id);
   const name = existing && existing.name ? existing.name.bn : id;
-  if (!confirm('🗑️ "' + name + '" মুছে ফেলবেন?')) return;
+  
+  if (!confirm('🗑️ "' + name + '" মুছে ফেলবেন?')) {
+    toast('❌ বাতিল');
+    return;
+  }
   
   try {
     await db.collection('feeds').doc(id).delete();
-    toast('🗑️ Deleted');
+    toast('✅ Deleted: ' + name);
     loadFeeds();
   } catch(e) {
     console.error('Delete feed failed:', e);
-    alert('Failed: ' + e.message);
+    toast('❌ Failed: ' + e.message);
   }
 }
 
@@ -2211,7 +2217,7 @@ function row(labelFull, labelShort, val, unit) {
   '<div style="margin-top:8px;font-size:11px;color:#666;font-style:italic;">' + escapeHtml(f.description.bn || f.description.en || '') + '</div>' : '') +
       '<div style="display:flex;gap:6px;margin-top:10px;">' +
         '<button onclick="editFeed(\'' + f.id + '\')" style="flex:1;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✏️ Edit</button>' +
-        '<button onclick="deleteFeed(\'' + f.id + '\')" style="flex:1;padding:9px;background:#e53935;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ Delete</button>' +
+      '<button onclick="window.deleteFeed && deleteFeed(\'' + f.id + '\')" style="flex:1;padding:9px;background:#e53935;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ Delete</button>' +
       '</div>' +
     '</div>';
   }).join('');
