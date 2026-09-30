@@ -2099,26 +2099,30 @@ function renderFeeds() {
     const nameBn = (f.name && f.name.bn) || f.id;
     const nameEn = (f.name && f.name.en) || '';
     
-    function row(label, val, unit) {
-      if (val === undefined || val === null || val === '' || val === 0) {
-        if (val === 0) return '<div class="l-row"><span class="l-label">' + label + '</span><span class="l-value">0' + (unit || '') + '</span></div>';
-        return '';
-      }
-      return '<div class="l-row"><span class="l-label">' + label + '</span><span class="l-value">' + val + (unit || '') + '</span></div>';
-    }
+function row(labelFull, labelShort, val, unit) {
+  if (val === undefined || val === null || val === '') return '';
+  const display = (val === 0) ? '0' : val;
+  return '<div class="l-row" style="padding:8px 0;border-bottom:1px solid #f0f0f0;">' +
+    '<span class="l-label" style="font-size:12px;color:#555;">' +
+      labelFull +
+      '<br><span style="font-size:10px;color:#999;font-weight:400;">' + labelShort + '</span>' +
+    '</span>' +
+    '<span class="l-value" style="font-size:13px;font-weight:700;color:#2E7D32;">' + display + (unit || '') + '</span>' +
+  '</div>';
+}
     
     return '<div class="lic-card">' +
       '<div class="l-code">' + icon + ' ' + escapeHtml(nameBn) + '</div>' +
       '<div class="l-device">' + escapeHtml(nameEn) + '</div>' +
       '<div class="l-device" style="color:#FF6F00;font-weight:700;">' + label + '</div>' +
-      row('DM', f.dm, '%') +
-      row('CP', f.cp, '%') +
-      row('TDN', f.tdn, '%') +
-      row('ME', f.me, ' MJ/kg') +
-      row('Fiber', f.fiber, '%') +
-      row('Ca', f.ca, '%') +
-      row('P', f.p, '%') +
-      row('Fat', f.fat, '%') +
+    row('শুকনো পদার্থ', 'Dry Matter (DM)', f.dm, '%') +
+    row('প্রোটিন', 'Crude Protein (CP)', f.cp, '%') +
+    row('হজমযোগ্য পুষ্টি', 'Digestible Nutrients (TDN)', f.tdn, '%') +
+    row('শক্তি', 'Energy (ME)', f.me, ' MJ/kg') +
+    row('আঁশ', 'Fiber', f.fiber, '%') +
+    row('ক্যালসিয়াম', 'Calcium (Ca)', f.ca, '%') +
+    row('ফসফরাস', 'Phosphorus (P)', f.p, '%') +
+    row('চর্বি', 'Fat', f.fat, '%') +
       '<div style="display:flex;gap:6px;margin-top:10px;">' +
         '<button onclick="editFeed(\'' + f.id + '\')" style="flex:1;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✏️ Edit</button>' +
         '<button onclick="deleteFeed(\'' + f.id + '\')" style="flex:1;padding:9px;background:#e53935;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ Delete</button>' +
