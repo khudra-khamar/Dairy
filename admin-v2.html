@@ -2084,13 +2084,10 @@ function renderLicenses() {
     return;
   }
   
-  filtered.sort((a, b) => {
-    const aExp = a.expiry || '0000-00-00';
-    const bExp = b.expiry || '0000-00-00';
-    return aExp.localeCompare(bExp);
-  });
+  const accountLicenses = filtered.filter(l => l.uid);
+  const legacyLicenses = filtered.filter(l => !l.uid);
   
-  listEl.innerHTML = filtered.map(lic => {
+  function renderCard(lic) {
     const status = getLicenseStatus(lic);
     const daysLeft = getDaysLeft(lic);
     const device = lic.deviceId || '—';
@@ -2149,7 +2146,21 @@ function renderLicenses() {
         (showRestore ? '<button class="lic-btn-restore" onclick="restoreLicense(\'' + lic.id + '\')">Restore</button>' : '') +
       '</div>' +
     '</div>';
-  }).join('');
+  }
+  
+  let html = '';
+  
+  if (accountLicenses.length > 0) {
+    html += '<div style="margin:0 0 12px;padding:8px 12px;background:#E8F5E9;border-left:4px solid #2E7D32;border-radius:6px;font-size:13px;font-weight:700;color:#2E7D32;">🆕 Account Licenses (' + accountLicenses.length + ')</div>';
+    html += accountLicenses.map(renderCard).join('');
+  }
+  
+  if (legacyLicenses.length > 0) {
+    html += '<div style="margin:20px 0 12px;padding:8px 12px;background:#FFF3E0;border-left:4px solid #EF6C00;border-radius:6px;font-size:13px;font-weight:700;color:#E65100;">📜 Legacy Licenses — Device-based (' + legacyLicenses.length + ')</div>';
+    html += legacyLicenses.map(renderCard).join('');
+  }
+  
+  listEl.innerHTML = html;
 }
 
 function formatRelativeTime(ts) {
