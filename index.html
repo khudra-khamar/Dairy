@@ -9838,50 +9838,113 @@ function updatePresetSection() {
   updatePresetButtonStyles();
 }
 // ========== BACKUP ==========
+// ========== EXPORT (Base64 + .dmb) ==========
 function exportData() {
-  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  try {
+    const jsonStr = JSON.stringify(DB);
+    const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    const fileContent = 'DMB1:' + base64;
+    const fileName = 'DMB-' + today() + '.dmb';
+    
+    const blob = new Blob([fileContent], { type: 'application/octet-stream' });
+    const file = new File([blob], fileName, { type: 'application/octet-stream' });
+    
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({
+        files: [file],
+        title: 'Dairy Manager Backup',
+        text: 'Dairy Manager Backup — ' + today()
+      }).then(function() {
+        toast(t('export_done'));
+      }).catch(function(err) {
+        if (err.name !== 'AbortError') {
+          console.log('Share failed, fallback to download');
+          downloadBackupFile(blob, fileName);
+        }
+      });
+    } else {
+      downloadBackupFile(blob, fileName);
+    }
+    
+  } catch(e) {
+    console.error('Backup failed:', e);
+    toast(t('error'));
+  }
+}
+
+function downloadBackupFile(blob, fileName) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'dairy-backup-' + today() + '.json';
+  a.download = fileName;
+  document.body.appendChild(a);
   a.click();
+  setTimeout(function() {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 100);
   toast(t('export_done'));
 }
 
+// ========== IMPORT (Base64 + .dmb + Legacy) ==========
 function importData(e) {
   const f = e.target.files[0];
   if (!f) return;
+  
   const r = new FileReader();
-  r.onload = ev => {
-    try {
-      const d = JSON.parse(ev.target.result);
-      if (d.cows || d.finance || d.milk) {
-        DB = Object.assign(DB, d);
-        if (!DB.cows) DB.cows = [];
-        if (!DB.milk) DB.milk = [];
-        if (!DB.finance) DB.finance = [];
-        if (!DB.medicine) DB.medicine = [];
-        if (!DB.notes) DB.notes = [];
-        if (!DB.medStock) DB.medStock = [];
-        if (!DB.feedStock) DB.feedStock = [];
-        if (!DB.contacts) DB.contacts = [];
-        if (!DB.snoozed) DB.snoozed = {};
-        if (!DB.deviceId) DB.deviceId = '';
-        if (!DB.security) DB.security = { pin: '', skipped: false };
-        if (!DB.license) DB.license = { code: '', expiry: '', trial: false };
-        if (!DB.settings) DB.settings = {};
-        if (!DB.settings.features) DB.settings.features = PRESETS.medium;
-        saveDB();
-        applyLang();
-        toast(t('import_ok'));
-        renderHome();
-        renderCows();
-      } else {
+  r.onload = function(ev) {
+    const content = ev.target.result;
+    let d = null;
+    
+    // ===== Encrypted .dmb file =====
+    if (content.startsWith('DMB1:')) {
+      try {
+        const base64 = content.substring(5);
+        const jsonStr = decodeURIComponent(escape(atob(base64)));
+        d = JSON.parse(jsonStr);
+      } catch(err) {
+        console.error('Decode failed:', err);
         toast(t('import_bad'));
+        return;
       }
-    } catch(err) {
-      toast(t('error'));
+    } else {
+      // ===== Legacy plain JSON =====
+      try {
+        d = JSON.parse(content);
+      } catch(err) {
+        toast(t('import_bad'));
+        return;
+      }
     }
+    
+    // ===== Restore =====
+    if (!(d.cows || d.finance || d.milk)) {
+      toast(t('import_bad'));
+      return;
+    }
+    
+    DB = Object.assign(DB, d);
+    if (!DB.cows) DB.cows = [];
+    if (!DB.milk) DB.milk = [];
+    if (!DB.finance) DB.finance = [];
+    if (!DB.medicine) DB.medicine = [];
+    if (!DB.notes) DB.notes = [];
+    if (!DB.medStock) DB.medStock = [];
+    if (!DB.feedStock) DB.feedStock = [];
+    if (!DB.contacts) DB.contacts = [];
+    if (!DB.snoozed) DB.snoozed = {};
+    if (!DB.deviceId) DB.deviceId = '';
+    if (!DB.security) DB.security = { pin: '', skipped: false };
+    if (!DB.license) DB.license = { code: '', expiry: '', trial: false };
+    if (!DB.settings) DB.settings = {};
+    if (!DB.settings.features) DB.settings.features = PRESETS.medium;
+    
+    saveDB();
+    applyLang();
+    toast(t('import_ok'));
+    renderHome();
+    renderCows();
   };
+  
   r.readAsText(f);
 }
 
