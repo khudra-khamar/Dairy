@@ -1,8 +1,8 @@
 // ========== DAIRY MANAGER — SERVICE WORKER ==========
 // Version: v5.0 (updated with Feed Guide + Admin features)
 
-const CACHE_NAME = 'dairy-manager-v9';
-const RUNTIME_CACHE = 'dairy-runtime-v9';
+const CACHE_NAME = 'dairy-manager-v10';
+const RUNTIME_CACHE = 'dairy-runtime-v10';
 
 // Files to cache on install
 const PRECACHE_URLS = [
