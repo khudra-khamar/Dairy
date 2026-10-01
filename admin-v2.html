@@ -2688,6 +2688,8 @@ function renderTrialUsers() {
     if (type === 'google') { typeIcon = '🔵'; typeLabel = 'Google'; }
     else if (type === 'phone') { typeIcon = '📱'; typeLabel = 'Phone'; }
     
+    const isAuthUser = (type === 'google' || type === 'phone');
+    
     const name = u.farmerName || u.ownerName || u.displayName || 'নাম নেই';
     const contact = u.email || u.phone || '';
     const device = u.deviceId || '—';
@@ -2700,15 +2702,23 @@ function renderTrialUsers() {
       : '<span class="lic-badge badge-expiring">⏳ TRIAL</span>';
     
     let actions = '';
-    if (u.phone) {
-      const phoneClean = u.phone.replace(/\D/g, '');
-      actions += '<button onclick="window.open(\'https://wa.me/' + phoneClean + '\', \'_blank\')" style="flex:1;min-width:90px;padding:9px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>';
-    }
-    if (u.email) {
-      actions += '<button onclick="window.location.href=\'mailto:' + escapeHtml(u.email) + '\'" style="flex:1;min-width:90px;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📧 Email</button>';
-    }
-    if (!converted) {
-      actions += '<button onclick="markTrialConverted(\'' + u.id + '\')" style="flex:1;min-width:90px;padding:9px;background:#2E7D32;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✅ Converted</button>';
+    
+    if (isAuthUser) {
+      // Auth user — WhatsApp + Email + Give License + Converted
+      if (u.phone) {
+        const phoneClean = u.phone.replace(/\D/g, '');
+        actions += '<button onclick="window.open(\'https://wa.me/' + phoneClean + '\', \'_blank\')" style="flex:1;min-width:90px;padding:9px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>';
+      }
+      if (u.email) {
+        actions += '<button onclick="window.location.href=\'mailto:' + escapeHtml(u.email) + '\'" style="flex:1;min-width:90px;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📧 Email</button>';
+      }
+      actions += '<button onclick="openGiveLicenseModal(\'' + u.id + '\')" style="flex:1;min-width:130px;padding:9px;background:#FF6F00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🎫 Give License</button>';
+      if (!converted) {
+        actions += '<button onclick="markTrialConverted(\'' + u.id + '\')" style="flex:1;min-width:90px;padding:9px;background:#2E7D32;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✅ Converted</button>';
+      }
+    } else {
+      // Guest user — শুধু message
+      actions += '<div style="flex:1;padding:10px;background:#FFF3E0;border-left:3px solid #FF6F00;border-radius:8px;font-size:11px;color:#555;line-height:1.5;">🔒 License দিতে হলে User কে <strong>Google Login</strong> করতে বলুন</div>';
     }
     
     return '<div class="lic-card">' +
@@ -2740,6 +2750,165 @@ function filterTrialUsers(filter) {
     }
   });
   renderTrialUsers();
+}
+
+// ========== GIVE LICENSE ==========
+function openGiveLicenseModal(userId) {
+  const user = allTrialUsers.find(u => u.id === userId);
+  if (!user) { alert('User পাওয়া যায়নি'); return; }
+  
+  const isAuthUser = (user.authMethod === 'google' || user.authMethod === 'phone');
+  if (!isAuthUser) {
+    alert('🔒 License দিতে হলে User কে Google Login করতে বলুন');
+    return;
+  }
+  
+  const name = user.farmerName || user.ownerName || user.displayName || 'নাম নেই';
+  const contact = user.email || user.phone || '';
+  const device = user.deviceId || '—';
+  
+  const modal = document.createElement('div');
+  modal.id = 'giveLicenseModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;overflow-y:auto;';
+  
+  const inputStyle = 'width:100%;padding:11px;font-size:14px;border:2px solid #ddd;border-radius:10px;box-sizing:border-box;outline:none;';
+  const labelStyle = 'font-size:12px;color:#666;font-weight:700;display:block;margin:12px 0 4px;';
+  
+  modal.innerHTML = 
+    '<div style="background:#fff;padding:22px;border-radius:14px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,0.3);margin:20px 0;">' +
+      '<div style="font-size:36px;text-align:center;margin-bottom:8px;">🎫</div>' +
+      '<h3 style="margin:0 0 8px;color:#2E7D32;font-size:18px;text-align:center;">Give License</h3>' +
+      
+      '<div style="background:#f5f5f5;padding:12px;border-radius:10px;margin-bottom:12px;font-size:12px;color:#555;line-height:1.6;">' +
+        '<div style="font-weight:700;color:#2E7D32;margin-bottom:4px;">👤 ' + escapeHtml(name) + '</div>' +
+        (contact ? '<div>📧 ' + escapeHtml(contact) + '</div>' : '') +
+        '<div>📱 ' + escapeHtml(device) + '</div>' +
+      '</div>' +
+      
+      '<label style="' + labelStyle + '">License Duration (days) *</label>' +
+      '<input type="number" id="glDays" min="1" max="3650" placeholder="যেমন: 365" style="' + inputStyle + '">' +
+      
+      '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+        '<button onclick="document.getElementById(\'glDays\').value=30" style="flex:1;min-width:60px;padding:8px;background:#E8F5E9;color:#2E7D32;border:1px solid #2E7D32;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">30</button>' +
+        '<button onclick="document.getElementById(\'glDays\').value=90" style="flex:1;min-width:60px;padding:8px;background:#E8F5E9;color:#2E7D32;border:1px solid #2E7D32;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">90</button>' +
+        '<button onclick="document.getElementById(\'glDays\').value=180" style="flex:1;min-width:60px;padding:8px;background:#E8F5E9;color:#2E7D32;border:1px solid #2E7D32;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">180</button>' +
+        '<button onclick="document.getElementById(\'glDays\').value=365" style="flex:1;min-width:60px;padding:8px;background:#E8F5E9;color:#2E7D32;border:1px solid #2E7D32;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">365</button>' +
+      '</div>' +
+      
+      '<label style="' + labelStyle + '">Notes (optional)</label>' +
+      '<input type="text" id="glNotes" maxlength="100" placeholder="যেমন: Paid ₹500 via UPI" style="' + inputStyle + '">' +
+      
+      '<div style="display:flex;gap:10px;margin-top:20px;">' +
+        '<button id="glCancel" style="flex:1;background:#f0f0f0;color:#333;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">বাতিল</button>' +
+        '<button id="glCreate" style="flex:2;background:#FF6F00;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🎫 Create License</button>' +
+      '</div>' +
+    '</div>';
+  
+  document.body.appendChild(modal);
+  
+  function closeModal() {
+    if (document.body.contains(modal)) document.body.removeChild(modal);
+  }
+  
+  document.getElementById('glCancel').onclick = closeModal;
+  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  
+  document.getElementById('glCreate').onclick = async () => {
+    const days = parseInt(document.getElementById('glDays').value);
+    const notes = document.getElementById('glNotes').value.trim();
+    
+    if (!days || days < 1 || days > 3650) {
+      alert('⚠️ Duration দিন (1-3650 days)');
+      return;
+    }
+    
+    if (!confirm('🎫 License তৈরি করবেন?\n\n👤 ' + name + '\n⏱️ ' + days + ' days\n\nচালিয়ে যাবেন?')) return;
+    
+    const btn = document.getElementById('glCreate');
+    btn.disabled = true;
+    btn.textContent = '⏳ Creating...';
+    
+    const ok = await createLicenseForUser(user, days, notes);
+    
+    if (ok) {
+      closeModal();
+      loadTrialUsers();
+    } else {
+      btn.disabled = false;
+      btn.textContent = '🎫 Create License';
+    }
+  };
+}
+
+async function createLicenseForUser(user, days, notes) {
+  try {
+    if (!db) { alert('Firestore ready না'); return false; }
+    
+    const uid = user.uid || user.id;
+    const ref = db.collection('licenses').doc(uid);
+    const snap = await ref.get();
+    
+    const now = new Date();
+    let startDate = now;
+    
+    // Extend logic — পুরনো active license থাকলে সেখান থেকে শুরু
+    if (snap.exists) {
+      const old = snap.data();
+      if (old.active && old.expiry) {
+        const oldExp = new Date(old.expiry + 'T23:59:59');
+        if (oldExp > now) startDate = oldExp;
+      }
+    }
+    
+    const newExp = new Date(startDate);
+    newExp.setDate(newExp.getDate() + days);
+    
+    const y = newExp.getFullYear();
+    const m = String(newExp.getMonth() + 1).padStart(2, '0');
+    const d = String(newExp.getDate()).padStart(2, '0');
+    const expiryStr = y + '-' + m + '-' + d;
+    
+    const data = {
+      uid: uid,
+      type: 'account',
+      authMethod: user.authMethod || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      farmerName: user.farmerName || user.ownerName || user.displayName || '',
+      deviceId: user.deviceId || '',
+      active: true,
+      expiry: expiryStr,
+      duration: days,
+      notes: notes || '',
+      issuedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      issuedBy: currentUser ? currentUser.email : 'admin',
+      lastExtendedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastExtendedBy: currentUser ? currentUser.email : 'admin'
+    };
+    
+    await ref.set(data, { merge: true });
+    
+    // trialUsers doc-এ converted mark + license info
+    try {
+      await db.collection('trialUsers').doc(user.id).update({
+        converted: true,
+        convertedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        convertedBy: currentUser ? currentUser.email : 'admin',
+        licenseExpiry: expiryStr
+      });
+    } catch(e) {
+      console.warn('trialUsers update failed:', e);
+    }
+    
+    console.log('✅ License created:', uid, 'expiry:', expiryStr);
+    alert('✅ License তৈরি হয়েছে!\n\n👤 ' + (user.farmerName || user.email || uid) + '\n📅 Expiry: ' + expiryStr + '\n⏱️ ' + days + ' days');
+    return true;
+    
+  } catch(e) {
+    console.error('Create license failed:', e);
+    alert('❌ Failed: ' + e.message);
+    return false;
+  }
 }
 
 async function markTrialConverted(id) {
