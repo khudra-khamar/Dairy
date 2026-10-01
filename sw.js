@@ -35,6 +35,14 @@ self.addEventListener('install', function(event) {
   );
 });
 
+// ========== MESSAGE (Auto-Update Notification) ==========
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+
 // ========== ACTIVATE ==========
 self.addEventListener('activate', function(event) {
   console.log('[SW] Activating v4...');
@@ -64,35 +72,60 @@ self.addEventListener('fetch', function(event) {
   // Skip chrome-extension or other protocols
   if (!url.protocol.startsWith('http')) return;
   
-  // Firebase / Google Analytics — network first, no cache
+  // Firebase / Google — network only, no cache
   if (url.hostname.includes('gstatic.com') || 
       url.hostname.includes('google-analytics.com') ||
       url.hostname.includes('firebase') ||
       url.hostname.includes('googletagmanager.com')) {
     event.respondWith(
       fetch(event.request).catch(function() {
-        // Offline — return empty response (Firebase/gtag will handle gracefully)
         return new Response('', { status: 200, statusText: 'Offline' });
       })
     );
     return;
   }
   
-  // App files — cache first, then network
+  // ===== HTML / Navigation — NETWORK FIRST =====
+  // HTML সবসময় নতুন version check করে — পুরনো cache ব্যবহার করে না
+  const isHTML = event.request.mode === 'navigate' || 
+                 url.pathname.endsWith('.html') ||
+                 url.pathname.endsWith('/') ||
+                 url.pathname === '/Dairy' ||
+                 url.pathname === '/Dairy/';
+  
+  if (isHTML) {
+    event.respondWith(
+      fetch(event.request).then(function(response) {
+        // নতুন version পেলে cache-ও update করি
+        if (response && response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
+      }).catch(function() {
+        // Network fail → cache fallback
+        return caches.match(event.request).then(function(cached) {
+          return cached || caches.match('./index.html');
+        });
+      })
+    );
+    return;
+  }
+  
+  // ===== Other assets — CACHE FIRST =====
   event.respondWith(
     caches.match(event.request).then(function(cachedResponse) {
       if (cachedResponse) {
         return cachedResponse;
       }
       
-      // Not in cache — fetch from network and cache
       return fetch(event.request).then(function(response) {
-        // Don't cache bad responses
         if (!response || response.status !== 200 || response.type === 'error') {
           return response;
         }
         
-        // Cache successful responses
         const responseToCache = response.clone();
         caches.open(RUNTIME_CACHE).then(function(cache) {
           cache.put(event.request, responseToCache);
@@ -100,11 +133,9 @@ self.addEventListener('fetch', function(event) {
         
         return response;
       }).catch(function() {
-        // Network failed — if navigation request, return index.html
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
-        // Otherwise return a fallback
         return new Response('Offline', { status: 503, statusText: 'Offline' });
       });
     })
