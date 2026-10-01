@@ -1,8 +1,8 @@
 // ========== DAIRY MANAGER — SERVICE WORKER ==========
 // Version: v5.0 (updated with Feed Guide + Admin features)
 
-const CACHE_NAME = 'dairy-manager-v15';
-const RUNTIME_CACHE = 'dairy-runtime-v15';
+const CACHE_NAME = 'dairy-manager-v16';
+const RUNTIME_CACHE = 'dairy-runtime-v16';
 
 // Files to cache on install
 const PRECACHE_URLS = [
@@ -43,7 +43,7 @@ self.addEventListener('message', function(event) {
 
 // ========== ACTIVATE ==========
 self.addEventListener('activate', function(event) {
-  console.log('[SW] Activating v4...');
+console.log('[SW] Activating...');
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
       return Promise.all(
@@ -141,10 +141,6 @@ self.addEventListener('fetch', function(event) {
 });
 
 // ========== MESSAGE (for skipWaiting) ==========
-self.addEventListener('message', function(event) {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
+
 
 console.log('[SW] Service Worker loaded');
