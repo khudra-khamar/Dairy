@@ -393,26 +393,26 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <span class="menu-icon">📖</span> Help / User Manual
   </div>
   <div class="menu-item" onclick="closeMenu(); showPage('calving-history')">
-<span class="menu-icon">📅</span> Calving History
-</div>
-
-<div class="menu-item" onclick="closeMenu(); showPage('selling-history')">
-<span class="menu-icon">💰</span> Selling History
-</div>
-
-<div class="menu-item" id="menuRetailItem" onclick="closeMenu(); showPage('retail')">
-<span class="menu-icon">🛒</span> খুচরো বিক্রি
-</div>
-
-<div class="menu-item" onclick="closeMenu(); showPage('contacts')">
-<span class="menu-icon">📞</span> Emergency Contacts
-</div>
-<div class="menu-item" onclick="closeMenu(); openFeedbackForm()">
-  <span class="menu-icon">💬</span> Send Feedback
-</div>
-<div class="menu-item" onclick="closeMenu(); shareApp()">
-  <span class="menu-icon">📤</span> Share App
-</div>
+    <span class="menu-icon">📅</span> Calving History
+  </div>
+  <div class="menu-item" onclick="closeMenu(); showPage('selling-history')">
+    <span class="menu-icon">💰</span> Selling History
+  </div>
+  <div class="menu-item" id="menuRetailItem" onclick="closeMenu(); showPage('retail')">
+    <span class="menu-icon">🛒</span> খুচরো বিক্রি
+  </div>
+  <div class="menu-item" onclick="closeMenu(); showPage('contacts')">
+    <span class="menu-icon">📞</span> Emergency Contacts
+  </div>
+  <div class="menu-item" onclick="closeMenu(); openFeedbackForm()">
+    <span class="menu-icon">💬</span> Send Feedback
+  </div>
+  <div class="menu-item" onclick="closeMenu(); shareApp()">
+    <span class="menu-icon">📤</span> Share App
+  </div>
+  <div class="menu-item" onclick="closeMenu(); checkForUpdate()">
+    <span class="menu-icon">🔄</span> Check for Update
+  </div>
   <div class="menu-item" onclick="closeMenu(); showPage('settings')">
     <span class="menu-icon">⚙️</span> Settings
   </div>
@@ -420,8 +420,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <span class="menu-icon">ℹ️</span> About
   </div>
 </div>
-
-<div class="container">
 
   <!-- HOME PAGE -->
   <div id="page-home" class="page active">
@@ -2748,6 +2746,78 @@ function fallbackShare(msg) {
   window.open(url, '_blank');
   toast('📤 WhatsApp খুলছে...');
 }
+
+// ========== CHECK FOR UPDATE ==========
+async function checkForUpdate() {
+  if (!('serviceWorker' in navigator)) {
+    showUpdateToast('⚠️ এই ব্রাউজারে update check কাজ করে না');
+    return;
+  }
+  
+  showUpdateToast('🔄 চেক করা হচ্ছে...');
+  
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    
+    if (!reg) {
+      showUpdateToast('⚠️ Service Worker নেই — App আবার খুলুন');
+      return;
+    }
+    
+    // Update check
+    await reg.update();
+    
+    // ২ সেকেন্ড অপেক্ষা — SW download হওয়ার জন্য
+    setTimeout(async function() {
+      const reg2 = await navigator.serviceWorker.getRegistration();
+      
+      if (reg2 && reg2.waiting) {
+        // Update পাওয়া গেছে
+        showUpdateToast('✅ নতুন update পাওয়া গেছে! Reload হচ্ছে...');
+        
+        try { sessionStorage.setItem('dm_justUpdated', '1'); } catch(e) {}
+        
+        setTimeout(function() {
+          if (reg2.waiting) {
+            reg2.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          // Fallback reload
+          setTimeout(function() {
+            window.location.reload(true);
+          }, 1000);
+        }, 800);
+        
+      } else {
+        // No update
+        showUpdateToast('✅ আপনি সর্বশেষ version-এ আছেন');
+      }
+    }, 2000);
+    
+  } catch(e) {
+    console.error('Update check failed:', e);
+    showUpdateToast('⚠️ Update check failed: ' + e.message);
+  }
+}
+
+function showUpdateToast(msg) {
+  // আগের toast সরাই
+  const old = document.getElementById('updateCheckToast');
+  if (old) old.remove();
+  
+  const t = document.createElement('div');
+  t.id = 'updateCheckToast';
+  t.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#2E7D32;color:#fff;padding:14px 22px;border-radius:12px;font-size:13px;font-weight:600;z-index:999999;box-shadow:0 6px 24px rgba(0,0,0,0.3);font-family:inherit;max-width:90%;text-align:center;line-height:1.5;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  
+  setTimeout(function() {
+    t.style.transition = 'opacity 0.5s, transform 0.5s';
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(-20px)';
+    setTimeout(function() { t.remove(); }, 500);
+  }, 3000);
+}
+
 function toggleMenu() {
   const menu = document.getElementById('menuDropdown');
   if (!menu) return;
