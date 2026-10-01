@@ -3855,6 +3855,104 @@ function calculateRation() {
     '</div>';
 }
 
+// ========== SUGGEST TRANSLATIONS ==========
+const SUGGEST_TEXTS = {
+  bn: {
+    title: '📋 সুপারিশ',
+    greenFodder: '🌿 সবুজ ঘাস',
+    dryFodder: '🌾 শুকনো খাদ্য',
+    concentrate: '🌰 দানাদার মিশ্রণ',
+    balancedFeed: '🛒 Balanced Feed',
+    ownMix: '🌰 নিজে বানানো মিশ্রণ',
+    mineral: '⚗️ খনিজ',
+    expNutrition: '📊 প্রত্যাশিত পুষ্টি',
+    energy: '⚡ শক্তি (ME)',
+    protein: '🥩 প্রোটিন (CP)',
+    tips: '💡 টিপস',
+    tipsList: '• সবুজ ঘাস দিনে ২-৩ বার ভাগ করে দিন<br>• দানাদার দুধ দেওয়ার সময় দিন<br>• সবসময় পরিষ্কার পানি দিন<br>• হঠাৎ খাদ্য পরিবর্তন করবেন না — ৭ দিনে ধীরে ধীরে বদলান',
+    need: 'প্রয়োজন',
+    marketBrand: 'মার্কেটে পাওয়া যেকোনো ব্র্যান্ড',
+    napier: 'নেপিয়ার / হাইব্রিড নেপিয়ার',
+    riceStraw: 'ধানের খড়',
+    mustard: 'সরিষার খৈল',
+    bran: 'গমের ভুসি',
+    maize: 'ভুট্টা দানা',
+    mineralName: 'প্রিমিয়াম মিনারেল',
+    salt: 'লবণ',
+    balancedName: 'Balanced Feed (CP ২০-২২%)',
+    state_milking: 'দুগ্ধদান',
+    state_pregnant: 'গর্ভবতী',
+    state_dry: 'শুকনো',
+    state_heifer: 'বাছুর/Heifer',
+    needWeight: '⚠️ গরুর ওজন দিন (কমপক্ষে ১০০ kg)'
+  },
+  en: {
+    title: '📋 Recommendation',
+    greenFodder: '🌿 Green Fodder',
+    dryFodder: '🌾 Dry Fodder',
+    concentrate: '🌰 Concentrate Mix',
+    balancedFeed: '🛒 Balanced Feed',
+    ownMix: '🌰 Own Mix',
+    mineral: '⚗️ Minerals',
+    expNutrition: '📊 Expected Nutrition',
+    energy: '⚡ Energy (ME)',
+    protein: '🥩 Protein (CP)',
+    tips: '💡 Tips',
+    tipsList: '• Feed green fodder 2-3 times a day<br>• Give concentrate during milking<br>• Always provide clean water<br>• Don\'t change feed suddenly — change gradually over 7 days',
+    need: 'Required',
+    marketBrand: 'Any brand available in market',
+    napier: 'Napier / Hybrid Napier',
+    riceStraw: 'Rice Straw',
+    mustard: 'Mustard Cake',
+    bran: 'Wheat Bran',
+    maize: 'Maize Grain',
+    mineralName: 'Premium Mineral',
+    salt: 'Salt',
+    balancedName: 'Balanced Feed (CP 20-22%)',
+    state_milking: 'Milking',
+    state_pregnant: 'Pregnant',
+    state_dry: 'Dry',
+    state_heifer: 'Calf/Heifer',
+    needWeight: '⚠️ Enter cow weight (min 100 kg)'
+  },
+  hi: {
+    title: '📋 सिफारिश',
+    greenFodder: '🌿 हरा चारा',
+    dryFodder: '🌾 सूखा चारा',
+    concentrate: '🌰 दाना मिश्रण',
+    balancedFeed: '🛒 बैलेंस्ड फीड',
+    ownMix: '🌰 खुद का मिश्रण',
+    mineral: '⚗️ खनिज',
+    expNutrition: '📊 अपेक्षित पोषण',
+    energy: '⚡ ऊर्जा (ME)',
+    protein: '🥩 प्रोटीन (CP)',
+    tips: '💡 सुझाव',
+    tipsList: '• हरा चारा दिन में २-३ बार दें<br>• दूध देते समय दाना दें<br>• हमेशा साफ पानी दें<br>• अचानक चारा न बदलें — ७ दिनों में धीरे-धीरे बदलें',
+    need: 'आवश्यक',
+    marketBrand: 'बाजार में उपलब्ध कोई भी ब्रांड',
+    napier: 'नेपियर / हाइब्रिड नेपियर',
+    riceStraw: 'धान का पुआल',
+    mustard: 'सरसों की खली',
+    bran: 'गेहूं की चोकर',
+    maize: 'मक्का दाना',
+    mineralName: 'प्रीमियम मिनरल',
+    salt: 'नमक',
+    balancedName: 'बैलेंस्ड फीड (CP 20-22%)',
+    state_milking: 'दूध देने वाली',
+    state_pregnant: 'गर्भवती',
+    state_dry: 'सूखी',
+    state_heifer: 'बछड़ा/Heifer',
+    needWeight: '⚠️ गाय का वजन डालें (कम से कम 100 kg)'
+  }
+};
+
+function getSuggestText(key) {
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  const t = SUGGEST_TEXTS[lang] || SUGGEST_TEXTS.bn;
+  return t[key] || SUGGEST_TEXTS.bn[key] || key;
+}
+
+
 // ========== FEED SUGGEST ==========
 function calculateSuggest() {
   const resultEl = document.getElementById('suggestResult');
@@ -3866,7 +3964,7 @@ function calculateSuggest() {
   const system = document.getElementById('suggestFeedSystem').value;
   
   if (weight < 100) {
-    resultEl.innerHTML = '<div style="padding:14px;background:#FFEBEE;border-radius:10px;color:#c62828;text-align:center;font-size:13px;">⚠️ গরুর ওজন দিন (কমপক্ষে ১০০ kg)</div>';
+    resultEl.innerHTML = '<div style="padding:14px;background:#FFEBEE;border-radius:10px;color:#c62828;text-align:center;font-size:13px;">' + getSuggestText('needWeight') + '</div>';
     return;
   }
   
@@ -3919,43 +4017,43 @@ function calculateSuggest() {
   
   if (system === 'mix') {
     rationHtml = 
-      heading('🌿 সবুজ ঘাস') +
-      row('🌿', 'নেপিয়ার / হাইব্রিড নেপিয়ার', greenKg + ' kg') +
-      heading('🌾 শুকনো খাদ্য') +
-      row('🌾', 'ধানের খড়', dryKg + ' kg') +
-      heading('🌰 দানাদার মিশ্রণ (মোট ' + concKg + ' kg)') +
-      row('🌰', 'সরিষার খৈল', mustardCake + ' kg') +
-      row('🌾', 'গমের ভুসি', wheatBran + ' kg') +
-      row('🌽', 'ভুট্টা দানা', maize + ' kg') +
-      heading('⚗️ খনিজ') +
-      row('⚗️', 'প্রিমিয়াম মিনারেল', mineral + ' g') +
-      row('🧂', 'লবণ', salt + ' g');
+      heading(getSuggestText('greenFodder')) +
+      row('🌿', getSuggestText('napier'), greenKg + ' kg') +
+      heading(getSuggestText('dryFodder')) +
+      row('🌾', getSuggestText('riceStraw'), dryKg + ' kg') +
+      heading(getSuggestText('concentrate') + ' (' + concKg + ' kg)') +
+      row('🌰', getSuggestText('mustard'), mustardCake + ' kg') +
+      row('🌾', getSuggestText('bran'), wheatBran + ' kg') +
+      row('🌽', getSuggestText('maize'), maize + ' kg') +
+      heading(getSuggestText('mineral')) +
+      row('⚗️', getSuggestText('mineralName'), mineral + ' g') +
+      row('🧂', getSuggestText('salt'), salt + ' g');
   } else if (system === 'balanced') {
     rationHtml = 
-      heading('🌿 সবুজ ঘাস') +
-      row('🌿', 'নেপিয়ার / হাইব্রিড নেপিয়ার', greenKg + ' kg') +
-      heading('🌾 শুকনো খাদ্য') +
-      row('🌾', 'ধানের খড়', dryKg + ' kg') +
-      heading('🛒 Balanced Feed') +
-      row('🛒', 'Balanced Feed (CP ২০-২২%)', concKg + ' kg') +
-      '<div style="font-size:11px;color:#999;padding:6px 0;font-style:italic;">মার্কেটে পাওয়া যেকোনো ব্র্যান্ড</div>' +
-      heading('⚗️ খনিজ') +
-      row('⚗️', 'প্রিমিয়াম মিনারেল', mineral + ' g') +
-      row('🧂', 'লবণ', salt + ' g');
+      heading(getSuggestText('greenFodder')) +
+      row('🌿', getSuggestText('napier'), greenKg + ' kg') +
+      heading(getSuggestText('dryFodder')) +
+      row('🌾', getSuggestText('riceStraw'), dryKg + ' kg') +
+      heading(getSuggestText('balancedFeed')) +
+      row('🛒', getSuggestText('balancedName'), concKg + ' kg') +
+      '<div style="font-size:11px;color:#999;padding:6px 0;font-style:italic;">' + getSuggestText('marketBrand') + '</div>' +
+      heading(getSuggestText('mineral')) +
+      row('⚗️', getSuggestText('mineralName'), mineral + ' g') +
+      row('🧂', getSuggestText('salt'), salt + ' g');
   } else {
     rationHtml = 
-      heading('🌿 সবুজ ঘাস') +
-      row('🌿', 'নেপিয়ার / হাইব্রিড নেপিয়ার', greenKg + ' kg') +
-      heading('🌾 শুকনো খাদ্য') +
-      row('🌾', 'ধানের খড়', dryKg + ' kg') +
-      heading('🛒 Balanced Feed (' + balancedKg + ' kg)') +
-      row('🛒', 'Balanced Feed (CP ২০-২২%)', balancedKg + ' kg') +
-      heading('🌰 নিজে বানানো মিশ্রণ (' + mixPart + ' kg)') +
-      row('🌰', 'সরিষার খৈল', Math.round(mixPart * 0.5 * 10) / 10 + ' kg') +
-      row('🌾', 'গমের ভুসি', Math.round(mixPart * 0.5 * 10) / 10 + ' kg') +
-      heading('⚗️ খনিজ') +
-      row('⚗️', 'প্রিমিয়াম মিনারেল', mineral + ' g') +
-      row('🧂', 'লবণ', salt + ' g');
+      heading(getSuggestText('greenFodder')) +
+      row('🌿', getSuggestText('napier'), greenKg + ' kg') +
+      heading(getSuggestText('dryFodder')) +
+      row('🌾', getSuggestText('riceStraw'), dryKg + ' kg') +
+      heading(getSuggestText('balancedFeed') + ' (' + balancedKg + ' kg)') +
+      row('🛒', getSuggestText('balancedName'), balancedKg + ' kg') +
+      heading(getSuggestText('ownMix') + ' (' + mixPart + ' kg)') +
+      row('🌰', getSuggestText('mustard'), Math.round(mixPart * 0.5 * 10) / 10 + ' kg') +
+      row('🌾', getSuggestText('bran'), Math.round(mixPart * 0.5 * 10) / 10 + ' kg') +
+      heading(getSuggestText('mineral')) +
+      row('⚗️', getSuggestText('mineralName'), mineral + ' g') +
+      row('🧂', getSuggestText('salt'), salt + ' g');
   }
   
   const estMe = (greenKg * 0.20 * 7.8) + (dryKg * 0.90 * 6.0) + (concKg * 0.88 * 11.5);
@@ -3970,40 +4068,31 @@ function calculateSuggest() {
     return Math.round(g) + ' g';
   };
   
-  const stateLabel = {
-    milking: 'দুগ্ধদান',
-    pregnant: 'গর্ভবতী',
-    dry: 'শুকনো',
-    heifer: 'বাছুর/Heifer'
-  };
+  const stateKey = 'state_' + state;
+  const stateLabel = getSuggestText(stateKey);
   
   resultEl.innerHTML =
     '<div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">' +
-      '<div style="font-size:15px;font-weight:700;color:#2E7D32;margin-bottom:6px;">📋 সুপারিশ</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#2E7D32;margin-bottom:6px;">' + getSuggestText('title') + '</div>' +
       '<div style="font-size:11px;color:#999;padding:8px 10px;background:#f5f5f5;border-radius:8px;margin-bottom:10px;">' +
-        '🐄 ' + weight + ' kg · ' + milk + ' L · ' + (stateLabel[state] || state) +
+        '🐄 ' + weight + ' kg · ' + milk + ' L · ' + stateLabel +
       '</div>' +
       rationHtml +
       '<div style="margin-top:16px;padding:12px;background:#E8F5E9;border-radius:10px;">' +
-        '<div style="font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:8px;">📊 প্রত্যাশিত পুষ্টি</div>' +
+        '<div style="font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:8px;">' + getSuggestText('expNutrition') + '</div>' +
         '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #c8e6c9;">' +
-          '<span style="font-size:12px;color:#333;">⚡ শক্তি (ME)</span>' +
+          '<span style="font-size:12px;color:#333;">' + getSuggestText('energy') + '</span>' +
           '<span style="font-size:13px;font-weight:700;color:' + (pMe >= 90 ? '#2E7D32' : '#e53935') + ';">' + estMe.toFixed(1) + ' MJ (' + pMe + '%)</span>' +
         '</div>' +
         '<div style="display:flex;justify-content:space-between;padding:6px 0;">' +
-          '<span style="font-size:12px;color:#333;">🥩 প্রোটিন (CP)</span>' +
+          '<span style="font-size:12px;color:#333;">' + getSuggestText('protein') + '</span>' +
           '<span style="font-size:13px;font-weight:700;color:' + (pCp >= 90 ? '#2E7D32' : '#e53935') + ';">' + gramOrKg(estCp) + ' (' + pCp + '%)</span>' +
         '</div>' +
-        '<div style="font-size:11px;color:#666;margin-top:6px;font-style:italic;">প্রয়োজন: ' + req.me.toFixed(1) + ' MJ · ' + gramOrKg(req.cp) + '</div>' +
+        '<div style="font-size:11px;color:#666;margin-top:6px;font-style:italic;">' + getSuggestText('need') + ': ' + req.me.toFixed(1) + ' MJ · ' + gramOrKg(req.cp) + '</div>' +
       '</div>' +
       '<div style="margin-top:12px;padding:12px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;">' +
-        '<div style="font-size:12px;font-weight:700;color:#E65100;margin-bottom:4px;">💡 টিপস</div>' +
-        '<div style="font-size:11px;color:#555;line-height:1.6;">' +
-          '• সবুজ ঘাস দিনে ২-৩ বার ভাগ করে দিন<br>' +
-          '• দানাদার দুধ দেওয়ার সময় দিন<br>' +
-          '• সবসময় পরিষ্কার পানি দিন<br>' +
-          '• হঠাৎ খাদ্য পরিবর্তন করবেন না — ৭ দিনে ধীরে ধীরে বদলান' +
-        '</div>' +
+        '<div style="font-size:12px;font-weight:700;color:#E65100;margin-bottom:4px;">' + getSuggestText('tips') + '</div>' +
+        '<div style="font-size:11px;color:#555;line-height:1.6;">' + getSuggestText('tipsList') + '</div>' +
       '</div>' +
     '</div>';
 }
