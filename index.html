@@ -9995,30 +9995,26 @@ async function initApp() {
 initApp();
 
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
+// ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ SW registered:', reg.scope);
       
-      // ===== Page load-এ waiting worker চেক =====
-      if (reg.waiting && navigator.serviceWorker.controller) {
-        window._waitingWorker = reg.waiting;
-        showUpdateBanner();
-      }
-      
-      // ===== নতুন version detect =====
       reg.addEventListener('updatefound', function() {
         const newWorker = reg.installing;
         if (!newWorker) return;
         
         newWorker.addEventListener('statechange', function() {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            window._waitingWorker = newWorker;
-            showUpdateBanner();
+            console.log('🔄 New version installed — ready to activate');
+            // flag save করি reload-এর আগে
+            try { sessionStorage.setItem('dm_justUpdated', '1'); } catch(e) {}
           }
         });
       });
       
+      // প্রতি ৩০ মিনিটে update check
       setInterval(function() { reg.update(); }, 30 * 60 * 1000);
       
     }).catch(function(err) {
@@ -10026,58 +10022,50 @@ if ('serviceWorker' in navigator) {
     });
   });
   
+  // নতুন SW controller হলে → auto reload
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', function() {
     if (refreshing) return;
     refreshing = true;
+    try { sessionStorage.setItem('dm_justUpdated', '1'); } catch(e) {}
+    console.log('✅ New SW active — reloading page');
     window.location.reload();
   });
 }
 
-function showUpdateBanner() {
-  if (document.getElementById('updateBanner')) return;
-  
-  const banner = document.createElement('div');
-  banner.id = 'updateBanner';
-  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#2E7D32;color:#fff;padding:14px 16px;z-index:999999;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 -4px 16px rgba(0,0,0,0.2);font-family:inherit;';
-  banner.innerHTML = 
-    '<div style="flex:1;font-size:13px;font-weight:600;">🔄 নতুন update এসেছে!</div>' +
-    '<button id="updateNowBtn" style="background:#fff;color:#2E7D32;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Update</button>' +
-    '<button id="updateLaterBtn" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.5);padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;">পরে</button>';
-  
-  document.body.appendChild(banner);
-  
-  document.getElementById('updateNowBtn').onclick = async function() {
-    const btn = document.getElementById('updateNowBtn');
-    btn.textContent = '⏳ Updating...';
-    btn.disabled = true;
-    
-    try {
-      // সরাসরি registration থেকে waiting worker নিই
-      const reg = await navigator.serviceWorker.getRegistration();
-      if (reg && reg.waiting) {
-        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      } else if (window._waitingWorker) {
-        window._waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-      } else {
-        // কিছুই না পেলে সরাসরি reload
-        window.location.reload(true);
-      }
-    } catch(e) {
-      console.warn('Update error:', e);
-      window.location.reload(true);
+// ===== Update Toast =====
+function checkUpdateToast() {
+  try {
+    if (sessionStorage.getItem('dm_justUpdated') === '1') {
+      sessionStorage.removeItem('dm_justUpdated');
+      setTimeout(function() {
+        if (typeof toast === 'function') {
+          toast('🔄 অ্যাপ আপডেট হয়েছে! নতুন সংস্করণ চালু হয়েছে');
+        } else {
+          // Fallback — নিজস্ব toast
+          showSimpleUpdateToast();
+        }
+      }, 1200);
     }
-    
-    // Fallback — ৩ সেকেন্ড পর reload
-    setTimeout(function() {
-      window.location.reload(true);
-    }, 3000);
-  };
-  
-  document.getElementById('updateLaterBtn').onclick = function() {
-    banner.remove();
-  };
+  } catch(e) {}
 }
+
+function showSimpleUpdateToast() {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#2E7D32;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:999999;box-shadow:0 4px 16px rgba(0,0,0,0.3);font-family:inherit;max-width:90%;text-align:center;';
+  t.textContent = '🔄 অ্যাপ আপডেট হয়েছে!';
+  document.body.appendChild(t);
+  setTimeout(function() {
+    t.style.transition = 'opacity 0.5s';
+    t.style.opacity = '0';
+    setTimeout(function() { t.remove(); }, 500);
+  }, 3000);
+}
+
+// Page load-এ check করি
+window.addEventListener('load', function() {
+  setTimeout(checkUpdateToast, 800);
+});
 
 
 // Prevent zoom on input focus
