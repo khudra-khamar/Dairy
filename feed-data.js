@@ -6,6 +6,11 @@
 window.FEED_DATABASE = [
   // ============ GREEN FODDER (সবুজ ঘাস) ============
   { id:'napier', name:{bn:'নেপিয়ার ঘাস',en:'Napier Grass',hi:'नेपियर घास'}, category:'green', dm:20, cp:7, tdn:52, me:7.5, fiber:28, ca:0.4, p:0.2, fat:2.5 },
+  { id:'co3_napier', name:{bn:'CO-3 নেপিয়ার',en:'CO-3 Napier',hi:'CO-3 नेपियर'}, category:'green', dm:22, cp:10, tdn:56, me:8.2, fiber:26, ca:0.4, p:0.25, fat:2.5 },
+{ id:'co4_napier', name:{bn:'CO-4 নেপিয়ার',en:'CO-4 Napier',hi:'CO-4 नेपियर'}, category:'green', dm:21, cp:11, tdn:58, me:8.5, fiber:24, ca:0.45, p:0.28, fat:2.8 },
+{ id:'super_napier', name:{bn:'সুপার নেপিয়ার',en:'Super Napier',hi:'सुपर नेपियर'}, category:'green', dm:20, cp:11, tdn:58, me:8.5, fiber:24, ca:0.45, p:0.28, fat:2.8 },
+{ id:'king_napier', name:{bn:'কিং নেপিয়ার',en:'King Napier',hi:'किंग नेपियर'}, category:'green', dm:22, cp:12, tdn:60, me:9.0, fiber:23, ca:0.5, p:0.3, fat:3.0 },
+{ id:'dwarf_napier', name:{bn:'ডোয়ার্ফ নেপিয়ার',en:'Dwarf Napier',hi:'ड्वार्फ नेपियर'}, category:'green', dm:18, cp:10, tdn:58, me:8.2, fiber:24, ca:0.45, p:0.28, fat:2.8 },
   { id:'hybrid_napier', name:{bn:'হাইব্রিড নেপিয়ার',en:'Hybrid Napier',hi:'हाइब्रिड नेपियर'}, category:'green', dm:22, cp:9, tdn:55, me:8.0, fiber:26, ca:0.4, p:0.25, fat:2.5 },
   { id:'maize_fodder', name:{bn:'ভুট্টার সবুজ',en:'Maize Fodder',hi:'मक्का का चारा'}, category:'green', dm:20, cp:8, tdn:60, me:9.0, fiber:25, ca:0.3, p:0.25, fat:2.5 },
   { id:'sorghum', name:{bn:'জোয়ার',en:'Sorghum',hi:'ज्वार'}, category:'green', dm:22, cp:8, tdn:55, me:8.5, fiber:28, ca:0.4, p:0.25, fat:2.5 },
@@ -40,7 +45,23 @@ window.FEED_DATABASE = [
   { id:'brewers_grain', name:{bn:'ব্রিউয়ার্স গ্রেইন',en:"Brewer's Grain",hi:'ब्रुअर्स ग्रेन'}, category:'byproduct', dm:25, cp:25, tdn:65, me:10.5, fiber:15, ca:0.3, p:0.5, fat:6.0 },
   { id:'veg_waste', name:{bn:'সবজির বর্জ্য',en:'Vegetable Waste',hi:'सब्जी का कचरा'}, category:'byproduct', dm:15, cp:12, tdn:50, me:7.5, fiber:20, ca:0.5, p:0.3, fat:1.0 },
 
-  // ============ MINERALS (খনিজ) ============
+  // ============ BALANCED FEED (ব্যালান্সড ফিড) ============
+{ 
+  id:'balanced_feed_20', 
+  name:{bn:'ব্যালান্সড ফিড (CP ২০%)',en:'Balanced Feed (CP 20%)',hi:'बैलेंस्ड फीड (CP 20%)'}, 
+  category:'concentrate', 
+  dm:88, cp:20, tdn:72, me:11.5, fiber:12, ca:0.8, p:0.6, fat:3.5,
+  description:{bn:'মার্কেটে পাওয়া balanced cattle feed',en:'Marketed balanced cattle feed',hi:'बाजार में उपलब्ध बैलेंस्ड फीड'}
+},
+{ 
+  id:'balanced_feed_22', 
+  name:{bn:'ব্যালান্সড ফিড (CP ২২%)',en:'Balanced Feed (CP 22%)',hi:'बैलेंस्ड फीड (CP 22%)'}, 
+  category:'concentrate', 
+  dm:88, cp:22, tdn:74, me:12.0, fiber:11, ca:0.9, p:0.65, fat:4.0,
+  description:{bn:'উচ্চ প্রোটিন balanced feed — দুগ্ধদান গরুর জন্য',en:'High protein balanced feed — for milking cows',hi:'उच्च प्रोटीन बैलेंस्ड फीड — दूध देने वाली गाय के लिए'}
+},
+
+// ============ MINERALS (খনিজ) ============
   { 
     id:'mineral_mix', 
     name:{bn:'সাধারণ মিনারেল মিশ্রণ',en:'Common Mineral Mixture',hi:'साधारण खनिज मिश्रण'}, 
