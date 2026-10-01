@@ -290,10 +290,12 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;vertical-align:middle;margin-right:8px;">
     Google দিয়ে শুরু করুন
   </button>
-  <button class="btn-white" onclick="loginWithPhone()" style="width:100%;background:#25D366;color:#fff;">
-    📱 Mobile Number দিয়ে শুরু করুন
-  </button>
-  <p style="text-align:center;color:#999;margin:16px 0;font-size:13px;">─── অথবা ───</p>
+<!-- Phone Login — Billing নিষ্ক্রিয়, পরে চালু হবে
+<button class="btn-white" onclick="loginWithPhone()" style="width:100%;background:#25D366;color:#fff;">
+  📱 Mobile Number দিয়ে শুরু করুন
+</button>
+-->
+<!-- অথবা divider — Phone Login বন্ধ থাকায় লুকানো -->
 </div>
   <div class="device-box">
     <p id="deviceLabel">📱 Your Device Code</p>
@@ -9109,9 +9111,10 @@ function showLoginOptions() {
         '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px;">' +
         'Google দিয়ে Login' +
       '</button>' +
-      '<button id="loginPhoneBtn" style="width:100%;background:#25D366;color:#fff;border:none;padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:16px;">' +
-        '📱 Mobile Number দিয়ে Login' +
-      '</button>' +
+  // Phone Login — Billing নিষ্ক্রিয়, পরে চালু হবে
+// '<button id="loginPhoneBtn" style="width:100%;background:#25D366;color:#fff;border:none;padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:16px;">' +
+//   '📱 Mobile Number দিয়ে Login' +
+// '</button>' +
       '<button id="loginCancelBtn" style="width:100%;background:#f0f0f0;color:#666;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">' +
         'বাতিল' +
       '</button>' +
@@ -9128,10 +9131,11 @@ function showLoginOptions() {
     loginWithGoogle();
   };
   
-  document.getElementById('loginPhoneBtn').onclick = () => {
-    closeModal();
-    loginWithPhone();
-  };
+  // Phone Login button বন্ধ — Billing দরকার
+// document.getElementById('loginPhoneBtn').onclick = () => {
+//   closeModal();
+//   loginWithPhone();
+// };
   
   document.getElementById('loginCancelBtn').onclick = closeModal;
   
