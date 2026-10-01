@@ -1,8 +1,8 @@
 // ========== DAIRY MANAGER — SERVICE WORKER ==========
 // Version: v5.0 (updated with Feed Guide + Admin features)
 
-const CACHE_NAME = 'dairy-manager-v14';
-const RUNTIME_CACHE = 'dairy-runtime-v14';
+const CACHE_NAME = 'dairy-manager-v15';
+const RUNTIME_CACHE = 'dairy-runtime-v15';
 
 // Files to cache on install
 const PRECACHE_URLS = [
@@ -19,19 +19,17 @@ const PRECACHE_URLS = [
 
 // ========== INSTALL ==========
 self.addEventListener('install', function(event) {
-  console.log('[SW] Installing v4...');
+  console.log('[SW] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(PRECACHE_URLS).then(function() {
         console.log('[SW] Precached all files');
       }).catch(function(err) {
         console.warn('[SW] Precache error:', err);
-        // Even if some files fail, continue
         return Promise.resolve();
       });
-    }).then(function() {
-      return self.skipWaiting();
     })
+    // ⚠️ skipWaiting() এখানে নেই — message পেলে করব
   );
 });
 
