@@ -1039,7 +1039,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <div style="text-align:center;padding:30px;color:#999;">⏳ Loading...</div>
   </div>
 </div>
-</div>
+
 
 <!-- ===== FEED CALCULATOR ===== -->
 <div id="feedSubCalc" style="display:none;">
@@ -1053,8 +1053,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     </div>
   </div>
   
-
-  
   <div id="calcRows"></div>
   
   <button onclick="addCalcRow()" style="width:100%;padding:12px;background:#1976D2;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;">➕ আরেকটা ফিড যোগ করুন</button>
@@ -1063,33 +1061,34 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   
   <div id="calcResult" style="margin-top:16px;"></div>
 </div>
-  <!-- ===== FEED RATION BALANCER ===== -->
+
+<!-- ===== FEED RATION BALANCER ===== -->
 <div id="feedSubRation" style="display:none;">
   <div style="background:#E3F2FD;border:2px solid #1976D2;border-radius:12px;padding:12px;margin-bottom:14px;">
     <div style="font-size:12px;color:#555;line-height:1.6;">
       <b>⚖️ Ration Balancer</b><br>
       গরুর তথ্য দিন → প্রয়োজন হিসাব হবে<br>
-      তারপর খাদ্য তালিকা দিন → ঘাটতি দেখাবে জিম্মি
+      তারপর খাদ্য তালিকা দিন → ঘাটতি দেখাবে
     </div>
   </div>
   
-<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
-  <div style="font-size:14px;font-weight:700;color:#2E7D32;margin-bottom:10px;">🐄 গরুর তথ্য</div>
-  
-  <label style="font-size:12px;color:#666;font-weight:700;display:block;margin-bottom:4px;">ওজন (kg)</label>
-  <input type="number" id="rationCowWeight" value="400" min="100" max="800" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:14px;box-sizing:border-box;outline:none;margin-bottom:10px;">
-  
-  <label style="font-size:12px;color:#666;font-weight:700;display:block;margin-bottom:4px;">দুধ (লিটার/দিন)</label>
-  <input type="number" id="rationCowMilk" value="10" min="0" max="40" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:14px;box-sizing:border-box;outline:none;margin-bottom:10px;">
-  
-  <label style="font-size:12px;color:#666;font-weight:700;display:block;margin-bottom:4px;">অবস্থা</label>
-  <select id="rationCowState" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:14px;background:#fff;box-sizing:border-box;outline:none;">
-    <option value="milking">দুগ্ধদান (Milking)</option>
-    <option value="pregnant">গর্ভবতী (Pregnant)</option>
-    <option value="dry">শুকনো (Dry)</option>
-    <option value="heifer">বাছুর/Heifer</option>
-  </select>
-</div>
+  <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+    <div style="font-size:14px;font-weight:700;color:#2E7D32;margin-bottom:10px;">🐄 গরুর তথ্য</div>
+    
+    <label style="font-size:12px;color:#666;font-weight:700;display:block;margin-bottom:4px;">ওজন (kg)</label>
+    <input type="number" id="rationCowWeight" value="400" min="100" max="800" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:14px;box-sizing:border-box;outline:none;margin-bottom:10px;">
+    
+    <label style="font-size:12px;color:#666;font-weight:700;display:block;margin-bottom:4px;">দুধ (লিটার/দিন)</label>
+    <input type="number" id="rationCowMilk" value="10" min="0" max="40" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:14px;box-sizing:border-box;outline:none;margin-bottom:10px;">
+    
+    <label style="font-size:12px;color:#666;font-weight:700;display:block;margin-bottom:4px;">অবস্থা</label>
+    <select id="rationCowState" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:14px;background:#fff;box-sizing:border-box;outline:none;">
+      <option value="milking">দুগ্ধদান (Milking)</option>
+      <option value="pregnant">গর্ভবতী (Pregnant)</option>
+      <option value="dry">শুকনো (Dry)</option>
+      <option value="heifer">বাছুর/Heifer</option>
+    </select>
+  </div>
   
   <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
     <div style="font-size:14px;font-weight:700;color:#2E7D32;margin-bottom:10px;">🍽️ খাদ্য তালিকা</div>
@@ -1112,7 +1111,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     </div>
   </div>
   
-  <!-- গরুর তথ্য -->
   <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
     <div style="font-size:14px;font-weight:700;color:#2E7D32;margin-bottom:10px;">🐄 গরুর তথ্য</div>
     
@@ -1140,9 +1138,9 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   
   <button onclick="calculateSuggest()" style="width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">💡 সুপারিশ পান</button>
   
-  <div id="suggestResult" style="margin-top:16px;"></div>
-</div>
-
+     <div id="suggestResult" style="margin-top:16px;"></div>
+   </div>
+ </div>
   <!-- NOTES PAGE -->
   <div id="page-notes" class="page">
     <div class="page-header">
@@ -3740,16 +3738,124 @@ function calculateRation() {
   const resultEl = document.getElementById('rationResult');
   if (!resultEl) return;
   
-const weight = parseFloat(document.getElementById('rationCowWeight').value) || 0;
-const milk = parseFloat(document.getElementById('rationCowMilk').value) || 0;
-const state = document.getElementById('rationCowState').value;
+  const weight = parseFloat(document.getElementById('rationCowWeight').value) || 0;
+  const milk = parseFloat(document.getElementById('rationCowMilk').value) || 0;
+  const state = document.getElementById('rationCowState').value;
   
   if (weight < 100) {
     resultEl.innerHTML = '<div style="padding:14px;background:#FFEBEE;border-radius:10px;color:#c62828;text-align:center;font-size:13px;">⚠️ গরুর ওজন দিন</div>';
     return;
   }
   
-  // ========== FEED SUGGEST ==========
+  const rows = document.querySelectorAll('#rationRows .ration-row');
+  const actual = { fresh: 0, dm: 0, cp: 0, me: 0, ca: 0, p: 0 };
+  const items = [];
+  
+  rows.forEach(row => {
+    const feedId = row.querySelector('[data-role="feed"]').value;
+    const qtyInput = parseFloat(row.querySelector('[data-role="qty"]').value);
+    if (!feedId || !qtyInput || qtyInput <= 0) return;
+    
+    const unitEl = row.querySelector('[data-role="unit"]');
+    const unit = unitEl ? unitEl.value : 'kg';
+    const qty = (unit === 'g') ? (qtyInput / 1000) : qtyInput;
+    
+    const feed = allFeedInfo.find(f => f.id === feedId);
+    if (!feed) return;
+    
+    const dm = qty * ((feed.dm || 0) / 100);
+    
+    actual.fresh += qty;
+    actual.dm += dm;
+    actual.cp += dm * ((feed.cp || 0) / 100) * 1000;
+    actual.me += dm * (feed.me || 0);
+    actual.ca += dm * ((feed.ca || 0) / 100) * 1000;
+    actual.p += dm * ((feed.p || 0) / 100) * 1000;
+    
+    const lang = (DB.settings && DB.settings.lang) || 'bn';
+    const name = (feed.name && feed.name[lang]) || (feed.name && feed.name.bn) || feedId;
+    items.push({ name: name, qty: qtyInput, unit: unit });
+  });
+  
+  const req = getCowRequirements(weight, milk, state);
+  
+  const pct = (act, need) => {
+    if (!need) return 0;
+    return Math.round((act / need) * 100);
+  };
+  
+  const status = (act, need) => {
+    const p = pct(act, need);
+    if (p >= 95 && p <= 115) return { color: '#2E7D32', icon: '✅', label: 'ঠিক' };
+    if (p < 95) return { color: '#e53935', icon: '⚠️', label: 'কম' };
+    return { color: '#FF6F00', icon: '🔺', label: 'বেশি' };
+  };
+  
+  const gramOrKg = (g) => {
+    if (g >= 1000) return (g / 1000).toFixed(2) + ' kg';
+    return Math.round(g) + ' g';
+  };
+  
+  const rowHtml = (label, need, act, isEnergy) => {
+    const st = status(act, need);
+    const needStr = isEnergy ? need.toFixed(1) + ' MJ' : gramOrKg(need);
+    const actStr = isEnergy ? act.toFixed(1) + ' MJ' : gramOrKg(act);
+    return '<tr style="border-bottom:1px solid #f0f0f0;">' +
+      '<td style="padding:10px 6px;font-size:12px;color:#333;">' + label + '</td>' +
+      '<td style="padding:10px 4px;font-size:12px;color:#666;text-align:right;">' + needStr + '</td>' +
+      '<td style="padding:10px 4px;font-size:12px;color:#333;text-align:right;font-weight:700;">' + actStr + '</td>' +
+      '<td style="padding:10px 4px;font-size:11px;text-align:right;color:' + st.color + ';font-weight:700;">' + st.icon + ' ' + st.label + '</td>' +
+    '</tr>';
+  };
+  
+  const itemsHtml = items.map(it =>
+    '<div style="font-size:12px;color:#555;padding:3px 0;">• ' + escapeHtml(it.name) + ' — ' + it.qty + ' ' + (it.unit || 'kg') + '</div>'
+  ).join('');
+  
+  const pMe = pct(actual.me, req.me);
+  const pCp = pct(actual.cp, req.cp);
+  const pCa = pct(actual.ca, req.ca);
+  const pP = pct(actual.p, req.p);
+  
+  let advice = [];
+  if (pMe < 95) advice.push('⚡ শক্তি ' + (95 - pMe) + '% কম — ভুট্টা দানা ১-২ কেজি বাড়ান');
+  if (pMe > 115) advice.push('🔺 শক্তি বেশি — কিছু দানাদার কমান');
+  if (pCp < 95) advice.push('🥩 প্রোটিন ' + (95 - pCp) + '% কম — সরিষার খৈল ১-২ কেজি বাড়ান');
+  if (pCa < 95) advice.push('🦴 ক্যালসিয়াম কম — DCP বা চুনাপাথর দিন');
+  if (pP < 95) advice.push('⚗️ ফসফরাস কম — ডিসিপি (DCP) ৫০ গ্রাম দিন');
+  if (actual.dm > req.dm * 1.15) advice.push('💧 শুকনো পদার্থ বেশি — ফিড পরিমাণ কমান');
+  
+  if (advice.length === 0) advice.push('✅ সব ঠিক আছে — এই খাদ্য চালিয়ে যান');
+  
+  const adviceHtml = advice.map(a => '<div style="padding:8px 10px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;margin-bottom:6px;font-size:12px;color:#555;">' + a + '</div>').join('');
+  
+  resultEl.innerHTML =
+    '<div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">' +
+      '<div style="font-size:15px;font-weight:700;color:#2E7D32;margin-bottom:10px;">📊 ফলাফল</div>' +
+      '<div style="padding:8px 10px;background:#f5f5f5;border-radius:8px;margin-bottom:12px;">' +
+        '<div style="font-size:11px;color:#999;margin-bottom:4px;">🐄 গরু: ' + weight + ' kg · ' + milk + ' লিটার · ' + state + '</div>' +
+        itemsHtml +
+      '</div>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px;">' +
+        '<thead><tr style="background:#E8F5E9;">' +
+          '<th style="padding:8px 6px;font-size:11px;color:#2E7D32;text-align:left;">পুষ্টি</th>' +
+          '<th style="padding:8px 4px;font-size:11px;color:#2E7D32;text-align:right;">প্রয়োজন</th>' +
+          '<th style="padding:8px 4px;font-size:11px;color:#2E7D32;text-align:right;">পাচ্ছে</th>' +
+          '<th style="padding:8px 4px;font-size:11px;color:#2E7D32;text-align:right;">অবস্থা</th>' +
+        '</tr></thead>' +
+        '<tbody>' +
+          rowHtml('⚡ শক্তি (ME)', req.me, actual.me, true) +
+          rowHtml('🥩 প্রোটিন (CP)', req.cp, actual.cp, false) +
+          rowHtml('🦴 ক্যালসিয়াম (Ca)', req.ca, actual.ca, false) +
+          rowHtml('⚗️ ফসফরাস (P)', req.p, actual.p, false) +
+        '</tbody>' +
+      '</table>' +
+      '<div style="font-size:13px;font-weight:700;color:#E65100;margin-bottom:8px;">💡 পরামর্শ</div>' +
+      adviceHtml +
+    '</div>';
+}
+
+// ========== FEED SUGGEST ==========
 function calculateSuggest() {
   const resultEl = document.getElementById('suggestResult');
   if (!resultEl) return;
@@ -3764,26 +3870,20 @@ function calculateSuggest() {
     return;
   }
   
-  // প্রয়োজন হিসাব
   const req = getCowRequirements(weight, milk, state);
   
-  // Scale factor (base: 400 kg cow with 10 L milk)
   const wtFactor = weight / 400;
-  const milkFactor = state === 'milking' ? (milk / 10) : 0;
   
-  // Green fodder (নেপিয়ার)
   let greenKg = 25 * wtFactor;
   if (state === 'milking') greenKg += milk * 0.5;
   if (state === 'heifer') greenKg = 15 * wtFactor;
   if (state === 'dry') greenKg = 20 * wtFactor;
   greenKg = Math.round(greenKg);
   
-  // Dry fodder (খড়)
   let dryKg = 3 * wtFactor;
   if (state === 'milking') dryKg += 1;
   dryKg = Math.round(dryKg * 10) / 10;
   
-  // Concentrate
   let concKg = 0;
   if (state === 'milking') {
     concKg = 1.5 * wtFactor + (milk * 0.35);
@@ -3796,16 +3896,13 @@ function calculateSuggest() {
   }
   concKg = Math.round(concKg * 10) / 10;
   
-  // Concentrate breakup (mix system)
   const mustardCake = Math.round(concKg * 0.35 * 10) / 10;
   const wheatBran = Math.round(concKg * 0.35 * 10) / 10;
   const maize = Math.round(concKg * 0.30 * 10) / 10;
   
-  // Balanced feed (for balanced/both system)
   const balancedKg = Math.round(concKg * 0.5 * 10) / 10;
   const mixPart = Math.round(concKg * 0.5 * 10) / 10;
   
-  // Mineral
   const mineral = (weight < 200) ? 15 : 30;
   const salt = (weight < 200) ? 15 : 30;
   
@@ -3861,7 +3958,6 @@ function calculateSuggest() {
       row('🧂', 'লবণ', salt + ' g');
   }
   
-  // Estimated nutrition
   const estMe = (greenKg * 0.20 * 7.8) + (dryKg * 0.90 * 6.0) + (concKg * 0.88 * 11.5);
   const estCp = (greenKg * 0.20 * 0.09 * 1000) + (dryKg * 0.90 * 0.04 * 1000) + (concKg * 0.88 * 0.21 * 1000);
   
@@ -3887,9 +3983,7 @@ function calculateSuggest() {
       '<div style="font-size:11px;color:#999;padding:8px 10px;background:#f5f5f5;border-radius:8px;margin-bottom:10px;">' +
         '🐄 ' + weight + ' kg · ' + milk + ' L · ' + (stateLabel[state] || state) +
       '</div>' +
-      
       rationHtml +
-      
       '<div style="margin-top:16px;padding:12px;background:#E8F5E9;border-radius:10px;">' +
         '<div style="font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:8px;">📊 প্রত্যাশিত পুষ্টি</div>' +
         '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #c8e6c9;">' +
@@ -3902,7 +3996,6 @@ function calculateSuggest() {
         '</div>' +
         '<div style="font-size:11px;color:#666;margin-top:6px;font-style:italic;">প্রয়োজন: ' + req.me.toFixed(1) + ' MJ · ' + gramOrKg(req.cp) + '</div>' +
       '</div>' +
-      
       '<div style="margin-top:12px;padding:12px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;">' +
         '<div style="font-size:12px;font-weight:700;color:#E65100;margin-bottom:4px;">💡 টিপস</div>' +
         '<div style="font-size:11px;color:#555;line-height:1.6;">' +
@@ -3914,120 +4007,7 @@ function calculateSuggest() {
       '</div>' +
     '</div>';
 }
-  
-  const rows = document.querySelectorAll('#rationRows .ration-row');
-  const actual = { fresh: 0, dm: 0, cp: 0, me: 0, ca: 0, p: 0 };
-  const items = [];
-  
-  rows.forEach(row => {
-    const feedId = row.querySelector('[data-role="feed"]').value;
-    const qtyInput = parseFloat(row.querySelector('[data-role="qty"]').value);
-    if (!feedId || !qtyInput || qtyInput <= 0) return;
-    
-    const unitEl = row.querySelector('[data-role="unit"]');
-    const unit = unitEl ? unitEl.value : 'kg';
-    const qty = (unit === 'g') ? (qtyInput / 1000) : qtyInput;
-    
-    const feed = allFeedInfo.find(f => f.id === feedId);
-    if (!feed) return;
-    
-    const dm = qty * ((feed.dm || 0) / 100);
-    
-    actual.fresh += qty;
-    actual.dm += dm;
-    actual.cp += dm * ((feed.cp || 0) / 100) * 1000;
-    actual.me += dm * (feed.me || 0);
-    actual.ca += dm * ((feed.ca || 0) / 100) * 1000;
-    actual.p += dm * ((feed.p || 0) / 100) * 1000;
-    
-    const lang = (DB.settings && DB.settings.lang) || 'bn';
-    const name = (feed.name && feed.name[lang]) || (feed.name && feed.name.bn) || feedId;
-    items.push({ name: name, qty: qtyInput, unit: unit });
-  });
-  
-  const req = getCowRequirements(weight, milk, state);
-  
-  const pct = (act, need) => {
-    if (!need) return 0;
-    return Math.round((act / need) * 100);
-  };
-  
-  const status = (act, need) => {
-    const p = pct(act, need);
-    if (p >= 95 && p <= 115) return { color: '#2E7D32', icon: '✅', label: 'ঠিক' };
-    if (p < 95) return { color: '#e53935', icon: '⚠️', label: 'কম' };
-    return { color: '#FF6F00', icon: '🔺', label: 'বেশি' };
-  };
-  
-  const gramOrKg = (g) => {
-    if (g >= 1000) return (g / 1000).toFixed(2) + ' kg';
-    return Math.round(g) + ' g';
-  };
-  
-  const rowHtml = (label, need, act, isEnergy) => {
-    const st = status(act, need);
-    const needStr = isEnergy ? need.toFixed(1) + ' MJ' : gramOrKg(need);
-    const actStr = isEnergy ? act.toFixed(1) + ' MJ' : gramOrKg(act);
-    const diffStr = (act >= need ? '+' : '') + (isEnergy ? (act - need).toFixed(1) + ' MJ' : gramOrKg(act - need));
-    return '<tr style="border-bottom:1px solid #f0f0f0;">' +
-      '<td style="padding:10px 6px;font-size:12px;color:#333;">' + label + '</td>' +
-      '<td style="padding:10px 4px;font-size:12px;color:#666;text-align:right;">' + needStr + '</td>' +
-      '<td style="padding:10px 4px;font-size:12px;color:#333;text-align:right;font-weight:700;">' + actStr + '</td>' +
-      '<td style="padding:10px 4px;font-size:11px;text-align:right;color:' + st.color + ';font-weight:700;">' + st.icon + ' ' + st.label + '</td>' +
-    '</tr>';
-  };
-  
-  const itemsHtml = items.map(it =>
-    '<div style="font-size:12px;color:#555;padding:3px 0;">• ' + escapeHtml(it.name) + ' — ' + it.qty + ' ' + (it.unit || 'kg') + '</div>'
-  ).join('');
-  
-  const pMe = pct(actual.me, req.me);
-  const pCp = pct(actual.cp, req.cp);
-  const pCa = pct(actual.ca, req.ca);
-  const pP = pct(actual.p, req.p);
-  
-  let advice = [];
-  if (pMe < 95) advice.push('⚡ শক্তি ' + (95 - pMe) + '% কম — ভুট্টা দানা ১-২ কেজি বাড়ান');
-  if (pMe > 115) advice.push('🔺 শক্তি বেশি — কিছু দানাদার কমান');
-  if (pCp < 95) advice.push('🥩 প্রোটিন ' + (95 - pCp) + '% কম — সরিষার খৈল ১-২ কেজি বাড়ান');
-  if (pCa < 95) advice.push('🦴 ক্যালসিয়াম কম — DCP বা চুনাপাথর দিন');
-  if (pP < 95) advice.push('⚗️ ফসফরাস কম — ডিসিপি (DCP) ৫০ গ্রাম দিন');
-  if (actual.dm > req.dm * 1.15) advice.push('💧 শুকনো পদার্থ বেশি — ফিড পরিমাণ কমান');
-  
-  if (advice.length === 0) {
-    advice.push('✅ সব ঠিক আছে — এই খাদ্য চালিয়ে যান');
-  }
-  
-  const adviceHtml = advice.map(a => '<div style="padding:8px 10px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;margin-bottom:6px;font-size:12px;color:#555;">' + a + '</div>').join('');
-  
-  resultEl.innerHTML =
-    '<div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">' +
-      '<div style="font-size:15px;font-weight:700;color:#2E7D32;margin-bottom:10px;">📊 ফলাফল</div>' +
-      
-      '<div style="padding:8px 10px;background:#f5f5f5;border-radius:8px;margin-bottom:12px;">' +
-        '<div style="font-size:11px;color:#999;margin-bottom:4px;">🐄 গরু: ' + weight + ' kg · ' + milk + ' লিটার · ' + state + '</div>' +
-        itemsHtml +
-      '</div>' +
-      
-      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px;">' +
-        '<thead><tr style="background:#E8F5E9;">' +
-          '<th style="padding:8px 6px;font-size:11px;color:#2E7D32;text-align:left;">পুষ্টি</th>' +
-          '<th style="padding:8px 4px;font-size:11px;color:#2E7D32;text-align:right;">প্রয়োজন</th>' +
-          '<th style="padding:8px 4px;font-size:11px;color:#2E7D32;text-align:right;">পাচ্ছে</th>' +
-          '<th style="padding:8px 4px;font-size:11px;color:#2E7D32;text-align:right;">অবস্থা</th>' +
-        '</tr></thead>' +
-        '<tbody>' +
-          rowHtml('⚡ শক্তি (ME)', req.me, actual.me, true) +
-          rowHtml('🥩 প্রোটিন (CP)', req.cp, actual.cp, false) +
-          rowHtml('🦴 ক্যালসিয়াম (Ca)', req.ca, actual.ca, false) +
-          rowHtml('⚗️ ফসফরাস (P)', req.p, actual.p, false) +
-        '</tbody>' +
-      '</table>' +
-      
-      '<div style="font-size:13px;font-weight:700;color:#E65100;margin-bottom:8px;">💡 পরামর্শ</div>' +
-      adviceHtml +
-    '</div>';
-}
+
 
 function showPage(p) {
   document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
