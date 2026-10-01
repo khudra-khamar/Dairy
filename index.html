@@ -10000,6 +10000,13 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ SW registered:', reg.scope);
       
+      // ===== Page load-এ waiting worker চেক =====
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        window._waitingWorker = reg.waiting;
+        showUpdateBanner();
+      }
+      
+      // ===== নতুন version detect =====
       reg.addEventListener('updatefound', function() {
         const newWorker = reg.installing;
         if (!newWorker) return;
@@ -10040,21 +10047,31 @@ function showUpdateBanner() {
   
   document.body.appendChild(banner);
   
-  document.getElementById('updateNowBtn').onclick = function() {
+  document.getElementById('updateNowBtn').onclick = async function() {
     const btn = document.getElementById('updateNowBtn');
     btn.textContent = '⏳ Updating...';
     btn.disabled = true;
     
-    if (window._waitingWorker) {
-      window._waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-    }
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    try {
+      // সরাসরি registration থেকে waiting worker নিই
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      } else if (window._waitingWorker) {
+        window._waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+      } else {
+        // কিছুই না পেলে সরাসরি reload
+        window.location.reload(true);
+      }
+    } catch(e) {
+      console.warn('Update error:', e);
+      window.location.reload(true);
     }
     
+    // Fallback — ৩ সেকেন্ড পর reload
     setTimeout(function() {
       window.location.reload(true);
-    }, 800);
+    }, 3000);
   };
   
   document.getElementById('updateLaterBtn').onclick = function() {
