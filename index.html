@@ -238,23 +238,57 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 
 </head>
 <body>
-<!-- ========== SPLASH SCREEN ========== -->
-<div id="dmSplash" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1B5E20 0%,#2E7D32 50%,#43A047 100%);z-index:9999999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
-  <div style="font-size:80px;animation:dmBounce 1.2s ease-in-out infinite;">🐄</div>
-  <div style="color:#fff;font-size:24px;font-weight:800;letter-spacing:1px;">Dairy Manager</div>
-  <div style="color:rgba(255,255,255,0.7);font-size:13px;">Loading...</div>
-  <div style="width:40px;height:40px;border:4px solid rgba(255,255,255,0.3);border-top-color:#FFEB3B;border-radius:50%;animation:dmSpin 1s linear infinite;"></div>
+<!-- ========== SPLASH SCREEN (Green + Gold) ========== -->
+<div id="dmSplash" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#0D3D14 0%,#1B5E20 40%,#2E7D32 100%);z-index:9999999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;overflow:hidden;">
+
+  <!-- Decorative Golden Circles -->
+  <div style="position:absolute;top:-80px;right:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,0.15) 0%,transparent 70%);"></div>
+  <div style="position:absolute;bottom:-100px;left:-100px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,0.12) 0%,transparent 70%);"></div>
+
+  <!-- Cow Icon in Golden Ring -->
+  <div style="position:relative;z-index:2;">
+    <div style="width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,215,0,0.25),rgba(255,215,0,0.05));border:3px solid #FFD700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(255,215,0,0.4),inset 0 0 20px rgba(255,215,0,0.2);animation:dmPulse 2s ease-in-out infinite;">
+      <span style="font-size:70px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));">🐄</span>
+    </div>
+  </div>
+
+  <!-- App Name -->
+  <div style="position:relative;z-index:2;text-align:center;">
+    <div style="color:#FFD700;font-size:30px;font-weight:900;letter-spacing:2px;text-shadow:0 2px 12px rgba(255,215,0,0.5),0 0 4px rgba(0,0,0,0.5);font-family:Georgia,serif;">Dairy Manager</div>
+    
+    <!-- Golden Divider -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
+      <div style="height:1px;width:30px;background:linear-gradient(90deg,transparent,#FFD700);"></div>
+      <span style="color:#FFD700;font-size:10px;">✦</span>
+      <div style="height:1px;width:30px;background:linear-gradient(90deg,#FFD700,transparent);"></div>
+    </div>
+    
+    <div style="color:rgba(255,255,255,0.85);font-size:13px;margin-top:10px;letter-spacing:0.5px;">আপনার ডেইরি, আপনার হাতে</div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:8px;">
+    <div style="width:46px;height:46px;border:3px solid rgba(255,215,0,0.2);border-top-color:#FFD700;border-right-color:#FFD700;border-radius:50%;animation:dmSpin 0.9s linear infinite;box-shadow:0 0 20px rgba(255,215,0,0.3);"></div>
+    <div style="color:rgba(255,215,0,0.8);font-size:11px;letter-spacing:1.5px;">LOADING...</div>
+  </div>
+
+  <!-- Footer -->
+  <div style="position:absolute;bottom:30px;left:0;right:0;text-align:center;z-index:2;">
+    <div style="color:rgba(255,255,255,0.5);font-size:10px;letter-spacing:1px;">💚 MADE FOR FARMERS</div>
+  </div>
+
 </div>
 
 <style>
-@keyframes dmBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+@keyframes dmPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(255,215,0,0.4), inset 0 0 20px rgba(255,215,0,0.2); }
+  50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(255,215,0,0.6), inset 0 0 30px rgba(255,215,0,0.3); }
 }
 @keyframes dmSpin {
   to { transform: rotate(360deg); }
 }
 </style>
+
 
 <!-- ========== SETUP WIZARD SCREEN ========== -->
 <div id="setupScreen" class="lock-screen" style="display:none;">
