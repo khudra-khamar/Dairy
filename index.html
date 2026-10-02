@@ -6889,6 +6889,63 @@ if (f.alertsDry && c.insemDate && c.inseminated === 'yes' && !c.dryDone) {
   return alerts;
 }
 
+// ========== ALERT SYNC TO FIRESTORE ==========
+async function syncAlertsToFirestore() {
+  try {
+    if (!window._db) return;
+    
+    const alerts = getAlerts();
+    const today = new Date().toISOString().split('T')[0];
+    
+ // FCM token খুঁজি (index-free)
+let fcmToken = '';
+try {
+  const tokSnap = await window._db.collection('fcmTokens').get();
+  tokSnap.forEach(function(doc) {
+    const d = doc.data();
+    if (d.deviceId === DB.deviceId && d.token) {
+      fcmToken = d.token;
+    }
+  });
+} catch(e) {
+  console.warn('Token lookup failed:', e);
+}
+console.log('FCM Token:', fcmToken ? 'Found (' + fcmToken.length + ' chars)' : 'Not found');
+    
+    // User info
+    const user = window._auth && window._auth.currentUser;
+    const uid = user ? user.uid : '';
+    
+    // Firestore-এ save
+    await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+      deviceId: DB.deviceId,
+      uid: uid,
+      fcmToken: fcmToken,
+      farmName: DB.settings.farmName || '',
+      phone: DB.settings.phone || '',
+      lang: DB.settings.lang || 'bn',
+      alerts: alerts.map(a => ({
+        id: a.id,
+        cowId: a.cowId || '',
+        type: a.type || '',
+        title: a.title || '',
+        desc: a.desc || '',
+        action: a.action || '',
+        icon: a.icon || '',
+        color: a.color || ''
+      })),
+      alertCount: alerts.length,
+      lastSync: Date.now(),
+      lastSyncDate: today,
+      appVersion: '3.0'
+    }, { merge: true });
+    
+    console.log('✅ Alerts synced:', alerts.length);
+  } catch(e) {
+    console.warn('Alert sync failed:', e);
+  }
+}
+
 function renderAlertCenter() {
   const badge = document.getElementById('alertBadge');
   if (!badge) return;
@@ -6899,6 +6956,7 @@ function renderAlertCenter() {
   } else {
     badge.style.display = 'none';
   }
+syncAlertsToFirestore();
 }
   
 function renderAlertsFull() {
@@ -9655,6 +9713,36 @@ function continueWithTrial() {
 async function checkLicense() {
   const input = document.getElementById('licenseInput').value.trim().toUpperCase();
   if (!input) { showAlert('Error', 'Enter license code'); return; }
+  
+  // ===== Step 1: Login করা User-এর UID License =====
+  const user = window._auth && window._auth.currentUser;
+  if (user && user.uid && window._db) {
+    try {
+      const licDoc = await window._db.collection('licenses').doc(user.uid).get();
+      if (licDoc.exists) {
+        const data = licDoc.data();
+        if (data.active !== false && data.expiry) {
+          const expDate = new Date(data.expiry + 'T23:59:59');
+          if (expDate > new Date()) {
+            DB.license = {
+              code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
+              expiry: data.expiry,
+              trial: false,
+              uid: user.uid
+            };
+            saveDB();
+            toast('✅ License activated (UID)');
+            proceedAfterLogin();
+            return;
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('UID license check failed:', e);
+    }
+  }
+  
+  // ===== Step 2: Device-based License =====
   const result = await verifyLicense(input, DB.deviceId);
   if (!result) {
     showAlert('❌ Invalid', 'This license is not valid for this device.\n\nYour device: ' + DB.deviceId);
@@ -9662,79 +9750,100 @@ async function checkLicense() {
   }
   DB.license = { code: input, expiry: result.expiry, trial: false };
   saveDB();
-  document.getElementById('licenseScreen').style.display = 'none';
-  if (DB.security.pin) {
-    document.getElementById('pinLoginScreen').style.display = 'flex';
-  } else if (DB.security.skipped) {
-    document.getElementById('mainApp').style.display = 'block';
-    afterLogin();
-  } else {
-    document.getElementById('pinSetupScreen').style.display = 'flex';
-  }
+  proceedAfterLogin();
 }
 
 async function checkLicenseOnLoad() {
   const devShow = document.getElementById('deviceIdShow');
   if (devShow) devShow.textContent = DB.deviceId;
 
+  // ===== Step 1: Login করা User-এর UID License =====
+  const user = window._auth && window._auth.currentUser;
+  if (user && user.uid && window._db) {
+    try {
+      const licDoc = await window._db.collection('licenses').doc(user.uid).get();
+      if (licDoc.exists) {
+        const data = licDoc.data();
+        if (data.active !== false && data.expiry) {
+          const expDate = new Date(data.expiry + 'T23:59:59');
+          const daysLeft = Math.ceil((expDate - new Date()) / 86400000);
+          
+          if (daysLeft > 0) {
+            DB.license = {
+              code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
+              expiry: data.expiry,
+              trial: false,
+              uid: user.uid
+            };
+            saveDB();
+            console.log('✅ UID License active:', data.expiry);
+            proceedAfterLogin();
+            return true;
+          }
+          
+          if (daysLeft <= -GRACE_DAYS) {
+            document.getElementById('licenseScreen').style.display = 'flex';
+            return false;
+          }
+          
+          if (daysLeft <= 0) {
+            showGraceScreen(daysLeft);
+            return true;
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('UID license check failed:', e);
+    }
+  }
+
+  // ===== Step 2: Trial check =====
   if (DB.license.trial && DB.license.expiry) {
     const exp = new Date(DB.license.expiry + 'T00:00:00');
     const daysLeft = Math.ceil((exp - new Date()) / 86400000);
- if (daysLeft > 0) {
-  // Trial active — সরাসরি Main App (PIN Setup নেই)
-  proceedAfterLogin();
-  return true;
-}
+    
+    if (daysLeft > 0) {
+      proceedAfterLogin();
+      return true;
+    }
 
     if (daysLeft <= -GRACE_DAYS) {
       document.getElementById('licenseScreen').style.display = 'flex';
       return false;
     }
+    
     if (daysLeft <= 0) {
       showGraceScreen(daysLeft);
       return true;
     }
   }
-
-  if (!DB.license.code) {
-    document.getElementById('licenseScreen').style.display = 'flex';
-    return false;
+  
+  // ===== Step 3: Device-based License =====
+  if (DB.license.code && DB.license.expiry) {
+    const exp = new Date(DB.license.expiry + 'T00:00:00');
+    const daysLeft = Math.ceil((exp - new Date()) / 86400000);
+    
+    if (daysLeft > 0) {
+      proceedAfterLogin();
+      return true;
+    }
+    
+    if (daysLeft <= -GRACE_DAYS) {
+      document.getElementById('licenseScreen').style.display = 'flex';
+      return false;
+    }
+    
+    if (daysLeft <= 0) {
+      showGraceScreen(daysLeft);
+      return true;
+    }
   }
-
-  const result = await verifyLicense(DB.license.code, DB.deviceId);
-  if (!result) {
-    document.getElementById('licenseScreen').style.display = 'flex';
-    return false;
-  }
-
-DB.license.expiry = result.expiry;
-DB.license.lastCheck = Date.now();
-DB.license.verifiedVia = result.source || 'unknown';
-saveDB();
-  const exp = new Date(result.expiry + 'T00:00:00');
-  const daysLeft = Math.ceil((exp - new Date()) / 86400000);
-
-  if (daysLeft <= -GRACE_DAYS) {
-    document.getElementById('licenseScreen').style.display = 'flex';
-    return false;
-  }
-
-  if (daysLeft <= 0) {
-    showGraceScreen(daysLeft);
-    return true;
-  }
-
-  document.getElementById('licenseScreen').style.display = 'none';
-  if (DB.security.pin) {
-    document.getElementById('pinLoginScreen').style.display = 'flex';
-  } else if (DB.security.skipped) {
-    document.getElementById('mainApp').style.display = 'block';
-    afterLogin();
-  } else {
-    document.getElementById('pinSetupScreen').style.display = 'flex';
-  }
-  return true;
+  
+  // ===== Step 4: License নেই =====
+  document.getElementById('licenseScreen').style.display = 'flex';
+  return false;
 }
+
 
 function showGraceScreen(daysLeft) {
   const screen = document.getElementById('licenseWarnScreen');
