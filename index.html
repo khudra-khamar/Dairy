@@ -253,63 +253,149 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     </div>
   </div>
 
-  <div id="setupStep2" style="display:none; width:100%; max-width:320px;">
-    <input type="text" id="setupFarmName" placeholder="Farm Name" style="text-align:left;">
-    <input type="text" id="setupOwnerName" placeholder="Owner Name" style="text-align:left;">
-    <input type="tel" id="setupPhone" placeholder="Mobile Number" style="text-align:left;">
-    <button class="btn-white" onclick="setupStep2Next()" id="setupBtn2">Next</button>
-    <button class="btn-link" onclick="setupStep3Show()">Skip</button>
-  </div>
 
-  <div id="setupStep3" style="display:none; width:100%; max-width:340px;">
-    <p style="font-size:14px; margin-bottom:12px;" id="presetTitle">Choose Mode</p>
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      <button class="btn-white" onclick="choosePreset('simple')" style="text-align:left; padding:16px;">
-        🌱 <b id="presetSimpleTitle">Simple</b><br>
-        <span style="font-size:12px; opacity:0.8;" id="presetSimpleDesc">Basic features only</span>
-      </button>
-      <button class="btn-white" onclick="choosePreset('medium')" style="text-align:left; padding:16px;">
-        🌿 <b id="presetMediumTitle">Medium</b><br>
-        <span style="font-size:12px; opacity:0.8;" id="presetMediumDesc">Adds lactation & alerts</span>
-      </button>
-      <button class="btn-white" onclick="choosePreset('advanced')" style="text-align:left; padding:16px;">
-        🌳 <b id="presetAdvancedTitle">Advanced</b><br>
-        <span style="font-size:12px; opacity:0.8;" id="presetAdvancedDesc">All features</span>
-      </button>
-    </div>
-  </div>
 </div>
+
 <!-- ========== LICENSE SCREEN ========== -->
-<div id="licenseScreen" class="lock-screen" style="display:none;">
-  <h2>Dairy Manager</h2>
-  <p id="licenseMsg">Enter License Code to Start</p>
-  <!-- ===== NEW: Login Section ===== -->
-<div id="loginSection" style="margin-bottom:20px;">
-  <p style="text-align:center;color:#666;margin:10px 0 16px;">🔐 Login করুন বা Trial শুরু করুন</p>
-  <button class="btn-white" onclick="loginWithGoogle()" style="width:100%;margin-bottom:10px;background:#fff;color:#333;border:1px solid #ddd;">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;vertical-align:middle;margin-right:8px;">
-    Google দিয়ে শুরু করুন
-  </button>
-<!-- Phone Login — Billing নিষ্ক্রিয়, পরে চালু হবে
-<button class="btn-white" onclick="loginWithPhone()" style="width:100%;background:#25D366;color:#fff;">
-  📱 Mobile Number দিয়ে শুরু করুন
-</button>
--->
-<!-- অথবা divider — Phone Login বন্ধ থাকায় লুকানো -->
-</div>
-  <div class="device-box">
-    <p id="deviceLabel">📱 Your Device Code</p>
-    <p id="deviceIdShow" class="dev-id">DEV-XXXXXXXX</p>
+<div id="licenseScreen" class="lock-screen" style="display:none;padding:0;background:linear-gradient(135deg,#1B5E20 0%,#2E7D32 50%,#43A047 100%);overflow-y:auto;">
+  
+  <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#FFEB3B,#FFC107,#FFEB3B);"></div>
+  
+  <div style="width:100%;max-width:420px;padding:30px 20px;text-align:center;position:relative;z-index:2;margin:auto;">
+    
+    <!-- Logo Section -->
+    <div style="margin-bottom:24px;">
+      <div style="width:110px;height:110px;margin:0 auto 16px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.3);box-shadow:0 8px 32px rgba(0,0,0,0.2);animation:floatLogo 3s ease-in-out infinite;">
+        <span style="font-size:60px;line-height:1;">🐄</span>
+      </div>
+      
+      <h1 style="margin:0;color:#fff;font-size:32px;font-weight:800;letter-spacing:0.5px;text-shadow:0 2px 8px rgba(0,0,0,0.3);">
+        Dairy Manager
+      </h1>
+      <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;font-weight:600;letter-spacing:0.3px;">
+        🥛 Your Dairy, In Your Hands
+      </p>
+      <p style="margin:4px 0 0;color:rgba(255,255,255,0.65);font-size:11px;letter-spacing:0.3px;">
+        আপনার ডেইরি, আপনার হাতে
+      </p>
+    </div>
+    
+    <!-- Welcome Card -->
+    <div style="background:rgba(255,255,255,0.98);border-radius:20px;padding:24px 20px;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+      
+      <!-- Heading -->
+      <p id="licenseMsg" style="margin:0 0 4px;color:#333;font-size:16px;font-weight:700;">
+        🔐 Login to Start
+      </p>
+      <p style="margin:0 0 20px;color:#888;font-size:12px;">
+        শুরু করতে Login করুন
+      </p>
+      
+      <!-- Login Section -->
+      <div id="loginSection">
+        
+        <!-- Google Login -->
+        <button onclick="loginWithGoogle()" style="width:100%;padding:15px 20px;background:#fff;color:#333;border:2px solid #e0e0e0;border-radius:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:24px;height:24px;">
+          <div style="text-align:left;line-height:1.2;">
+            <div style="font-size:15px;font-weight:700;color:#222;">Sign in with Google</div>
+            <div style="font-size:11px;color:#888;">Google দিয়ে শুরু করুন</div>
+          </div>
+        </button>
+        
+        <!-- Phone Login — Billing নিষ্ক্রিয়, পরে চালু হবে
+        <button onclick="loginWithPhone()" style="width:100%;padding:15px 20px;background:#25D366;color:#fff;border:none;border-radius:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:24px;">📱</span>
+          <div style="text-align:left;line-height:1.2;">
+            <div style="font-size:15px;font-weight:700;">Sign in with Mobile</div>
+            <div style="font-size:11px;opacity:0.9;">Mobile দিয়ে শুরু করুন</div>
+          </div>
+        </button>
+        -->
+        
+        <!-- Divider -->
+        <div style="display:flex;align-items:center;margin:18px 0;">
+          <div style="flex:1;height:1px;background:#e0e0e0;"></div>
+          <span style="padding:0 12px;color:#999;font-size:11px;font-weight:700;">OR</span>
+          <div style="flex:1;height:1px;background:#e0e0e0;"></div>
+        </div>
+        
+        <!-- Trial Button -->
+        <button onclick="continueWithTrial()" style="width:100%;padding:16px 20px;background:linear-gradient(135deg,#FFEB3B,#FFC107);color:#1B5E20;border:none;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(255,193,7,0.4);">
+          <div style="font-size:16px;font-weight:800;line-height:1.3;">▶️ Start 7-Day Free Trial</div>
+          <div style="font-size:11px;font-weight:600;opacity:0.8;margin-top:2px;">৭ দিন ফ্রি ট্রায়াল শুরু করুন</div>
+        </button>
+        
+      </div>
+      
+      <!-- License Code Section (Collapsible) -->
+      <div style="margin-top:20px;padding-top:18px;border-top:1px dashed #ddd;">
+        
+        <button onclick="toggleLicenseInput()" style="width:100%;background:transparent;border:none;padding:10px;color:#666;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <span style="font-size:14px;">🔑</span>
+          <span style="font-size:13px;font-weight:700;">Have a License Code?</span>
+          <span id="toggleArrow" style="transition:transform 0.3s;font-size:11px;">▼</span>
+        </button>
+        <p style="margin:0 0 8px;font-size:10px;color:#999;">License Code আছে?</p>
+        
+        <div id="licenseInputBox" style="display:none;margin-top:12px;">
+          
+          <!-- Device Code -->
+          <div style="background:#F1F8E9;border:1px dashed #A5D6A7;border-radius:12px;padding:12px;margin-bottom:14px;">
+            <p style="margin:0 0 4px;font-size:10px;color:#666;font-weight:700;letter-spacing:0.8px;">📱 YOUR DEVICE CODE</p>
+            <p style="margin:0 0 4px;font-size:9px;color:#999;">আপনার ডিভাইস কোড</p>
+            <p id="deviceIdShow" style="margin:0;font-size:15px;color:#1B5E20;font-weight:800;font-family:'Courier New',monospace;letter-spacing:1.5px;">DEV-XXXXXXXX</p>
+          </div>
+          
+          <!-- License Input -->
+          <input type="text" id="licenseInput" placeholder="ENTER LICENSE CODE" style="width:100%;padding:14px;border:2px solid #ddd;border-radius:12px;font-size:13px;text-transform:uppercase;box-sizing:border-box;font-family:'Courier New',monospace;letter-spacing:1.5px;outline:none;margin-bottom:10px;text-align:center;font-weight:700;">
+          
+          <button onclick="checkLicense()" id="licenseBtn" style="width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit;">
+            <div style="font-size:14px;font-weight:700;">✅ Enter License</div>
+            <div style="font-size:10px;opacity:0.9;margin-top:2px;">License দিন</div>
+          </button>
+          
+        </div>
+      </div>
+      
+      <!-- Contact Section -->
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+        <p style="margin:0 0 4px;font-size:13px;color:#555;font-weight:700;">
+          📞 Buy License
+        </p>
+        <p style="margin:0 0 12px;font-size:11px;color:#999;">
+          License কিনতে যোগাযোগ করুন
+        </p>
+        <div style="display:flex;gap:10px;">
+          <a href="tel:+919800696104" style="flex:1;padding:11px;background:#1976D2;color:#fff;border-radius:10px;text-decoration:none;text-align:center;">
+            <div style="font-size:13px;font-weight:700;">📞 Call</div>
+          </a>
+          <a href="https://wa.me/919800696104?text=I%20want%20Dairy%20Manager%20license%20code" style="flex:1;padding:11px;background:#25D366;color:#fff;border-radius:10px;text-decoration:none;text-align:center;">
+            <div style="font-size:13px;font-weight:700;">💬 WhatsApp</div>
+          </a>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Footer -->
+    <p style="margin:20px 0 0;color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:0.5px;">
+      💚 Made for Farmers · v3.0
+    </p>
+    <p style="margin:4px 0 0;color:rgba(255,255,255,0.5);font-size:10px;">
+      কৃষকদের জন্য তৈরি
+    </p>
+    
   </div>
-  <input type="text" id="licenseInput" placeholder="Enter license code" style="text-transform:uppercase;">
-  <button class="btn-white" onclick="checkLicense()" id="licenseBtn">✅ Enter</button>
-  <button class="btn-link" onclick="continueWithTrial()" style="display:block;margin:14px auto;padding:12px 24px;background:#FFEB3B;color:#1B5E20;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;">▶️ Continue with Trial</button>
-   <div class="contact-btns">
-    <p id="contactMsg">📞 Contact for license code</p>
-    <a href="tel:+919800696104" class="btn-call">📞 Call</a>
-    <a href="https://wa.me/919800696104?text=I%20want%20Dairy%20Manager%20license%20code" class="btn-wa">📱 WhatsApp</a>
-  </div>
+  
 </div>
+
+<style>
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+</style>
 
 <!-- ========== PIN SETUP SCREEN ========== -->
 <div id="pinSetupScreen" class="lock-screen" style="display:none;">
@@ -781,7 +867,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       <input type="text" id="srvProblemCustom" placeholder="সমস্যার নাম লিখুন..." style="display:none;margin-top:8px;">
     </div>
 
-    <div class="form-group"><label>📅 কবে দরকার?</label>
+    <div class="form-group"><label>?? কবে দরকার?</label>
       <input type="date" id="srvDate">
     </div>
 
@@ -8898,17 +8984,7 @@ if (!DB.settings.farmName) {
 }
 
 function goToAppAfterLogin() {
-  const licScreen = document.getElementById('licenseScreen');
-  if (licScreen) licScreen.style.display = 'none';
-  
-  if (DB.security.pin) {
-    document.getElementById('pinLoginScreen').style.display = 'flex';
-  } else if (DB.security.skipped) {
-    document.getElementById('mainApp').style.display = 'block';
-    afterLogin();
-  } else {
-    document.getElementById('pinSetupScreen').style.display = 'flex';
-  }
+  proceedAfterLogin();
 }
 
 function showOtpModal() {
@@ -9405,6 +9481,104 @@ if (!phoneNumber) return;
   }
 }
 
+// ========== LICENSE INPUT TOGGLE ==========
+function toggleLicenseInput() {
+  const box = document.getElementById('licenseInputBox');
+  const arrow = document.getElementById('toggleArrow');
+  if (!box) return;
+  
+  if (box.style.display === 'none') {
+    box.style.display = 'block';
+    if (arrow) arrow.style.transform = 'rotate(180deg)';
+  } else {
+    box.style.display = 'none';
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+  }
+}
+// ========== DEBUG ERROR DISPLAY ==========
+window.addEventListener('error', function(e) {
+  console.error('Global error:', e.error || e.message);
+  try {
+    let errBox = document.getElementById('dmErrorBox');
+    if (!errBox) {
+      errBox = document.createElement('div');
+      errBox.id = 'dmErrorBox';
+      errBox.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#e53935;color:#fff;padding:14px;font-size:12px;z-index:999999;font-family:monospace;word-break:break-all;max-height:50vh;overflow-y:auto;';
+      document.body.appendChild(errBox);
+    }
+    errBox.textContent = '❌ ' + (e.message || 'Unknown error') + ' at ' + (e.filename || '') + ':' + (e.lineno || '');
+  } catch(err) {}
+});
+
+// ========== AFTER LOGIN — Farm Name + Main App ==========
+async function proceedAfterLogin() {
+  try {
+    // License screen লুকাই
+    const licScreen = document.getElementById('licenseScreen');
+    if (licScreen) licScreen.style.display = 'none';
+    
+    // PIN set থাকলে PIN Login
+    if (DB.security && DB.security.pin) {
+      const pinLogin = document.getElementById('pinLoginScreen');
+      if (pinLogin) pinLogin.style.display = 'flex';
+      return;
+    }
+    
+    // Default Preset Advanced
+    if (!DB.settings.preset) {
+      DB.settings.preset = 'advanced';
+      if (typeof PRESETS !== 'undefined' && PRESETS.advanced) {
+        DB.settings.features = PRESETS.advanced;
+      }
+      saveDB();
+    }
+    
+    // Farm Name Modal — একবার per session
+    if (!DB.settings.farmName) {
+      let asked = '0';
+      try {
+        asked = sessionStorage.getItem('dm_farmNameAsked') || '0';
+      } catch(e) {}
+      
+      if (asked !== '1') {
+        try {
+          sessionStorage.setItem('dm_farmNameAsked', '1');
+        } catch(e) {}
+        
+        try {
+          if (typeof askNameModal === 'function') {
+            const name = await askNameModal();
+            if (name) {
+              DB.settings.farmName = name;
+              saveDB();
+              if (typeof saveNameToFirestore === 'function') {
+                try { await saveNameToFirestore(name); } catch(e) {}
+              }
+            }
+          }
+        } catch(e) {
+          console.warn('Farm name modal failed:', e);
+        }
+      }
+    }
+  } catch(e) {
+    console.error('proceedAfterLogin error:', e);
+  }
+  
+  // Main App দেখাই (error হলেও)
+  try {
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) mainApp.style.display = 'block';
+    
+    if (typeof afterLogin === 'function') {
+      afterLogin();
+    }
+  } catch(e) {
+    console.error('afterLogin error:', e);
+  }
+}
+
+
 function continueWithTrial() {
   // If trial already active — just skip license screen
   if (!DB.license.trial || !DB.license.expiry) {
@@ -9418,19 +9592,13 @@ function continueWithTrial() {
     saveDB();
   }
   
-  document.getElementById('licenseScreen').style.display = 'none';
-  
-  if (DB.security.pin) {
-    document.getElementById('pinLoginScreen').style.display = 'flex';
-  } else if (DB.security.skipped) {
-    document.getElementById('mainApp').style.display = 'block';
-    afterLogin();
-  } else {
-    document.getElementById('pinSetupScreen').style.display = 'flex';
-  }
   toast('✅ Trial চালু হয়েছে');
   saveGuestTrialUser();
+  
+  // নতুন flow — সরাসরি proceed
+  proceedAfterLogin();
 }
+  
 
 async function checkLicense() {
   const input = document.getElementById('licenseInput').value.trim().toUpperCase();
@@ -9460,18 +9628,12 @@ async function checkLicenseOnLoad() {
   if (DB.license.trial && DB.license.expiry) {
     const exp = new Date(DB.license.expiry + 'T00:00:00');
     const daysLeft = Math.ceil((exp - new Date()) / 86400000);
-    if (daysLeft > 0) {
-      document.getElementById('licenseScreen').style.display = 'none';
-      if (DB.security.pin) {
-        document.getElementById('pinLoginScreen').style.display = 'flex';
-      } else if (DB.security.skipped) {
-        document.getElementById('mainApp').style.display = 'block';
-        afterLogin();
-      } else {
-        document.getElementById('pinSetupScreen').style.display = 'flex';
-      }
-      return true;
-    }
+ if (daysLeft > 0) {
+  // Trial active — সরাসরি Main App (PIN Setup নেই)
+  proceedAfterLogin();
+  return true;
+}
+
     if (daysLeft <= -GRACE_DAYS) {
       document.getElementById('licenseScreen').style.display = 'flex';
       return false;
@@ -9672,55 +9834,38 @@ function disablePin() {
   });
 }
 
-// ========== SETUP WIZARD ==========
-let setupData = { lang: 'en', farmName: '', ownerName: '', phone: '', preset: 'medium' };
+// ========== SETUP WIZARD (Simplified — Language Only) ==========
+// শুধু Language Select → সরাসরি Login Screen
 
 function chooseSetupLang(l) {
-  setupData.lang = l;
   DB.settings.lang = l;
+  DB.settings.setupDone = true;
+  // Default Preset Advanced
+  if (!DB.settings.preset) {
+    DB.settings.preset = 'advanced';
+    if (typeof PRESETS !== 'undefined' && PRESETS.advanced) {
+      DB.settings.features = PRESETS.advanced;
+    }
+  }
+  
   saveDB();
-  document.getElementById('setupStep1').style.display = 'none';
-  document.getElementById('setupStep2').style.display = 'block';
-  document.getElementById('setupTitle').textContent =
-    l === 'bn' ? 'স্বাগতম' : l === 'hi' ? 'स्वागत है' : 'Welcome';
-  document.getElementById('setupSubtitle').textContent =
-    l === 'bn' ? 'আপনার খামার সেটআপ করুন' : l === 'hi' ? 'अपना फार्म सेट करें' : 'Set up your farm';
-  document.getElementById('setupFarmName').placeholder =
-    l === 'bn' ? 'খামারের নাম' : l === 'hi' ? 'फार्म का नाम' : 'Farm Name';
-  document.getElementById('setupOwnerName').placeholder =
-    l === 'bn' ? 'মালিকের নাম' : l === 'hi' ? 'मालिक का नाम' : 'Owner Name';
-  document.getElementById('setupPhone').placeholder =
-    l === 'bn' ? 'মোবাইল নম্বর' : l === 'hi' ? 'मोबाइल नंबर' : 'Mobile Number';
-  document.getElementById('setupBtn2').textContent =
-    l === 'bn' ? 'পরবর্তী' : l === 'hi' ? 'अगला' : 'Next';
+  
+  // Setup screen লুকাই
+  const setupScreen = document.getElementById('setupScreen');
+  if (setupScreen) setupScreen.style.display = 'none';
+  
+  // License/Login Screen দেখাই
+  const licScreen = document.getElementById('licenseScreen');
+  if (licScreen) licScreen.style.display = 'flex';
+  
+  // Language apply (সব label update)
+  if (typeof applyLang === 'function') {
+    applyLang();
+  }
+  
+  console.log('✅ Language set:', l);
 }
 
-function setupStep2Next() {
-  setupData.farmName = document.getElementById('setupFarmName').value.trim();
-  setupData.ownerName = document.getElementById('setupOwnerName').value.trim();
-  setupData.phone = document.getElementById('setupPhone').value.trim();
-  setupStep3Show();
-}
-
-function setupStep3Show() {
-  document.getElementById('setupStep2').style.display = 'none';
-  document.getElementById('setupStep3').style.display = 'block';
-  const l = setupData.lang;
-  document.getElementById('presetTitle').textContent =
-    l === 'bn' ? 'আপনার খামার কেমন?' : l === 'hi' ? 'आपका फार्म कैसा है?' : 'Your farm type?';
-  document.getElementById('presetSimpleTitle').textContent =
-    l === 'bn' ? 'সাধারণ' : l === 'hi' ? 'सरल' : 'Simple';
-  document.getElementById('presetSimpleDesc').textContent =
-    l === 'bn' ? 'শুধু মূল ফিচার' : l === 'hi' ? 'केवल बुनियादी' : 'Basic features only';
-  document.getElementById('presetMediumTitle').textContent =
-    l === 'bn' ? 'মধ্যম' : l === 'hi' ? 'मध्यम' : 'Medium';
-  document.getElementById('presetMediumDesc').textContent =
-    l === 'bn' ? 'Lactation + Alerts' : l === 'hi' ? 'लैक्टेशन + अलर्ट' : 'Lactation + Alerts';
-  document.getElementById('presetAdvancedTitle').textContent =
-    l === 'bn' ? 'অ্যাডভান্সড' : l === 'hi' ? 'उन्नत' : 'Advanced';
-  document.getElementById('presetAdvancedDesc').textContent =
-    l === 'bn' ? 'সব ফিচার' : l === 'hi' ? 'सभी फीचर' : 'All features';
-}
 
 function choosePreset(p) {
   setupData.preset = p;
@@ -10053,13 +10198,11 @@ async function initApp() {
           const parsed = JSON.parse(localData);
           DB = Object.assign(DB, parsed);
           idbLog('Migrated from localStorage');
-          // Save to IndexedDB immediately
           await saveDBAsync();
         } catch(e) {
           idbLog('Migration error: ' + e.message);
         }
       } else {
-        // Fresh install — load localStorage defaults if any
         loadDB();
       }
     }
@@ -10080,6 +10223,7 @@ async function initApp() {
     if (!DB.security.skipped) DB.security.skipped = false;
     if (!DB.license) DB.license = { code:'', expiry:'', trial:false };
     if (!DB.settings) DB.settings = {};
+    
     if (!DB.settings.features) DB.settings.features = {
       lactation:true, milkRecord:false, alertsPD:true, alertsHeat:true,
       alertsDry:true, alertsCalving:true, alertsDeworm:true,
@@ -10088,8 +10232,9 @@ async function initApp() {
     if (DB.settings.features.retail === undefined) DB.settings.features.retail = true;
     if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
     if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
-    if (!DB.settings.preset) DB.settings.preset = 'medium';
-    if (!DB.settings.lang) DB.settings.lang = 'en';
+    
+    // Default Preset Advanced
+    if (!DB.settings.preset) DB.settings.preset = 'advanced';
     if (!DB.settings.price) DB.settings.price = 40;
     if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
     
@@ -10103,20 +10248,28 @@ async function initApp() {
     if (dShow) dShow.textContent = DB.deviceId;
     
     // Step 6: Setup wizard or license check
-    if (!DB.settings.farmName && !DB.license.code && !DB.license.trial) {
-      document.getElementById('setupScreen').style.display = 'flex';
-      document.getElementById('setupStep1').style.display = 'block';
-      document.getElementById('setupStep2').style.display = 'none';
-      document.getElementById('setupStep3').style.display = 'none';
+    if (!DB.settings.setupDone) {
+      // প্রথমবার — Language Screen দেখাই
+      const setupEl = document.getElementById('setupScreen');
+      if (setupEl) setupEl.style.display = 'flex';
+      
+      const step1 = document.getElementById('setupStep1');
+      if (step1) step1.style.display = 'block';
+      
+      const licEl = document.getElementById('licenseScreen');
+      if (licEl) licEl.style.display = 'none';
     } else {
-      document.getElementById('setupScreen').style.display = 'none';
+      // Setup শেষ → License/Main App flow
+      const setupEl = document.getElementById('setupScreen');
+      if (setupEl) setupEl.style.display = 'none';
+      
       checkLicenseOnLoad();
     }
     
     idbLog('App initialized successfully');
   } catch(e) {
     idbLog('Init error: ' + e.message);
-    // Fallback to localStorage
+    console.error('Init error:', e);
     loadDB();
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
