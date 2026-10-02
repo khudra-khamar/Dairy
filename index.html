@@ -6897,16 +6897,30 @@ async function syncAlertsToFirestore() {
     const alerts = getAlerts();
     const today = new Date().toISOString().split('T')[0];
     
- // FCM token খুঁজি (index-free)
+// FCM token খুঁজি (latest + deviceId fallback)
 let fcmToken = '';
 try {
   const tokSnap = await window._db.collection('fcmTokens').get();
+  let latestTime = 0;
+  let latestToken = '';
   tokSnap.forEach(function(doc) {
     const d = doc.data();
-    if (d.deviceId === DB.deviceId && d.token) {
+    if (!d.token) return;
+    // deviceId match হলে সেটাই best
+    if (d.deviceId === DB.deviceId) {
       fcmToken = d.token;
+      latestTime = 9999999999;
+      return;
+    }
+    // otherwise latest token track করি
+    const t = d.updatedAt && d.updatedAt.seconds ? d.updatedAt.seconds : 0;
+    if (t > latestTime) {
+      latestTime = t;
+      latestToken = d.token;
     }
   });
+  // deviceId match না পেলে latest token
+  if (!fcmToken && latestToken) fcmToken = latestToken;
 } catch(e) {
   console.warn('Token lookup failed:', e);
 }
