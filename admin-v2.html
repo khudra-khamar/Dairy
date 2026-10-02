@@ -2650,14 +2650,24 @@ function renderLicenses() {
   const accountLicenses = filtered.filter(l => l.uid);
   const legacyLicenses = filtered.filter(l => !l.uid);
   
+  function getDisplayCode(lic) {
+    if (lic.licenseCode) return lic.licenseCode;
+    if (lic.uid && lic.uid.length >= 8) {
+      return 'DM-' + lic.uid.substring(0, 8).toUpperCase();
+    }
+    return lic.id || '—';
+  }
+  
   function renderCard(lic) {
     const status = getLicenseStatus(lic);
     const daysLeft = getDaysLeft(lic);
     const device = lic.deviceId || '—';
-    const createdBy = lic.createdBy || '—';
+    const createdBy = lic.createdBy || lic.issuedBy || '—';
     const farmerName = lic.farmerName || lic.ownerName || '—';
     const ownerPhone = lic.phone || '—';
     const expiry = lic.expiry || '—';
+    const displayCode = getDisplayCode(lic);
+    const isAccount = !!lic.uid;
     
     let statusBadge = '';
     let cardClass = '';
@@ -2683,10 +2693,23 @@ function renderLicenses() {
     const showRevoke = status !== 'revoked';
     const showRestore = status === 'revoked';
     
+    const copyBtn = isAccount ? 
+      '<button onclick="copyLicenseCode(\'' + displayCode + '\')" style="padding:4px 10px;background:#E8F5E9;color:#2E7D32;border:1px solid #2E7D32;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:8px;">📋 Copy</button>' : '';
+    
     return '<div class="lic-card ' + cardClass + '">' +
-      '<div class="l-code">' + escapeHtml(lic.id) + '</div>' +
+      (isAccount ? 
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:8px 10px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;">' +
+          '<div>' +
+            '<div style="font-size:9px;color:#888;font-weight:700;letter-spacing:0.5px;">🎫 LICENSE CODE</div>' +
+            '<div style="font-size:14px;color:#E65100;font-weight:800;font-family:Courier New,monospace;letter-spacing:1px;">' + escapeHtml(displayCode) + '</div>' +
+          '</div>' +
+          copyBtn +
+        '</div>' : 
+        '<div class="l-code">' + escapeHtml(displayCode) + '</div>') +
+      (farmerName !== '—' ? '<div class="l-device" style="font-weight:700;color:#2E7D32;">👤 ' + escapeHtml(farmerName) + '</div>' : '') +
+      (lic.email ? '<div class="l-device">📧 ' + escapeHtml(lic.email) + '</div>' : '') +
       '<div class="l-device">Device: ' + escapeHtml(device) + '</div>' +
-      '<div class="l-device">👤 ' + escapeHtml(farmerName) + (ownerPhone !== '—' ? ' · 📞 ' + escapeHtml(ownerPhone) : '') + '</div>' +
+      (ownerPhone !== '—' ? '<div class="l-device">📞 ' + escapeHtml(ownerPhone) + '</div>' : '') +
       '<div class="l-row">' +
         '<span class="l-label">Status</span>' +
         '<span class="l-value">' + statusBadge + '</span>' +
@@ -2701,7 +2724,7 @@ function renderLicenses() {
       '</div>' +
       '<div class="l-row">' +
         '<span class="l-label">Created By</span>' +
-        '<span class="l-value">' + escapeHtml(createdBy) + '</span>' +
+        '<span class="l-value" style="font-size:11px;">' + escapeHtml(createdBy) + '</span>' +
       '</div>' +
       '<div class="lic-actions">' +
         '<button class="lic-btn-extend" onclick="extendLicense(\'' + lic.id + '\')">+ Extend</button>' +
@@ -2725,6 +2748,40 @@ function renderLicenses() {
   
   listEl.innerHTML = html;
 }
+
+// ========== COPY LICENSE CODE ==========
+function copyLicenseCode(code) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function() {
+        toast('📋 Code কপি হয়েছে: ' + code);
+      }).catch(function() {
+        fallbackCopy(code);
+      });
+    } else {
+      fallbackCopy(code);
+    }
+  } catch(e) {
+    fallbackCopy(code);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    toast('📋 Code কপি হয়েছে: ' + text);
+  } catch(e) {
+    alert('Code: ' + text);
+  }
+  document.body.removeChild(ta);
+}
+
 
 function formatRelativeTime(ts) {
   if (!ts) return '—';
@@ -2950,9 +3007,20 @@ async function createLicenseForUser(user, days, notes) {
     const d = String(newExp.getDate()).padStart(2, '0');
     const expiryStr = y + '-' + m + '-' + d;
     
+    // ===== License Code তৈরি =====
+    // UID-র প্রথম ৮ অক্ষর uppercase
+    let codeFromUid = '';
+    if (uid && uid.length >= 8) {
+      codeFromUid = uid.substring(0, 8).toUpperCase();
+    } else {
+      codeFromUid = String(Date.now()).slice(-8);
+    }
+    const licenseCode = 'DM-' + codeFromUid;
+    
     const data = {
       uid: uid,
       type: 'account',
+      licenseCode: licenseCode,
       authMethod: user.authMethod || '',
       email: user.email || '',
       phone: user.phone || '',
@@ -2970,20 +3038,34 @@ async function createLicenseForUser(user, days, notes) {
     
     await ref.set(data, { merge: true });
     
-    // trialUsers doc-এ converted mark + license info
+    // trialUsers doc-এ converted mark
     try {
       await db.collection('trialUsers').doc(user.id).update({
         converted: true,
         convertedAt: firebase.firestore.FieldValue.serverTimestamp(),
         convertedBy: currentUser ? currentUser.email : 'admin',
-        licenseExpiry: expiryStr
+        licenseExpiry: expiryStr,
+        licenseCode: licenseCode
       });
     } catch(e) {
       console.warn('trialUsers update failed:', e);
     }
     
-    console.log('✅ License created:', uid, 'expiry:', expiryStr);
-    alert('✅ License তৈরি হয়েছে!\n\n👤 ' + (user.farmerName || user.email || uid) + '\n📅 Expiry: ' + expiryStr + '\n⏱️ ' + days + ' days');
+    console.log('✅ License created:', uid, 'code:', licenseCode, 'expiry:', expiryStr);
+    
+    // ===== Success Message (Code সহ) =====
+    const displayName = user.farmerName || user.ownerName || user.displayName || user.email || uid;
+    
+    alert(
+      '✅ License তৈরি হয়েছে!\n\n' +
+      '👤 ' + displayName + '\n' +
+      '📅 Expiry: ' + expiryStr + '\n' +
+      '⏱️ ' + days + ' days\n\n' +
+      '🎫 License Code:\n' +
+      licenseCode + '\n\n' +
+      '📌 এই code কপি করে PWA-তে Enter করতে পারবেন।'
+    );
+    
     return true;
     
   } catch(e) {
@@ -2992,6 +3074,7 @@ async function createLicenseForUser(user, days, notes) {
     return false;
   }
 }
+
 
 async function markTrialConverted(id) {
   if (!confirm('এই user কে Converted হিসেবে mark করবেন?')) return;
