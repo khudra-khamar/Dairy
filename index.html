@@ -10355,6 +10355,38 @@ window.addEventListener('popstate', function() {
 history.pushState(null, '', location.href);
 history.pushState(null, '', location.href);
 
+// ========== WAIT FOR AUTH + CHECK LICENSE ==========
+function waitForAuthThenCheckLicense() {
+  let attempts = 0;
+  const maxAttempts = 30; // 6 সেকেন্ড
+  
+  function tryCheck() {
+    attempts++;
+    
+    // Auth ready?
+    if (window._auth) {
+      // onAuthStateChanged দিয়ে final check
+      const unsub = window._auth.onAuthStateChanged(function(user) {
+        unsub();
+        console.log('✅ Auth ready:', user ? user.email : 'Not logged in');
+        checkLicenseOnLoad();
+      });
+      return;
+    }
+    
+    // Auth ready না — আবার চেষ্টা
+    if (attempts < maxAttempts) {
+      setTimeout(tryCheck, 200);
+    } else {
+      // Timeout — তবু check করি
+      console.warn('⚠️ Auth timeout — checking anyway');
+      checkLicenseOnLoad();
+    }
+  }
+  
+  tryCheck();
+}
+
 // ========== INIT ==========
 async function initApp() {
   try {
@@ -10422,24 +10454,25 @@ async function initApp() {
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
     
-    // Step 6: Setup wizard or license check
-    if (!DB.settings.setupDone) {
-      // প্রথমবার — Language Screen দেখাই
-      const setupEl = document.getElementById('setupScreen');
-      if (setupEl) setupEl.style.display = 'flex';
-      
-      const step1 = document.getElementById('setupStep1');
-      if (step1) step1.style.display = 'block';
-      
-      const licEl = document.getElementById('licenseScreen');
-      if (licEl) licEl.style.display = 'none';
-    } else {
-      // Setup শেষ → License/Main App flow
-      const setupEl = document.getElementById('setupScreen');
-      if (setupEl) setupEl.style.display = 'none';
-      
-      checkLicenseOnLoad();
-    }
+// Step 6: Setup wizard or license check
+if (!DB.settings.setupDone) {
+  // প্রথমবার — Language Screen দেখাই
+  const setupEl = document.getElementById('setupScreen');
+  if (setupEl) setupEl.style.display = 'flex';
+  
+  const step1 = document.getElementById('setupStep1');
+  if (step1) step1.style.display = 'block';
+  
+  const licEl = document.getElementById('licenseScreen');
+  if (licEl) licEl.style.display = 'none';
+} else {
+  // Setup শেষ → License/Main App flow
+  const setupEl = document.getElementById('setupScreen');
+  if (setupEl) setupEl.style.display = 'none';
+  
+  // Firebase Auth ready হওয়ার অপেক্ষা করি
+  waitForAuthThenCheckLicense();
+}
     
     idbLog('App initialized successfully');
     // Splash মুছি
@@ -10458,7 +10491,7 @@ if (splashErr) splashErr.remove();
     loadDB();
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
-    checkLicenseOnLoad();
+    waitForAuthThenCheckLicense();
   }
 }
 
