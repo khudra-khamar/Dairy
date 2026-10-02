@@ -729,9 +729,17 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
     <div class="login-err" id="loginErr"></div>
     
     <input type="email" id="loginEmail" placeholder="Email" autocomplete="email" value="matiur49@gmail.com">
-    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    
+    <div style="position:relative;">
+      <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" style="padding-right:44px;width:100%;box-sizing:border-box;">
+      <button type="button" id="togglePwBtn" onclick="togglePasswordVisibility()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:18px;cursor:pointer;padding:8px;color:#666;line-height:1;">👁️</button>
+    </div>
     
     <button id="loginBtn" onclick="doLogin()">Login</button>
+    
+    <div id="loginProgress" style="display:none;text-align:center;margin-top:12px;font-size:13px;color:#666;">
+      <span id="loginProgressText">⏳ Logging in...</span>
+    </div>
   </div>
 </div>
 
@@ -1363,11 +1371,43 @@ function getFriendlyAuthError(err) {
   return '❌ Login failed। আবার চেষ্টা করুন';
 }
 
+// ========== PASSWORD TOGGLE ==========
+function togglePasswordVisibility() {
+  const pw = document.getElementById('loginPassword');
+  const btn = document.getElementById('togglePwBtn');
+  if (!pw || !btn) return;
+  
+  if (pw.type === 'password') {
+    pw.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    pw.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+
+// ========== LOGIN ==========
+function getFriendlyAuthError(err) {
+  const code = err.code || '';
+  if (code === 'auth/invalid-email') return '❌ Email format ভুল হয়েছে';
+  if (code === 'auth/user-disabled') return '⚠️ এই account বন্ধ করা হয়েছে';
+  if (code === 'auth/user-not-found') return '❌ এই email-এ কোনো account নেই';
+  if (code === 'auth/wrong-password') return '❌ Password ভুল হয়েছে';
+  if (code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials') return '❌ Email বা Password ভুল হয়েছে';
+  if (code === 'auth/too-many-requests') return '⚠️ অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন';
+  if (code === 'auth/network-request-failed') return '📡 Internet সংযোগ নেই';
+  if (code === 'auth/missing-password') return '❌ Password দিন';
+  return '❌ Login failed। আবার চেষ্টা করুন';
+}
+
 function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
   const errEl = document.getElementById('loginErr');
+  const progEl = document.getElementById('loginProgress');
+  const progText = document.getElementById('loginProgressText');
   
   if (!email || !password) {
     errEl.textContent = '⚠️ Email ও Password দুটোই দিন';
@@ -1375,20 +1415,62 @@ function doLogin() {
     return;
   }
   
+  errEl.style.display = 'none';
   btn.disabled = true;
   btn.textContent = '⏳ Logging in...';
-  errEl.style.display = 'none';
+  btn.style.opacity = '0.7';
+  
+  if (progEl) {
+    progEl.style.display = 'block';
+    if (progText) progText.textContent = '⏳ Firebase-এ connect হচ্ছে...';
+  }
+  
+  const startTime = Date.now();
+  
+  // 8 সেকেন্ড পর progress update
+  const progressTimer1 = setTimeout(function() {
+    if (progText) progText.textContent = '⏳ Authentication verify হচ্ছে...';
+  }, 3000);
+  
+  const progressTimer2 = setTimeout(function() {
+    if (progText) progText.textContent = '⏳ একটু অপেক্ষা করুন...';
+  }, 6000);
+  
+  // 15 সেকেন্ড timeout
+  const timeoutTimer = setTimeout(function() {
+    if (btn.disabled) {
+      btn.disabled = false;
+      btn.textContent = 'Login';
+      btn.style.opacity = '1';
+      if (progEl) progEl.style.display = 'none';
+      errEl.textContent = '⚠️ Login-এ দেরি হচ্ছে। Internet connection চেক করুন।';
+      errEl.style.display = 'block';
+    }
+  }, 15000);
   
   auth.signInWithEmailAndPassword(email, password)
     .then(function(cred) {
-      console.log('✅ Logged in:', cred.user.email);
+      clearTimeout(progressTimer1);
+      clearTimeout(progressTimer2);
+      clearTimeout(timeoutTimer);
+      
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log('✅ Logged in in ' + elapsed + 's:', cred.user.email);
+      
+      if (progText) progText.textContent = '✅ সফল! (' + elapsed + 's)';
     })
     .catch(function(err) {
+      clearTimeout(progressTimer1);
+      clearTimeout(progressTimer2);
+      clearTimeout(timeoutTimer);
+      
       console.error('Login error:', err);
       errEl.textContent = getFriendlyAuthError(err);
       errEl.style.display = 'block';
       btn.disabled = false;
       btn.textContent = 'Login';
+      btn.style.opacity = '1';
+      if (progEl) progEl.style.display = 'none';
     });
 }
 
