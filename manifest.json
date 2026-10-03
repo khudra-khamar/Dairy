@@ -1,27 +1,58 @@
 {
   "name": "Dairy Manager",
-  "short_name": "Dairy",
-  "description": "Complete dairy farm management app",
-  "start_url": "./index.html",
-  "scope": "./",
+  "short_name": "Dairy Manager",
+  "description": "Complete digital solution for dairy farmers to manage cattle, milk production, income & expenses, and feed management.",
+  "start_url": "/Dairy/",
+  "scope": "/Dairy/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#2E7D32",
+  "background_color": "#1B5E20",
   "theme_color": "#2E7D32",
+  "orientation": "portrait",
   "lang": "en",
-  "categories": ["business", "productivity"],
+  "dir": "ltr",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["farming", "productivity", "business"],
+  "screenshots": [
+    {
+      "src": "farm-photo.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Animal",
+      "short_name": "Add Animal",
+      "description": "Add a new animal to your farm",
+      "url": "/Dairy/?page=add-cow",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Milk Entry",
+      "short_name": "Milk Entry",
+      "description": "Record today's milk production",
+      "url": "/Dairy/?page=milk-record",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
