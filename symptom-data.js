@@ -175,8 +175,7 @@ window.SYMPTOM_LIST = [
   { id:'nervous', name:{bn:'অস্থির', en:'Restless', hi:'बेचैन'}, icon:'😰' },
   { id:'convulsion', name:{bn:'খিঁচুনি', en:'Convulsion', hi:'दौरा'}, icon:'⚡' },
   { id:'anemia', name:{bn:'রক্তশূন্যতা', en:'Anemia', hi:'खून की कमी'}, icon:'🩸' },
-  { id:'retained_placenta', name:{bn:'গর্ভফুল পড়েনি', en:'Retained Placenta', hi:'जेर नहीं गिरा'}, icon:'⚠️' }
-    { id:'retained_placenta', name:{bn:'গর্ভফুল পড়েনি', en:'Retained Placenta', hi:'जेर नहीं गिरा'}, icon:'⚠️' },
+  { id:'retained_placenta', name:{bn:'গর্ভফুল পড়েনি', en:'Retained Placenta', hi:'जेर नहीं गिरा'}, icon:'⚠️' },
   { id:'navel_swelling', name:{bn:'নাভি ফুলে গেছে', en:'Navel Swelling', hi:'नाभि में सूजन'}, icon:'🩹' },
   { id:'uterus_out', name:{bn:'জরায়ু বেরিয়ে এসেছে', en:'Uterus Prolapsed', hi:'गर्भाशय बाहर'}, icon:'⚠️' },
   { id:'abortion', name:{bn:'গর্ভপাত হয়েছে', en:'Abortion', hi:'गर्भपात'}, icon:'💔' },
@@ -586,21 +585,6 @@ window.DISEASE_DB = [
   },
 
   // ২৫. পেট ব্যথা
-  {
-    id: 'stomach_pain',
-    name: { bn:'পেট ব্যথা', en:'Stomach Pain', hi:'पेट दर्द' },
-    icon: '⚠️',
-    urgency: 'medium',
-    symptoms: ['not_eating', 'nervous', 'bloat', 'constipation'],
-    min_match: 2,
-    first_aid_id: 'stomach',
-    action: {
-      bn: 'কৃমি বা বদহজম হতে পারে। ২৪ ঘণ্টা খাওয়া বন্ধ রাখুন, পানি দিন।',
-      en: 'Could be worms or indigestion. Fast 24 hours, give water.',
-      hi: 'कीड़े या अपच हो सकता है। २४ घंटे उपवास, पानी दें।'
-    }
-  }
-  
     {
     id: 'stomach_pain',
     name: { bn:'পেট ব্যথা', en:'Stomach Pain', hi:'पेट दर्द' },
@@ -861,7 +845,6 @@ window.DISEASE_DB = [
   }
 
 ];
-
 
 console.log('✅ Symptom Database Loaded:');
 console.log('   🩺 Symptoms:', window.SYMPTOM_LIST.length);
