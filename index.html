@@ -11096,8 +11096,10 @@ function checkLicenseWarning() {
 
 // ========== BACK BUTTON ==========
 let lastBackPress = 0;
+var __exiting = false;
 
 window.addEventListener('popstate', function() {
+if (__exiting) return;
   const mainApp = document.getElementById('mainApp');
   if (!mainApp || mainApp.style.display === 'none') return;
   if (pageStack.length > 1) {
@@ -11116,10 +11118,13 @@ window.addEventListener('popstate', function() {
 
 function exitAppChoose(yes) {
   document.getElementById('exitModal').style.display = 'none';
-  if (yes) {
-    if (navigator.app && navigator.app.exitApp) navigator.app.exitApp();
-    else window.close();
-  }
+  if (!yes) return;
+  try { if (navigator.app && navigator.app.exitApp) navigator.app.exitApp(); } catch(e) {}
+  try { window.close(); } catch(e) {}
+  // PWA/TWA-তে উপরেরটা কাজ না করলে: trap সরাও, পরের Back-এ app নিজে বন্ধ হবে
+  __exiting = true;
+  try { history.go(-2); } catch(e) {}
+  setTimeout(function(){ toast('⬅️ বের হতে Back বাটন চাপুন'); }, 600);
 }
 
 history.pushState(null, '', location.href);
