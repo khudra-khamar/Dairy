@@ -547,7 +547,10 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   <div class="menu-item" onclick="closeMenu(); showPage('manual')">
     <span class="menu-icon">📖</span> Help / User Manual
   </div>
-  <div class="menu-item" onclick="closeMenu(); showPage('calving-history')">
+ <div class="menu-item" onclick="closeMenu(); showPage('symptom')">
+  <span class="menu-icon">🔍</span> <span data-t="sym_menu_title">Symptom Checker</span>
+</div>
+ <div class="menu-item" onclick="closeMenu(); showPage('calving-history')">
     <span class="menu-icon">📅</span> Calving History
   </div>
   <div class="menu-item" onclick="closeMenu(); showPage('selling-history')">
@@ -628,6 +631,11 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     <div style="font-size:22px;margin-bottom:4px;">🍼</div>
     <div data-t="calving" style="font-size:10px;color:#333;font-weight:600;">Calving</div>
   </div>
+
+<div onclick="showPage('symptom')" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+  <div style="font-size:22px;margin-bottom:4px;">🔍</div>
+  <div data-t="sym_menu_title" style="font-size:10px;color:#333;font-weight:600;">Symptom</div>
+</div>
 
   <div onclick="showPage('feed-stock')" style="background:#FFF;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
     <div style="font-size:22px;margin-bottom:4px;">🌾</div>
@@ -1398,6 +1406,74 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 <div class="container">
 
+<!-- ========== SYMPTOM CHECKER PAGE ========== -->
+<div id="page-symptom" class="page">
+  <div class="page-header">
+    <button class="back-icon" onclick="showPage('home')">←</button>
+    <h2 data-t="sym_title">🔍 Symptom Checker</h2>
+  </div>
+  
+  <!-- Warning Banner -->
+  <div style="background:#FFF3E0;border-left:4px solid #FF6F00;border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:#555;line-height:1.6;">
+    <span data-t="sym_warning">⚠️ Not a substitute for vet. Consult doctor if unsure.</span>
+  </div>
+  
+  <!-- Info Card -->
+  <div style="background:#E8F5E9;border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;">
+    <div style="font-size:13px;color:#2E7D32;font-weight:700;" data-t="sym_subtitle">Select symptoms — Find possible diseases</div>
+  </div>
+  
+  <!-- Symptom Selection -->
+  <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+    <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:12px;">
+      <span data-t="sym_select_symptoms">Select symptoms (all that apply)</span>
+      <span id="symCount" style="float:right;background:#2E7D32;color:#fff;padding:2px 10px;border-radius:20px;font-size:11px;">0</span>
+    </div>
+    
+    <div id="symListContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <!-- Symptoms will be populated by JavaScript -->
+    </div>
+  </div>
+  
+  <!-- Action Buttons -->
+  <button onclick="searchDisease()" style="width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;" data-t="sym_search_btn">🔍 Find Disease</button>
+  
+  <button onclick="clearSymptoms()" style="width:100%;padding:12px;background:#f0f0f0;color:#666;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;" data-t="sym_clear_btn">🔄 Clear All</button>
+  
+  <!-- Results Section -->
+  <div id="symResults" style="margin-top:16px;"></div>
+  
+  <!-- Expert Help Section -->
+  <div style="background:#E3F2FD;border-left:4px solid #1976D2;border-radius:10px;padding:14px;margin-top:16px;">
+    <div style="font-size:14px;font-weight:700;color:#0D47A1;margin-bottom:8px;">
+      📷 <span data-t="sym_expert_title">Expert Help</span>
+    </div>
+    <div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:12px;">
+      <span data-t="sym_ask_photo">📷 Send photo — doctor will reply</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="symSendPhoto()" style="flex:1;padding:12px;background:#1976D2;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+        📷 <span data-t="sym_send_photo">Send Photo</span>
+      </button>
+      <button onclick="symCallDoctor()" style="flex:1;padding:12px;background:#C62828;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+        📞 <span data-t="sym_call_doctor">Call</span>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Bottom Info -->
+  <div style="text-align:center;margin-top:20px;padding:14px;background:#F5F5F5;border-radius:10px;font-size:11px;color:#666;line-height:1.7;">
+    <div>👨‍💻 <span data-t="sym_developer">Developer</span>: Matiur Rahaman Shaikh</div>
+    <div>📞 +91 98006 96104</div>
+    <div>📍 <span data-t="sym_location">Polashi, Nadia, West Bengal</span></div>
+  </div>
+  
+</div>
+
+<!-- Hidden Photo Input -->
+<input type="file" id="symPhotoInput" accept="image/*" capture="environment" style="display:none;" onchange="symHandlePhoto(event)">
+
+
   <!-- SETTINGS PAGE -->
   <div id="page-settings" class="page">
     <div class="page-header">
@@ -1735,6 +1811,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 
 
 <script src="first-aid-data.js"></script>
+<script src="symptom-data.js"></script>
 
 <script>
 
@@ -1808,6 +1885,27 @@ const T = {
     need_cow:'❌ Add a cow first', no_cows:'No animals added yet',
     no_milk:'No milk entries yet', no_income:'No income yet',
     no_expense:'No expense yet', edit:'✏️ Edit', delete:'🗑️ Delete',
+sym_title:'🔍 Symptom Checker',
+sym_subtitle:'Select symptoms — Find possible diseases',
+sym_warning:'⚠️ Not a substitute for vet. Consult doctor if unsure.',
+sym_select_symptoms:'Select symptoms (all that apply)',
+sym_search_btn:'🔍 Find Disease',
+sym_clear_btn:'🔄 Clear All',
+sym_select_atleast:'⚠️ Select at least 2 symptoms',
+sym_no_match:'❌ No match found. Consult doctor.',
+sym_results_title:'📋 Possible Causes',
+sym_matched_symptoms:'Matched symptoms',
+sym_action:'Action',
+sym_view_firstaid:'📖 View First Aid',
+sym_call_doctor:'📞 Call Doctor',
+sym_send_photo:'📷 Send Photo',
+sym_expert_title:'Expert Help',
+sym_ask_photo:'📷 Send photo — doctor will reply',
+sym_developer:'Developer',
+sym_location:'Polashi, Nadia, West Bengal',
+sym_match:'Match',
+sym_urgency:'Urgency',
+sym_menu_title:'Symptom Checker',
     export_done:'📤 Downloaded', import_ok:'✅ Import successful',
 import_bad:'❌ Invalid file', error:'❌ Error',
 import_title:'📥 Backup Restore',
@@ -1927,6 +2025,27 @@ import_cancelled:'❌ Cancelled',
     need_cow:'❌ আগে গাভী যোগ করুন', no_cows:'এখনো কোনো পশু যোগ করা হয়নি',
     no_milk:'এখনো কোনো দুধের এন্ট্রি নেই', no_income:'এখনো কোনো আয় নেই',
     no_expense:'এখনো কোনো ব্যয় নেই', edit:'✏️ সম্পাদনা', delete:'🗑️ মুছুন',
+sym_title:'🔍 রোগ চিহ্নিতকারী',
+sym_subtitle:'আপনার গরুর লক্ষণ বাছুন — সম্ভাব্য রোগ জানুন',
+sym_warning:'⚠️ এটি ডাক্তারের বিকল্প নয়। সন্দেহ হলে ডাক্তারকে দেখান।',
+sym_select_symptoms:'লক্ষণ বাছুন (যতগুলো মিলে)',
+sym_search_btn:'🔍 রোগ খুঁজুন',
+sym_clear_btn:'🔄 সব মুছুন',
+sym_select_atleast:'⚠️ কমপক্ষে ২টি লক্ষণ বাছুন',
+sym_no_match:'❌ কোনো রোগ মেলেনি। ডাক্তারকে দেখান।',
+sym_results_title:'📋 সম্ভাব্য কারণ',
+sym_matched_symptoms:'মিলে যাওয়া লক্ষণ',
+sym_action:'করণীয়',
+sym_view_firstaid:'📖 First Aid দেখুন',
+sym_call_doctor:'📞 ডাক্তারকে ফোন',
+sym_send_photo:'📷 ছবি পাঠান',
+sym_expert_title:'ডাক্তারের সাহায্য',
+sym_ask_photo:'📷 ছবি তুলে পাঠান — ডাক্তার দেখে উত্তর দেবেন',
+sym_developer:'নির্মাতা',
+sym_location:'পলাশী, নদীয়া, পশ্চিমবঙ্গ',
+sym_match:'মিল',
+sym_urgency:'জরুরি স্তর',
+sym_menu_title:'রোগ চিহ্নিতকারী',
     export_done:'📤 ডাউনলোড হয়েছে', import_ok:'✅ ইমপোর্ট সফল',
 import_bad:'❌ ফাইল সঠিক নয়', error:'❌ ত্রুটি',
 import_title:'📥 ব্যাকআপ রিস্টোর',
@@ -2046,6 +2165,27 @@ import_cancelled:'❌ বাতিল',
     need_cow:'❌ पहले गाय जोड़ें', no_cows:'अभी तक कोई पशु नहीं जोड़ा',
     no_milk:'अभी तक कोई दूध एंट्री नहीं', no_income:'अभी तक कोई आय नहीं',
     no_expense:'अभी तक कोई खर्च नहीं', edit:'✏️ संपादित करें', delete:'🗑️ मिटाएं',
+sym_title:'🔍 रोग पहचानकर्ता',
+sym_subtitle:'लक्षण चुनें — संभावित रोग जानें',
+sym_warning:'⚠️ यह डॉक्टर का विकल्प नहीं। संदेह हो तो डॉक्टर को दिखाएं।',
+sym_select_symptoms:'लक्षण चुनें (जितने लागू हों)',
+sym_search_btn:'🔍 रोग खोजें',
+sym_clear_btn:'🔄 सब मिटाएं',
+sym_select_atleast:'⚠️ कम से कम २ लक्षण चुनें',
+sym_no_match:'❌ कोई रोग नहीं मिला। डॉक्टर को दिखाएं।',
+sym_results_title:'📋 संभावित कारण',
+sym_matched_symptoms:'मिले लक्षण',
+sym_action:'कार्रवाई',
+sym_view_firstaid:'📖 First Aid देखें',
+sym_call_doctor:'📞 डॉक्टर को कॉल',
+sym_send_photo:'📷 फोटो भेजें',
+sym_expert_title:'डॉक्टर की सहायता',
+sym_ask_photo:'📷 फोटो भेजें — डॉक्टर जवाब देंगे',
+sym_developer:'निर्माता',
+sym_location:'पलाशी, नदिया, पश्चिम बंगाल',
+sym_match:'मिलान',
+sym_urgency:'आवश्यकता',
+sym_menu_title:'रोग पहचानकर्ता',
     export_done:'📤 डाउनलोड हो गया', import_ok:'✅ आयात सफल',
 import_bad:'❌ अमान्य फाइल', error:'❌ त्रुटि',
 import_title:'📥 बैकअप रिस्टोर',
@@ -4435,6 +4575,263 @@ function calculateSuggest() {
     '</div>';
 }
 
+// ============================================
+// SYMPTOM CHECKER — Main Functions
+// ============================================
+let symSelected = new Set();
+
+// ===== Render Symptom List =====
+function renderSymptomList() {
+  const container = document.getElementById('symListContainer');
+  if (!container) return;
+  if (!window.SYMPTOM_LIST) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">Database loading...</div>';
+    return;
+  }
+  
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  
+  container.innerHTML = window.SYMPTOM_LIST.map(function(s) {
+    const name = s.name[lang] || s.name.bn;
+    const checked = symSelected.has(s.id);
+    
+    const bgColor = checked ? '#E8F5E9' : '#f9f9f9';
+    const borderColor = checked ? '#2E7D32' : '#eeeeee';
+    const boxBg = checked ? '#2E7D32' : '#ffffff';
+    const boxBorder = checked ? '#2E7D32' : '#cccccc';
+    const checkMark = checked ? '✓' : '';
+    
+    return '<div onclick="toggleSymptom(\'' + s.id + '\')" style="display:flex;align-items:center;gap:8px;padding:10px;background:' + bgColor + ';border:2px solid ' + borderColor + ';border-radius:8px;cursor:pointer;font-size:11px;line-height:1.3;user-select:none;-webkit-tap-highlight-color:transparent;">' +
+      '<div style="width:22px;height:22px;border-radius:5px;border:2px solid ' + boxBorder + ';background:' + boxBg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:900;font-size:14px;color:#fff;">' + checkMark + '</div>' +
+      '<span style="font-size:16px;flex-shrink:0;">' + s.icon + '</span>' +
+      '<span style="flex:1;color:#333;font-weight:600;">' + name + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+// ===== Toggle Symptom =====
+function toggleSymptom(id) {
+  if (symSelected.has(id)) {
+    symSelected.delete(id);
+  } else {
+    symSelected.add(id);
+  }
+  updateSymCount();
+  renderSymptomList();
+}
+
+// ===== Update Counter =====
+function updateSymCount() {
+  const el = document.getElementById('symCount');
+  if (el) el.textContent = symSelected.size;
+}
+
+// ===== Clear All =====
+function clearSymptoms() {
+  symSelected.clear();
+  updateSymCount();
+  renderSymptomList();
+  const res = document.getElementById('symResults');
+  if (res) res.innerHTML = '';
+  toast('🔄 ' + (t('sym_clear_btn') || 'Cleared'));
+}
+
+// ===== Search Disease =====
+function searchDisease() {
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  
+  if (symSelected.size < 2) {
+    toast(t('sym_select_atleast') || '⚠️ Select at least 2 symptoms');
+    return;
+  }
+  
+  if (!window.DISEASE_DB) {
+    toast('❌ Database not loaded');
+    return;
+  }
+  
+  // Calculate match scores
+  const matches = [];
+  
+  window.DISEASE_DB.forEach(function(disease) {
+    let matched = 0;
+    const matchedList = [];
+    
+    disease.symptoms.forEach(function(sym) {
+      if (symSelected.has(sym)) {
+        matched++;
+        matchedList.push(sym);
+      }
+    });
+    
+    const minMatch = disease.min_match || 2;
+    if (matched >= minMatch) {
+      const total = disease.symptoms.length;
+      const score = Math.round((matched / total) * 100);
+      matches.push({
+        disease: disease,
+        matched: matched,
+        total: total,
+        score: score,
+        matchedSymptoms: matchedList
+      });
+    }
+  });
+  
+  // Sort by score descending
+  matches.sort(function(a, b) { return b.score - a.score; });
+  
+  renderSymResults(matches);
+}
+
+// ===== Render Results =====
+function renderSymResults(matches) {
+  const resEl = document.getElementById('symResults');
+  if (!resEl) return;
+  
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  
+  if (matches.length === 0) {
+    resEl.innerHTML = '<div style="padding:20px;background:#FFEBEE;border-radius:12px;text-align:center;font-size:13px;color:#C62828;font-weight:600;">' +
+      (t('sym_no_match') || '❌ No match found') + '</div>';
+    return;
+  }
+  
+  let html = '<div style="font-size:14px;font-weight:700;color:#2E7D32;margin:16px 0 10px;padding-bottom:6px;border-bottom:2px solid #E8F5E9;">' +
+    (t('sym_results_title') || '📋 Possible Causes') + '</div>';
+  
+  matches.forEach(function(m) {
+    const d = m.disease;
+    const name = d.name[lang] || d.name.bn;
+    const action = d.action[lang] || d.action.bn;
+    const urg = window.URGENCY_LABELS[d.urgency] || window.URGENCY_LABELS.medium;
+    const urgLabel = urg[lang] || urg.bn;
+    
+    // Matched symptoms list
+    const symNames = m.matchedSymptoms.map(function(id) {
+      const s = window.SYMPTOM_LIST.find(function(x) { return x.id === id; });
+      return s ? (s.name[lang] || s.name.bn) : id;
+    }).join(', ');
+    
+    html += '<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-left:4px solid ' + urg.color + ';">' +
+      
+      // Header: Icon + Name + Urgency
+      '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">' +
+        '<div style="font-size:32px;line-height:1;">' + d.icon + '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:16px;font-weight:800;color:#2E7D32;margin-bottom:4px;">' + name + '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+            '<span style="background:' + urg.bg + ';color:' + urg.color + ';padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;">' + urgLabel + '</span>' +
+            '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;">' + m.score + '% ' + (t('sym_match') || 'Match') + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      
+      // Matched symptoms
+      '<div style="background:#F5F5F5;border-radius:8px;padding:10px;margin-bottom:10px;font-size:11px;color:#555;line-height:1.6;">' +
+        '<div style="font-weight:700;color:#333;margin-bottom:4px;">✅ ' + (t('sym_matched_symptoms') || 'Matched') + ' (' + m.matched + '/' + m.total + '):</div>' +
+        '<div>' + symNames + '</div>' +
+      '</div>' +
+      
+      // Action
+      '<div style="background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;padding:10px;margin-bottom:10px;font-size:12px;color:#555;line-height:1.6;">' +
+        '<div style="font-weight:700;color:#E65100;margin-bottom:4px;">💡 ' + (t('sym_action') || 'Action') + ':</div>' +
+        '<div>' + action + '</div>' +
+      '</div>' +
+      
+      // Action Buttons
+      '<div style="display:flex;gap:8px;">' +
+        (d.first_aid_id ? '<button onclick="openFirstAidFromSym(\'' + d.first_aid_id + '\')" style="flex:1;padding:10px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">' +
+          (t('sym_view_firstaid') || '📖 First Aid') + '</button>' : '') +
+        '<button onclick="symCallDoctor()" style="flex:1;padding:10px;background:#C62828;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">' +
+          (t('sym_call_doctor') || '📞 Call') + '</button>' +
+      '</div>' +
+      
+    '</div>';
+  });
+  
+  // Bottom info
+  html += '<div style="background:#FFF3E0;border-radius:10px;padding:12px;margin-top:12px;font-size:11px;color:#555;text-align:center;line-height:1.6;">' +
+    '⚠️ ' + (t('sym_warning') || 'Consult vet if unsure') +
+  '</div>';
+  
+  resEl.innerHTML = html;
+  
+  // Scroll to results
+  setTimeout(function() {
+    if (resEl.scrollIntoView) resEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ===== Open First Aid from Symptom =====
+function openFirstAidFromSym(aidId) {
+  // First Aid data থেকে সমস্যা খুঁজি
+  if (window.FIRST_AID_DATA && Array.isArray(window.FIRST_AID_DATA)) {
+    const problem = window.FIRST_AID_DATA.find(function(p) {
+      return p.id === aidId;
+    });
+    if (problem) {
+      // First Aid দেখানোর function থাকলে call করি
+      if (typeof showFirstAidDetail === 'function') {
+        showFirstAidDetail(aidId);
+        return;
+      }
+    }
+  }
+  // Fallback: First Aid page-এ যাই
+  showPage('firstaid');
+}
+
+// ===== Call Doctor =====
+function symCallDoctor() {
+  if (confirm('📞 ' + (t('sym_call_doctor') || 'Call Doctor') + '?\n\n+91 98006 96104')) {
+    window.location.href = 'tel:+919800696104';
+  }
+}
+
+// ===== Send Photo via WhatsApp =====
+function symSendPhoto() {
+  const input = document.getElementById('symPhotoInput');
+  if (input) input.click();
+}
+
+function symHandlePhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  
+  // Photo selected — WhatsApp-এ পাঠানোর message
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  
+  const messages = {
+    bn: '🐄 Dairy Manager - রোগ চিহ্নিতকারী\n\n' +
+        '📷 আমি আমার গরুর সমস্যার ছবি পাঠাতে চাই।\n\n' +
+        '🏠 খামার: ' + (DB.settings.farmName || '—') + '\n' +
+        '📱 Device: ' + (DB.deviceId || '—') + '\n\n' +
+        'অনুগ্রহ করে ছবি দেখে পরামর্শ দিন।',
+    en: '🐄 Dairy Manager - Symptom Checker\n\n' +
+        '📷 I want to send photo of my cow\'s problem.\n\n' +
+        '🏠 Farm: ' + (DB.settings.farmName || '—') + '\n' +
+        '📱 Device: ' + (DB.deviceId || '—') + '\n\n' +
+        'Please check the photo and advise.',
+    hi: '🐄 डेयरी मैनेजर - रोग पहचानकर्ता\n\n' +
+        '📷 मैं अपनी गाय की समस्या की फोटो भेजना चाहता हूँ।\n\n' +
+        '🏠 फार्म: ' + (DB.settings.farmName || '—') + '\n' +
+        '📱 डिवाइस: ' + (DB.deviceId || '—') + '\n\n' +
+        'कृपया फोटो देखकर सलाह दें।'
+  };
+  
+  const msg = messages[lang] || messages.bn;
+  const waUrl = 'https://wa.me/919800696104?text=' + encodeURIComponent(msg);
+  window.open(waUrl, '_blank');
+  
+  // Reset input
+  event.target.value = '';
+  
+  toast('📱 WhatsApp ' + (lang === 'bn' ? 'খুলছে...' : 'opening...'));
+}
+
+console.log('✅ Symptom Checker functions loaded');
+
 
 function showPage(p) {
   document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
@@ -4455,6 +4852,7 @@ function showPage(p) {
   if (p === 'finance') renderFinance();
   if (p === 'reports') renderReports();
   if (p === 'calving') initCalving();
+  if (p === 'symptom') { symSelected.clear(); updateSymCount(); renderSymptomList(); }
   if (p === 'settings') loadSettings();
   if (p === 'alerts') renderAlertsFull();
   if (p === 'gallery') renderGallery();
