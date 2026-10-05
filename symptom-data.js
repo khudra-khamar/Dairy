@@ -866,4 +866,4 @@ window.DISEASE_DB = [
 console.log('✅ Symptom Database Loaded:');
 console.log('   🩺 Symptoms:', window.SYMPTOM_LIST.length);
 console.log('   🦠 Diseases:', window.DISEASE_DB.length);
-console.lo('   🌐 Languages: bn, en, hi');
+console.log('   🌐 Languages: bn, en, hi');
