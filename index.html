@@ -518,11 +518,28 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 
 <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+
+<!-- Language Button -->
+<button class="header-icon" id="langToggleBtn" onclick="toggleLangMenu(event)" style="width:34px;height:34px;font-size:13px;font-weight:700;padding:0;background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">বাং</button>
+
 <button class="header-icon" onclick="showPage('alerts')" style="width:34px;height:34px;font-size:16px;padding:0;position:relative;background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">🔔<span class="header-badge" id="alertBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:#C62828;color:#fff;font-size:10px;font-weight:bold;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #2E7D32;">0</span></button>
 
 <button class="header-icon" onclick="toggleMenu()" style="width:34px;height:34px;font-size:20px;padding:0;background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">⋮</button>
 </div>
 
+</div>
+
+<!-- Language Dropdown -->
+<div id="langDropdown" style="display:none;position:fixed;top:56px;right:60px;background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.25);z-index:9999;overflow:hidden;min-width:150px;">
+  <div onclick="selectLang('bn')" style="padding:12px 16px;cursor:pointer;font-size:14px;font-weight:600;color:#333;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f0f0;">
+    <span style="font-size:20px;">🇧🇩</span> <span>বাংলা</span>
+  </div>
+  <div onclick="selectLang('en')" style="padding:12px 16px;cursor:pointer;font-size:14px;font-weight:600;color:#333;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f0f0;">
+    <span style="font-size:20px;">🇬🇧</span> <span>English</span>
+  </div>
+  <div onclick="selectLang('hi')" style="padding:12px 16px;cursor:pointer;font-size:14px;font-weight:600;color:#333;display:flex;align-items:center;gap:10px;">
+    <span style="font-size:20px;">🇮🇳</span> <span>हिन्दी</span>
+  </div>
 </div>
 
 <!-- MENU DROPDOWN -->
@@ -1278,6 +1295,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
      <div id="suggestResult" style="margin-top:16px;"></div>
    </div>
  </div>
+ 
   <!-- NOTES PAGE -->
   <div id="page-notes" class="page">
     <div class="page-header">
@@ -1791,7 +1809,18 @@ const T = {
     no_milk:'No milk entries yet', no_income:'No income yet',
     no_expense:'No expense yet', edit:'✏️ Edit', delete:'🗑️ Delete',
     export_done:'📤 Downloaded', import_ok:'✅ Import successful',
-    import_bad:'❌ Invalid file', error:'❌ Error',
+import_bad:'❌ Invalid file', error:'❌ Error',
+import_title:'📥 Backup Restore',
+import_phone_now:'📱 On phone now',
+import_backup_has:'💾 In backup',
+import_cows_unit:' cows',
+import_milk_unit:' milk',
+import_merge_hint:'✅ OK = Merge (old + new together)',
+import_replace_hint:'❌ Cancel = Replace (backup only)',
+import_replace_warning:'⚠️ Warning! Replace will delete all current data. Are you sure?',
+import_merge_done:'✅ Merge complete!',
+import_replace_done:'✅ Replace complete',
+import_cancelled:'❌ Cancelled',
     settings_saved:'✅ Settings saved', lang_changed:'✅ Language changed',
     save_calving_first:'❌ Select an animal first', calving_saved:'✅ Saved',
     days_remaining:'days remaining', pregnancy_progress:'Pregnancy Progress',
@@ -1899,7 +1928,18 @@ const T = {
     no_milk:'এখনো কোনো দুধের এন্ট্রি নেই', no_income:'এখনো কোনো আয় নেই',
     no_expense:'এখনো কোনো ব্যয় নেই', edit:'✏️ সম্পাদনা', delete:'🗑️ মুছুন',
     export_done:'📤 ডাউনলোড হয়েছে', import_ok:'✅ ইমপোর্ট সফল',
-    import_bad:'❌ ফাইল সঠিক নয়', error:'❌ ত্রুটি',
+import_bad:'❌ ফাইল সঠিক নয়', error:'❌ ত্রুটি',
+import_title:'📥 ব্যাকআপ রিস্টোর',
+import_phone_now:'📱 ফোনে এখন',
+import_backup_has:'💾 Backup-এ',
+import_cows_unit:'টি গরু',
+import_milk_unit:'টি দুধ',
+import_merge_hint:'✅ OK = Merge (পুরনো + নতুন একসাথে)',
+import_replace_hint:'❌ Cancel = Replace (শুধু backup)',
+import_replace_warning:'⚠️ সতর্কবার্তা! Replace করলে ফোনের সব পুরনো data মুছে যাবে। আপনি কি নিশ্চিত?',
+import_merge_done:'✅ Merge সম্পূর্ণ!',
+import_replace_done:'✅ Replace সম্পূর্ণ',
+import_cancelled:'❌ বাতিল',
     settings_saved:'✅ সেটিংস সেভ হয়েছে', lang_changed:'✅ ভাষা পরিবর্তন হয়েছে',
     save_calving_first:'❌ আগে পশু সিলেক্ট করুন', calving_saved:'✅ সেভ হয়েছে',
     days_remaining:'দিন বাকি', pregnancy_progress:'গর্ভাবস্থার অগ্রগতি',
@@ -2007,7 +2047,18 @@ const T = {
     no_milk:'अभी तक कोई दूध एंट्री नहीं', no_income:'अभी तक कोई आय नहीं',
     no_expense:'अभी तक कोई खर्च नहीं', edit:'✏️ संपादित करें', delete:'🗑️ मिटाएं',
     export_done:'📤 डाउनलोड हो गया', import_ok:'✅ आयात सफल',
-    import_bad:'❌ अमान्य फ़ाइल', error:'❌ त्रुटि',
+import_bad:'❌ अमान्य फाइल', error:'❌ त्रुटि',
+import_title:'📥 बैकअप रिस्टोर',
+import_phone_now:'📱 फोन में अभी',
+import_backup_has:'💾 बैकअप में',
+import_cows_unit:' गाय',
+import_milk_unit:' दूध',
+import_merge_hint:'✅ OK = Merge (पुराना + नया साथ)',
+import_replace_hint:'❌ Cancel = Replace (केवल बैकअप)',
+import_replace_warning:'⚠️ चेतावनी! Replace से सारा पुराना डेटा मिट जाएगा। क्या आप निश्चित हैं?',
+import_merge_done:'✅ Merge पूर्ण!',
+import_replace_done:'✅ Replace पूर्ण',
+import_cancelled:'❌ रद्द',
     settings_saved:'✅ सेटिंग्स सेव हो गईं', lang_changed:'✅ भाषा बदल गई',
     save_calving_first:'❌ पहले पशु चुनें', calving_saved:'✅ सेव हो गया',
     days_remaining:'दिन शेष', pregnancy_progress:'गर्भावस्था प्रगति',
@@ -2740,6 +2791,8 @@ updateHeaderSubtitle();
   renderHome();
   renderCows();
   updateHomeServiceCard();
+  // Header language button update
+if (typeof updateLangButton === 'function') updateLangButton();
 }
 
 // ========== FEATURE CONTROL ==========
@@ -2958,6 +3011,79 @@ function showUpdateToast(msg) {
     setTimeout(function() { t.remove(); }, 500);
   }, 3000);
 }
+
+// ========== LANGUAGE TOGGLE (Header) ==========
+function toggleLangMenu(e) {
+  if (e) e.stopPropagation();
+  const dd = document.getElementById('langDropdown');
+  if (!dd) return;
+  
+  if (dd.style.display === 'none' || dd.style.display === '') {
+    dd.style.display = 'block';
+    // Position adjust
+    const btn = document.getElementById('langToggleBtn');
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      dd.style.top = (rect.bottom + 8) + 'px';
+      dd.style.right = (window.innerWidth - rect.right) + 'px';
+    }
+  } else {
+    dd.style.display = 'none';
+  }
+}
+
+function closeLangMenu() {
+  const dd = document.getElementById('langDropdown');
+  if (dd) dd.style.display = 'none';
+}
+
+function updateLangButton() {
+  const btn = document.getElementById('langToggleBtn');
+  if (!btn) return;
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  if (lang === 'bn') btn.textContent = 'বাং';
+  else if (lang === 'en') btn.textContent = 'EN';
+  else if (lang === 'hi') btn.textContent = 'हि';
+  else btn.textContent = 'বাং';
+}
+
+function selectLang(lang) {
+  closeLangMenu();
+  
+  if (!DB.settings) DB.settings = {};
+  DB.settings.lang = lang;
+  
+  if (typeof saveDB === 'function') saveDB();
+  
+  // পুরনো language system-এ apply করি
+  if (typeof applyLang === 'function') {
+    applyLang();
+  }
+  
+  // Header button update
+  updateLangButton();
+  
+  // Language switch button active state update (Settings-এ)
+  ['langEn','langBn','langHi'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const map = { langEn: 'en', langBn: 'bn', langHi: 'hi' };
+    el.classList.toggle('active', map[id] === lang);
+  });
+  
+  console.log('✅ Language changed to:', lang);
+}
+
+// Document click — dropdown বন্ধ
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('langDropdown');
+  const btn = document.getElementById('langToggleBtn');
+  if (!dd || !btn) return;
+  if (!dd.contains(e.target) && !btn.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
 
 function toggleMenu() {
   const menu = document.getElementById('menuDropdown');
@@ -10208,7 +10334,7 @@ function downloadBackupFile(blob, fileName) {
   toast(t('export_done'));
 }
 
-// ========== IMPORT (Base64 + .dmb + Legacy) ==========
+// ========== IMPORT (Merge + Replace + Modal) ==========
 function importData(e) {
   const f = e.target.files[0];
   if (!f) return;
@@ -10218,7 +10344,7 @@ function importData(e) {
     const content = ev.target.result;
     let d = null;
     
-    // ===== Encrypted .dmb file =====
+    // ===== Decode .dmb file =====
     if (content.startsWith('DMB1:')) {
       try {
         const base64 = content.substring(5);
@@ -10230,7 +10356,6 @@ function importData(e) {
         return;
       }
     } else {
-      // ===== Legacy plain JSON =====
       try {
         d = JSON.parse(content);
       } catch(err) {
@@ -10239,36 +10364,248 @@ function importData(e) {
       }
     }
     
-    // ===== Restore =====
-    if (!(d.cows || d.finance || d.milk)) {
+    // ===== Validate =====
+    if (!d || (!d.cows && !d.finance && !d.milk)) {
       toast(t('import_bad'));
       return;
     }
     
-    DB = Object.assign(DB, d);
-    if (!DB.cows) DB.cows = [];
-    if (!DB.milk) DB.milk = [];
-    if (!DB.finance) DB.finance = [];
-    if (!DB.medicine) DB.medicine = [];
-    if (!DB.notes) DB.notes = [];
-    if (!DB.medStock) DB.medStock = [];
-    if (!DB.feedStock) DB.feedStock = [];
-    if (!DB.contacts) DB.contacts = [];
-    if (!DB.snoozed) DB.snoozed = {};
-    if (!DB.deviceId) DB.deviceId = '';
-    if (!DB.security) DB.security = { pin: '', skipped: false };
-    if (!DB.license) DB.license = { code: '', expiry: '', trial: false };
-    if (!DB.settings) DB.settings = {};
-    if (!DB.settings.features) DB.settings.features = PRESETS.medium;
-    
-    saveDB();
-    applyLang();
-    toast(t('import_ok'));
-    renderHome();
-    renderCows();
+    // ===== Show Modal =====
+    showImportModal(d);
   };
   
   r.readAsText(f);
+}
+
+// ========== IMPORT MODAL ==========
+function showImportModal(d) {
+  const currentCows = (DB.cows || []).length;
+  const backupCows = (d.cows || []).length;
+  const currentMilk = (DB.milk || []).length;
+  const backupMilk = (d.milk || []).length;
+  const currentFin = (DB.finance || []).length;
+  const backupFin = (d.finance || []).length;
+  
+  const lang = (DB.settings && DB.settings.lang) || 'bn';
+  
+  const texts = {
+    bn: {
+      title: '📥 ব্যাকআপ রিস্টোর',
+      now: '📱 ফোনে এখন',
+      backup: '💾 Backup-এ',
+      cow: 'টি গরু',
+      milk: 'টি দুধ',
+      fin: 'টি হিসাব',
+      question: 'আপনি কী করতে চান?',
+      merge: '🔀 Merge',
+      mergeDesc: 'পুরনো + নতুন একসাথে',
+      replace: '🔄 Replace',
+      replaceDesc: 'শুধু backup থাকবে',
+      cancel: '❌ Cancel',
+      cancelDesc: 'কিছুই পরিবর্তন হবে না',
+      confirmReplace: '⚠️ সতর্কবার্তা!\n\nReplace করলে ফোনের সব পুরনো data মুছে যাবে।\n\nআপনি কি নিশ্চিত?'
+    },
+    en: {
+      title: '📥 Backup Restore',
+      now: '📱 On phone now',
+      backup: '💾 In backup',
+      cow: ' cows',
+      milk: ' milk',
+      fin: ' entries',
+      question: 'What do you want to do?',
+      merge: '🔀 Merge',
+      mergeDesc: 'Old + new together',
+      replace: '🔄 Replace',
+      replaceDesc: 'Only backup stays',
+      cancel: '❌ Cancel',
+      cancelDesc: 'Nothing will change',
+      confirmReplace: '⚠️ Warning!\n\nReplace will delete all current data.\n\nAre you sure?'
+    },
+    hi: {
+      title: '📥 बैकअप रिस्टोर',
+      now: '📱 फोन में अभी',
+      backup: '💾 बैकअप में',
+      cow: ' गाय',
+      milk: ' दूध',
+      fin: ' एंट्री',
+      question: 'आप क्या करना चाहते हैं?',
+      merge: '🔀 Merge',
+      mergeDesc: 'पुराना + नया साथ',
+      replace: '🔄 Replace',
+      replaceDesc: 'केवल बैकअप रहेगा',
+      cancel: '❌ Cancel',
+      cancelDesc: 'कुछ नहीं बदलेगा',
+      confirmReplace: '⚠️ चेतावनी!\n\nReplace से सारा पुराना डेटा मिट जाएगा।\n\nक्या आप निश्चित हैं?'
+    }
+  };
+  
+  const tx = texts[lang] || texts.bn;
+  
+  const modal = document.createElement('div');
+  modal.id = 'importModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;overflow-y:auto;';
+  
+  modal.innerHTML = 
+    '<div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:400px;box-shadow:0 12px 40px rgba(0,0,0,0.3);margin:auto;">' +
+      
+      '<div style="text-align:center;margin-bottom:16px;">' +
+        '<div style="font-size:40px;margin-bottom:4px;">📥</div>' +
+        '<h3 style="margin:0;color:#2E7D32;font-size:18px;">' + tx.title + '</h3>' +
+      '</div>' +
+      
+      '<div style="background:#f5f5f5;border-radius:10px;padding:12px;margin-bottom:16px;font-size:13px;line-height:1.7;">' +
+        '<div style="font-weight:700;color:#333;margin-bottom:6px;">' + tx.now + ':</div>' +
+        '<div style="padding-left:12px;color:#555;">🐄 ' + currentCows + tx.cow + '</div>' +
+        '<div style="padding-left:12px;color:#555;">🥛 ' + currentMilk + tx.milk + '</div>' +
+        '<div style="padding-left:12px;color:#555;">💰 ' + currentFin + tx.fin + '</div>' +
+        
+        '<div style="height:1px;background:#ddd;margin:8px 0;"></div>' +
+        
+        '<div style="font-weight:700;color:#333;margin-bottom:6px;">' + tx.backup + ':</div>' +
+        '<div style="padding-left:12px;color:#555;">🐄 ' + backupCows + tx.cow + '</div>' +
+        '<div style="padding-left:12px;color:#555;">🥛 ' + backupMilk + tx.milk + '</div>' +
+        '<div style="padding-left:12px;color:#555;">💰 ' + backupFin + tx.fin + '</div>' +
+      '</div>' +
+      
+      '<div style="text-align:center;font-weight:700;color:#333;margin-bottom:12px;font-size:14px;">' + tx.question + '</div>' +
+      
+      '<button id="impMergeBtn" style="width:100%;padding:12px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">' +
+        '<span style="font-size:22px;">🔀</span>' +
+        '<div><div>' + tx.merge + '</div><div style="font-size:11px;font-weight:400;opacity:0.85;">' + tx.mergeDesc + '</div></div>' +
+      '</button>' +
+      
+      '<button id="impReplaceBtn" style="width:100%;padding:12px;background:#FF6F00;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">' +
+        '<span style="font-size:22px;">🔄</span>' +
+        '<div><div>' + tx.replace + '</div><div style="font-size:11px;font-weight:400;opacity:0.85;">' + tx.replaceDesc + '</div></div>' +
+      '</button>' +
+      
+      '<button id="impCancelBtn" style="width:100%;padding:12px;background:#f0f0f0;color:#555;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:10px;">' +
+        '<span style="font-size:22px;">❌</span>' +
+        '<div><div>' + tx.cancel + '</div><div style="font-size:11px;font-weight:400;opacity:0.7;">' + tx.cancelDesc + '</div></div>' +
+      '</button>' +
+      
+    '</div>';
+  
+  document.body.appendChild(modal);
+  
+  function closeModal() {
+    if (document.body.contains(modal)) document.body.removeChild(modal);
+  }
+  
+  function finishAndRefresh() {
+    saveDB();
+    applyLang();
+    renderHome();
+    renderCows();
+    if (typeof renderMilk === 'function') renderMilk();
+    if (typeof renderFinance === 'function') renderFinance();
+  }
+  
+  document.getElementById('impMergeBtn').onclick = function() {
+    mergeBackupData(d);
+    closeModal();
+    finishAndRefresh();
+    toast(t('import_merge_done') + ' ' + DB.cows.length + t('import_cows_unit'));
+  };
+  
+  document.getElementById('impReplaceBtn').onclick = function() {
+    if (!confirm(tx.confirmReplace)) return;
+    replaceWithBackup(d);
+    closeModal();
+    finishAndRefresh();
+    toast(t('import_replace_done'));
+  };
+  
+  document.getElementById('impCancelBtn').onclick = function() {
+    closeModal();
+    toast(t('import_cancelled'));
+  };
+  
+  modal.onclick = function(e) {
+    if (e.target === modal) {
+      closeModal();
+      toast(t('import_cancelled'));
+    }
+  };
+}
+
+// ========== MERGE HELPERS ==========
+function mergeArrays(existing, backup) {
+  const seen = new Set();
+  const result = [];
+  
+  (existing || []).forEach(function(item) {
+    if (!item) return;
+    const key = item.id || JSON.stringify(item).substring(0, 100);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(item);
+    }
+  });
+  
+  (backup || []).forEach(function(item) {
+    if (!item) return;
+    const key = item.id || JSON.stringify(item).substring(0, 100);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(item);
+    }
+  });
+  
+  return result;
+}
+
+function mergeBackupData(d) {
+  DB.cows = mergeArrays(DB.cows, d.cows);
+  DB.milk = mergeArrays(DB.milk, d.milk);
+  DB.finance = mergeArrays(DB.finance, d.finance);
+  DB.medicine = mergeArrays(DB.medicine, d.medicine);
+  DB.notes = mergeArrays(DB.notes, d.notes);
+  DB.medStock = mergeArrays(DB.medStock, d.medStock);
+  DB.feedStock = mergeArrays(DB.feedStock, d.feedStock);
+  DB.contacts = mergeArrays(DB.contacts, d.contacts);
+  DB.customers = mergeArrays(DB.customers, d.customers);
+  DB.retailEntries = mergeArrays(DB.retailEntries, d.retailEntries);
+  
+  if (d.snoozed && typeof d.snoozed === 'object') {
+    DB.snoozed = DB.snoozed || {};
+    Object.keys(d.snoozed).forEach(function(k) {
+      if (!DB.snoozed[k]) DB.snoozed[k] = d.snoozed[k];
+    });
+  }
+  
+  if (d.settings && typeof d.settings === 'object') {
+    DB.settings = DB.settings || {};
+    Object.keys(d.settings).forEach(function(k) {
+      if (DB.settings[k] === undefined || DB.settings[k] === '' || DB.settings[k] === null) {
+        DB.settings[k] = d.settings[k];
+      }
+    });
+  }
+}
+
+function replaceWithBackup(d) {
+  DB.cows = d.cows || [];
+  DB.milk = d.milk || [];
+  DB.finance = d.finance || [];
+  DB.medicine = d.medicine || [];
+  DB.notes = d.notes || [];
+  DB.medStock = d.medStock || [];
+  DB.feedStock = d.feedStock || [];
+  DB.contacts = d.contacts || [];
+  DB.customers = d.customers || [];
+  DB.retailEntries = d.retailEntries || [];
+  DB.snoozed = d.snoozed || {};
+  
+  if (d.settings) {
+    const lang = DB.settings.lang;
+    const features = DB.settings.features;
+    const preset = DB.settings.preset;
+    DB.settings = Object.assign({}, DB.settings, d.settings);
+    if (!DB.settings.lang) DB.settings.lang = lang;
+    if (!DB.settings.features) DB.settings.features = features;
+    if (!DB.settings.preset) DB.settings.preset = preset;
+  }
 }
 
 function clearAllData() {
@@ -10300,6 +10637,7 @@ function clearAllData() {
     });
   });
 }
+
 
 // ========== AFTER LOGIN ==========
 function afterLogin() {
