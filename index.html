@@ -1920,6 +1920,10 @@ import_merge_done:'✅ Merge complete!',
 import_replace_done:'✅ Replace complete',
 import_cancelled:'❌ Cancelled',
     settings_saved:'✅ Settings saved', lang_changed:'✅ Language changed',
+    exit_title: 'Exit App?',
+exit_msg: 'Are you sure you want to quit this application?',
+exit_yes: 'Yes',
+exit_no: 'No',
     save_calving_first:'❌ Select an animal first', calving_saved:'✅ Saved',
     days_remaining:'days remaining', pregnancy_progress:'Pregnancy Progress',
     insem_info:'🧬 Insemination Info', ai_date_lbl:'AI Date',
@@ -2060,6 +2064,10 @@ import_merge_done:'✅ Merge সম্পূর্ণ!',
 import_replace_done:'✅ Replace সম্পূর্ণ',
 import_cancelled:'❌ বাতিল',
     settings_saved:'✅ সেটিংস সেভ হয়েছে', lang_changed:'✅ ভাষা পরিবর্তন হয়েছে',
+    exit_title: 'অ্যাপ বন্ধ করবেন?',
+exit_msg: 'আপনি কি নিশ্চিত এই অ্যাপটি বন্ধ করতে চান?',
+exit_yes: 'হ্যাঁ',
+exit_no: 'না',
     save_calving_first:'❌ আগে পশু সিলেক্ট করুন', calving_saved:'✅ সেভ হয়েছে',
     days_remaining:'দিন বাকি', pregnancy_progress:'গর্ভাবস্থার অগ্রগতি',
     insem_info:'🧬 Insemination তথ্য', ai_date_lbl:'AI তারিখ',
@@ -2200,6 +2208,10 @@ import_merge_done:'✅ Merge पूर्ण!',
 import_replace_done:'✅ Replace पूर्ण',
 import_cancelled:'❌ रद्द',
     settings_saved:'✅ सेटिंग्स सेव हो गईं', lang_changed:'✅ भाषा बदल गई',
+    exit_title: 'ऐप बंद करें?',
+exit_msg: 'क्या आप वाकई यह ऐप बंद करना चाहते हैं?',
+exit_yes: 'हाँ',
+exit_no: 'नहीं',
     save_calving_first:'❌ पहले पशु चुनें', calving_saved:'✅ सेव हो गया',
     days_remaining:'दिन शेष', pregnancy_progress:'गर्भावस्था प्रगति',
     insem_info:'🧬 गर्भाधान जानकारी', ai_date_lbl:'AI तिथि',
@@ -11096,18 +11108,19 @@ window.addEventListener('popstate', function() {
     if (el) el.classList.add('active');
     window.scrollTo(0, 0);
     history.pushState(null, '', location.href);
-  } else {
-    const now = Date.now();
-    if (now - lastBackPress < 2000) {
-      if (navigator.app) navigator.app.exitApp();
-      else window.close();
-    } else {
-      lastBackPress = now;
-      toast('🔙 Press back again to exit');
-      history.pushState(null, '', location.href);
-    }
+} else {
+    document.getElementById('exitModal').style.display = 'flex';
+    history.pushState(null, "", location.href);
   }
 });
+
+function exitAppChoose(yes) {
+  document.getElementById('exitModal').style.display = 'none';
+  if (yes) {
+    if (navigator.app && navigator.app.exitApp) navigator.app.exitApp();
+    else window.close();
+  }
+}
 
 history.pushState(null, '', location.href);
 history.pushState(null, '', location.href);
@@ -11335,7 +11348,18 @@ document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 </script>
 
 <!-- First Aid Data (separate file) -->
-
+<!-- EXIT CONFIRM MODAL -->
+<div id="exitModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:85%;max-width:320px;text-align:center;">
+    <div style="font-size:44px;">🐄</div>
+    <h3 data-t="exit_title" style="margin:8px 0;color:#1B5E20;">Exit App?</h3>
+    <p data-t="exit_msg" style="font-size:14px;color:#666;">Are you sure you want to quit this application?</p>
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button onclick="exitAppChoose(false)" data-t="exit_no" style="flex:1;padding:12px;border:none;border-radius:10px;background:#f0f0f0;font-weight:700;">No</button>
+      <button onclick="exitAppChoose(true)" data-t="exit_yes" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2E7D32;color:#fff;font-weight:700;">Yes</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
