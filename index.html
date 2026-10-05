@@ -4765,22 +4765,36 @@ function renderSymResults(matches) {
 
 // ===== Open First Aid from Symptom =====
 function openFirstAidFromSym(aidId) {
-  // First Aid data থেকে সমস্যা খুঁজি
-  if (window.FIRST_AID_DATA && Array.isArray(window.FIRST_AID_DATA)) {
-    const problem = window.FIRST_AID_DATA.find(function(p) {
-      return p.id === aidId;
-    });
-    if (problem) {
-      // First Aid দেখানোর function থাকলে call করি
-      if (typeof showFirstAidDetail === 'function') {
-        showFirstAidDetail(aidId);
-        return;
-      }
-    }
+  if (!aidId) {
+    openFirstAidPage();
+    return;
   }
-  // Fallback: First Aid page-এ যাই
-  showPage('firstaid');
+  
+  // med-all page-এ যাই
+  showPage('med-all');
+  
+  // ২০০ms পর First Aid tab switch
+  setTimeout(function() {
+    if (typeof switchMedTab === 'function') {
+      switchMedTab('firstaid');
+    }
+    
+    // আরো ৪০০ms পর specific problem খুলি
+    setTimeout(function() {
+      if (typeof openFirstAidDetail === 'function') {
+        try {
+          openFirstAidDetail(aidId);
+        } catch(e) {
+          console.warn('openFirstAidDetail failed:', e);
+          toast('⚠️ First Aid item খোলা যায়নি');
+        }
+      } else {
+        toast('⚠️ First Aid system unavailable');
+      }
+    }, 400);
+  }, 200);
 }
+
 
 // ===== Call Doctor =====
 function symCallDoctor() {
