@@ -176,7 +176,25 @@ window.SYMPTOM_LIST = [
   { id:'convulsion', name:{bn:'খিঁচুনি', en:'Convulsion', hi:'दौरा'}, icon:'⚡' },
   { id:'anemia', name:{bn:'রক্তশূন্যতা', en:'Anemia', hi:'खून की कमी'}, icon:'🩸' },
   { id:'retained_placenta', name:{bn:'গর্ভফুল পড়েনি', en:'Retained Placenta', hi:'जेर नहीं गिरा'}, icon:'⚠️' }
+    { id:'retained_placenta', name:{bn:'গর্ভফুল পড়েনি', en:'Retained Placenta', hi:'जेर नहीं गिरा'}, icon:'⚠️' },
+  { id:'navel_swelling', name:{bn:'নাভি ফুলে গেছে', en:'Navel Swelling', hi:'नाभि में सूजन'}, icon:'🩹' },
+  { id:'uterus_out', name:{bn:'জরায়ু বেরিয়ে এসেছে', en:'Uterus Prolapsed', hi:'गर्भाशय बाहर'}, icon:'⚠️' },
+  { id:'abortion', name:{bn:'গর্ভপাত হয়েছে', en:'Abortion', hi:'गर्भपात'}, icon:'💔' },
+  { id:'warts', name:{bn:'চামড়ায় আঁচিল', en:'Warts on Skin', hi:'त्वचा पर मस्से'}, icon:'🩹' },
+  { id:'tick_lice', name:{bn:'উকুন/মাকড়ি', en:'Ticks/Lice', hi:'चिचड़ी/जूँ'}, icon:'🐛' },
+  { id:'ringworm_patch', name:{bn:'দাদ (গোল ছোপ)', en:'Ringworm Patches', hi:'दाद (गोल धब्बे)'}, icon:'🔴' },
+  { id:'sudden_collapse', name:{bn:'হঠাৎ পড়ে গেছে', en:'Sudden Collapse', hi:'अचानक गिर पड़ी'}, icon:'💥' },
+  { id:'staggering', name:{bn:'টলমল করছে', en:'Staggering', hi:'लड़खड़ाहट'}, icon:'😵' },
+  { id:'muscle_twitching', name:{bn:'পেশী কাঁপছে', en:'Muscle Twitching', hi:'मांसपेशी कांपना'}, icon:'⚡' },
+  { id:'snake_bite', name:{bn:'সাপে কেটেছে', en:'Snake Bite', hi:'सांप ने काटा'}, icon:'🐍' },
+  { id:'udder_edema', name:{bn:'ওলান ফোলা (প্রসবের আগে)', en:'Udder Edema (Before Calving)', hi:'थन सूजन (प्रसव से पहले)'}, icon:'🫧' },
+  { id:'dental_problem', name:{bn:'দাঁতের সমস্যা', en:'Dental Problem', hi:'दांत की समस्या'}, icon:'🦷' },
+  { id:'foul_breath', name:{bn:'মুখে দুর্গন্ধ', en:'Foul Breath', hi:'मुंह से बदबू'}, icon:'😷' },
+  { id:'dark_urine', name:{bn:'গাঢ় প্রস্রাব', en:'Dark Urine', hi:'गहरा पेशाब'}, icon:'🩸' },
+  { id:'swollen_leg', name:{bn:'পা ফুলে গেছে', en:'Swollen Leg', hi:'पैर में सूजन'}, icon:'🦵' },
+  { id:'foul_smell', name:{bn:'দুর্গন্ধ বের হচ্ছে', en:'Foul Smell', hi:'बदबू आ रही है'}, icon:'⚠️' }
 ];
+
 
 // ============================================
 // DISEASE DATABASE — ২৫টি রোগ (৩ ভাষায়)
@@ -582,7 +600,268 @@ window.DISEASE_DB = [
       hi: 'कीड़े या अपच हो सकता है। २४ घंटे उपवास, पानी दें।'
     }
   }
+  
+    {
+    id: 'stomach_pain',
+    name: { bn:'পেট ব্যথা', en:'Stomach Pain', hi:'पेट दर्द' },
+    icon: '⚠️',
+    urgency: 'medium',
+    symptoms: ['not_eating', 'nervous', 'bloat', 'constipation'],
+    min_match: 2,
+    first_aid_id: 'stomach',
+    action: {
+      bn: 'কৃমি বা বদহজম হতে পারে। ২৪ ঘণ্টা খাওয়া বন্ধ রাখুন, পানি দিন।',
+      en: 'Could be worms or indigestion. Fast 24 hours, give water.',
+      hi: 'कीड़े या अपच हो सकता है। २४ घंटे उपवास, पानी दें।'
+    }
+  },
+
+  // ============================================
+  // নতুন ১৫টি রোগ (২৬-৪০)
+  // ============================================
+
+  // ২৬. পা পচা (Foot Rot)
+  {
+    id: 'foot_rot',
+    name: { bn:'পা পচা', en:'Foot Rot', hi:'पैर सड़न' },
+    icon: '🦶',
+    urgency: 'high',
+    symptoms: ['lame', 'swollen_leg', 'fever', 'not_eating', 'foul_smell', 'low_milk'],
+    min_match: 2,
+    first_aid_id: 'foot_rot',
+    action: {
+      bn: 'পা পরিষ্কার পানিতে ধুয়ে পচা অংশ পরিষ্কার করুন। অ্যান্টিসেপটিক লাগান। বর্ষায় বেশি হয়। ডাক্তার দেখান।',
+      en: 'Wash foot with clean water, clean rotting area. Apply antiseptic. Common in monsoon. Consult vet.',
+      hi: 'पैर को साफ पानी से धोएं, सड़ा हिस्सा साफ करें। एंटीसेप्टिक लगाएं। डॉक्टर को दिखाएं।'
+    }
+  },
+
+  // ২৭. কষ্টপ্রসব (Dystocia)
+  {
+    id: 'dystocia',
+    name: { bn:'কষ্টপ্রসব (বাছুর আটকে গেছে)', en:'Dystocia (Difficult Calving)', hi:'कठिन प्रसव' },
+    icon: '🚨',
+    urgency: 'critical',
+    symptoms: ['pregnant', 'recent_calving', 'nervous', 'not_eating', 'bloat'],
+    min_match: 2,
+    first_aid_id: 'dystocia',
+    action: {
+      bn: '২ ঘণ্টার বেশি প্রসব ব্যথা হলে সাথে সাথে ডাক্তার ডাকুন। নিজে জোর করে টানবেন না — জরায়ু ছিঁড়ে যেতে পারে।',
+      en: 'Call vet immediately if labor >2 hours. Do not pull forcefully — uterus may tear.',
+      hi: '२ घंटे से अधिक प्रसव पीड़ा हो तो तुरंत डॉक्टर बुलाएं। जोर से खींचें नहीं।'
+    }
+  },
+
+  // ২৮. জরায়ু বেরিয়ে আসা (Uterine Prolapse)
+  {
+    id: 'prolapse',
+    name: { bn:'জরায়ু বেরিয়ে আসা', en:'Uterine Prolapse', hi:'गर्भाशय बाहर आना' },
+    icon: '🚨',
+    urgency: 'critical',
+    symptoms: ['uterus_out', 'recent_calving', 'nervous', 'foul_smell', 'not_eating'],
+    min_match: 2,
+    first_aid_id: 'prolapse',
+    action: {
+      bn: 'অতি জরুরি! জীবনের ঝুঁকি। পরিষ্কার কাপড় দিয়ে ঢেকে রাখুন। সাথে সাথে ডাক্তার ডাকুন। নিজে ঠেলবেন না।',
+      en: 'Extremely urgent! Life-threatening. Cover with clean cloth. Call vet immediately. Do not push.',
+      hi: 'अत्यंत आवश्यक! जानलेवा। साफ कपड़े से ढकें। तुरंत डॉक्टर बुलाएं।'
+    }
+  },
+
+  // ২৯. গর্ভপাত (Abortion)
+  {
+    id: 'abortion',
+    name: { bn:'গর্ভপাত', en:'Abortion', hi:'गर्भपात' },
+    icon: '🚨',
+    urgency: 'high',
+    symptoms: ['abortion', 'pregnant', 'fever', 'not_eating', 'foul_smell', 'retained_placenta'],
+    min_match: 2,
+    first_aid_id: 'abortion',
+    action: {
+      bn: 'গর্ভফুল পড়েছে কিনা দেখুন। ডাক্তারকে জানান। সংক্রামক রোগ (ব্রুসেলোসিস) হতে পারে — সতর্ক থাকুন।',
+      en: 'Check if placenta passed. Inform vet. Could be Brucellosis — be careful.',
+      hi: 'जेर गिरा या नहीं देखें। डॉक्टर को बताएं। संक्रामक रोग हो सकता है।'
+    }
+  },
+
+  // ৩০. উকুন/মাকড়ি (Ticks/Lice)
+  {
+    id: 'tick_lice',
+    name: { bn:'উকুন/মাকড়ি', en:'Ticks/Lice Infestation', hi:'चिचड़ी/जूँ' },
+    icon: '🐛',
+    urgency: 'medium',
+    symptoms: ['tick_lice', 'nervous', 'hair_loss', 'skin_problem', 'anemia', 'weight_loss'],
+    min_match: 2,
+    first_aid_id: 'tick',
+    action: {
+      bn: 'বাটাভেট বা সাইপারমেথ্রিন স্প্রে করুন। ২১ দিন পর আবার। গোয়ালঘর পরিষ্কার রাখুন।',
+      en: 'Apply Butavate or Cypermethrin spray. Repeat after 21 days. Keep shed clean.',
+      hi: 'बटावेट या साइपरमेथ्रिन स्प्रे करें। २१ दिन बाद दोहराएं।'
+    }
+  },
+
+  // ৩১. দাদ (Ringworm)
+  {
+    id: 'ringworm',
+    name: { bn:'দাদ (চর্মরোগ)', en:'Ringworm', hi:'दाद (त्वचा रोग)' },
+    icon: '🔴',
+    urgency: 'low',
+    symptoms: ['ringworm_patch', 'skin_problem', 'hair_loss'],
+    min_match: 2,
+    first_aid_id: 'ringworm',
+    action: {
+      bn: 'ছত্রাকনাশক মলম লাগান। মানুষেরও হতে পারে — হাত ধুয়ে নিন। ৭-১০ দিনে সারে।',
+      en: 'Apply antifungal ointment. Can affect humans — wash hands. Heals in 7-10 days.',
+      hi: 'एंटीफंगल मरहम लगाएं। मनुष्यों को भी हो सकता है — हाथ धोएं।'
+    }
+  },
+
+  // ৩২. নাইট্রেট বিষক্রিয়া (Nitrate Poisoning)
+  {
+    id: 'nitrate_poison',
+    name: { bn:'নাইট্রেট বিষক্রিয়া', en:'Nitrate Poisoning', hi:'नाइट्रेट विषाक्तता' },
+    icon: '🚨',
+    urgency: 'critical',
+    symptoms: ['breathing_difficulty', 'sudden_collapse', 'staggering', 'nervous', 'diarrhea'],
+    min_match: 2,
+    first_aid_id: 'nitrate',
+    action: {
+      bn: 'সবুজ ঘাস/সার বেশি খেলে হয়। সাথে সাথে ডাক্তার! মিথিলিন ব্লু ইনজেকশন দরকার।',
+      en: 'From excess green fodder/fertilizer. Call vet immediately! Methylene blue injection needed.',
+      hi: 'अधिक हरा चारा/खाद से। तुरंत डॉक्टर! मिथिलीन ब्लू इंजेक्शन चाहिए।'
+    }
+  },
+
+  // ৩৩. ইউরিয়া বিষক্রিয়া (Urea Poisoning)
+  {
+    id: 'urea_poison',
+    name: { bn:'ইউরিয়া বিষক্রিয়া', en:'Urea Poisoning', hi:'यूरिया विषाक्तता' },
+    icon: '🚨',
+    urgency: 'critical',
+    symptoms: ['sudden_collapse', 'muscle_twitching', 'breathing_difficulty', 'bloat', 'nervous', 'excessive_salivation'],
+    min_match: 2,
+    first_aid_id: 'urea',
+    action: {
+      bn: 'বেশি ইউরিয়া খেলে ৩০-৬০ মিনিটে মৃত্যু হতে পারে। সাথে সাথে ডাক্তার! ২ লিটার ভিনেগার + ২ লিটার পানি খাওয়ান।',
+      en: 'Excess urea can kill in 30-60 min. Call vet! Give 2L vinegar + 2L water.',
+      hi: 'अधिक यूरिया से ३०-६० मिनट में मृत्यु। तुरंत डॉक्टर! २ लीटर सिरका + २ लीटर पानी दें।'
+    }
+  },
+
+  // ৩৪. সাপে কাটা (Snake Bite)
+  {
+    id: 'snake_bite',
+    name: { bn:'সাপে কাটা', en:'Snake Bite', hi:'सांप का काटना' },
+    icon: '🐍',
+    urgency: 'critical',
+    symptoms: ['snake_bite', 'sudden_collapse', 'breathing_difficulty', 'staggering', 'not_eating'],
+    min_match: 2,
+    first_aid_id: 'snakebite',
+    action: {
+      bn: 'কাটার জায়গা নড়াচড়া করবেন না। শক্ত করে বাঁধবেন না। পশুকে শান্ত রাখুন। সাথে সাথে ডাক্তার। এন্টিভেনম দরকার।',
+      en: 'Do not move bite area. Do not tie tightly. Keep animal calm. Call vet immediately for antivenom.',
+      hi: 'काटने की जगह न हिलाएं। कसकर न बांधें। पशु को शांत रखें। तुरंत डॉक्टर।'
+    }
+  },
+
+  // ৩৫. আঁচিল (Warts)
+  {
+    id: 'warts',
+    name: { bn:'আঁচিল', en:'Warts', hi:'मस्से' },
+    icon: '🩹',
+    urgency: 'low',
+    symptoms: ['warts', 'skin_problem'],
+    min_match: 2,
+    first_aid_id: 'warts',
+    action: {
+      bn: 'সাধারণত নিজে থেকে সারে। ছড়াতে থাকলে ডাক্তার দেখান। ভিটামিন A দিতে পারেন।',
+      en: 'Usually heals on its own. Consult vet if spreading. Vitamin A may help.',
+      hi: 'आमतौर पर अपने आप ठीक हो जाते हैं। फैलने पर डॉक्टर।'
+    }
+  },
+
+  // ৩৬. ওলান ফোলা - প্রসবের আগে (Udder Edema)
+  {
+    id: 'udder_edema',
+    name: { bn:'ওলান ফোলা (প্রসবের আগে)', en:'Udder Edema (Pre-calving)', hi:'थन सूजन (प्रसव से पहले)' },
+    icon: '🫧',
+    urgency: 'medium',
+    symptoms: ['udder_edema', 'swollen_udder', 'pregnant', 'recent_calving'],
+    min_match: 2,
+    first_aid_id: 'edema',
+    action: {
+      bn: 'প্রসবের আগে স্বাভাবিক। বেশি খাওয়া কমান। হাঁটাচলা বাড়ান। প্রসবের পর নিজে থেকে কমে যাবে।',
+      en: 'Normal before calving. Reduce feed. Increase walking. Will decrease after calving.',
+      hi: 'प्रसव से पहले सामान्य। भोजन कम करें। चलना बढ़ाएं।'
+    }
+  },
+
+  // ৩৭. নাভি পচা - বাছুর (Navel Ill)
+  {
+    id: 'navel_ill',
+    name: { bn:'বাছুরের নাভি পচা', en:'Navel Ill (Calf)', hi:'बछड़े की नाभि सड़न' },
+    icon: '🩹',
+    urgency: 'high',
+    symptoms: ['navel_swelling', 'fever', 'not_eating', 'swollen_joint', 'lame'],
+    min_match: 2,
+    first_aid_id: 'navel',
+    action: {
+      bn: 'নাভি পরিষ্কার রাখুন, আয়োডিন লাগান। জ্বর থাকলে ডাক্তার দেখান। সংক্রমণ রক্তে যেতে পারে।',
+      en: 'Keep navel clean, apply iodine. Consult vet if fever. Infection can spread to blood.',
+      hi: 'नाभि साफ रखें, आयोडीन लगाएं। बुखार हो तो डॉक্টर को दिखाएं।'
+    }
+  },
+
+  // ৩৮. দুধ না নামা (Milk Let Down)
+  {
+    id: 'milk_letdown',
+    name: { bn:'দুধ না নামা (Let-down)', en:'Milk Let Down Failure', hi:'दूध न आना' },
+    icon: '🥛',
+    urgency: 'medium',
+    symptoms: ['low_milk', 'painful_milking', 'nervous', 'recent_calving'],
+    min_match: 2,
+    first_aid_id: 'letdown',
+    action: {
+      bn: 'নিজে শান্ত থাকুন, গাভীকে আরামদায়ক পরিবেশ দিন। গরম কাপড় দিয়ে ওলান মুছুন। অক্সিটোসিন ইনজেকশনের জন্য ডাক্তার দেখান।',
+      en: 'Stay calm, give cow comfortable environment. Massage udder with warm cloth. Consult vet for oxytocin.',
+      hi: 'शांत रहें, गाय को आरामदायक वातावरण दें। गर्म कपड़े से थन मलें। डॉक्टर से ऑक्सीटोसिन।'
+    }
+  },
+
+  // ৩৯. দাঁতের সমস্যা (Dental Problem)
+  {
+    id: 'dental_problem',
+    name: { bn:'দাঁতের সমস্যা', en:'Dental Problem', hi:'दांत की समस्या' },
+    icon: '🦷',
+    urgency: 'medium',
+    symptoms: ['dental_problem', 'not_eating', 'weight_loss', 'foul_breath', 'salivation', 'low_milk'],
+    min_match: 2,
+    first_aid_id: 'dental',
+    action: {
+      bn: 'নরম খাবার দিন। ডাক্তার দিয়ে দাঁত পরীক্ষা করান। ধারালো দাঁত কেটে দিতে হতে পারে।',
+      en: 'Give soft feed. Get teeth examined by vet. Sharp teeth may need filing.',
+      hi: 'नरम चारा दें। डॉक्टर से दांत जांच कराएं।'
+    }
+  },
+
+  // ৪০. ব্রঙ্কাইটিস (Bronchitis)
+  {
+    id: 'bronchitis',
+    name: { bn:'ব্রঙ্কাইটিস', en:'Bronchitis', hi:'ब्रोंकाइटिस' },
+    icon: '🫁',
+    urgency: 'medium',
+    symptoms: ['cough', 'breathing_difficulty', 'fever', 'nasal_discharge', 'not_eating'],
+    min_match: 3,
+    first_aid_id: 'bronchitis',
+    action: {
+      bn: 'শ্বাসনালীর সংক্রমণ। শীতকালে বেশি। বাতাস চলাচল রাখুন। ডাক্তারের পরামর্শে অ্যান্টিবায়োটিক।',
+      en: 'Airway infection. Common in winter. Ensure ventilation. Antibiotics as per vet.',
+      hi: 'श्वासनली संक्रमण। सर्दी में आम। हवा आने-जाने दें। डॉक्टर की सलाह पर एंटीबायोटिक।'
+    }
+  }
+
 ];
+
 
 console.log('✅ Symptom Database Loaded:');
 console.log('   🩺 Symptoms:', window.SYMPTOM_LIST.length);

@@ -2933,6 +2933,10 @@ updateHeaderSubtitle();
   updateHomeServiceCard();
   // Header language button update
 if (typeof updateLangButton === 'function') updateLangButton();
+// Symptom Checker re-render on language change
+if (typeof renderSymptomList === 'function' && document.getElementById('symListContainer')) {
+  try { renderSymptomList(); } catch(e) {}
+}
 }
 
 // ========== FEATURE CONTROL ==========
