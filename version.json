@@ -1,0 +1,25 @@
+{
+  "version": "3.1",
+  "versionCode": 27,
+  "date": "2026-10-06",
+  "changes": {
+    "bn": [
+      "✅ Exit confirmation modal যোগ হয়েছে - ভুল করে App বন্ধ হবে না",
+      "🔍 Symptom checker ঠিক করা হয়েছে - ৪৬টা লক্ষণ এখন লোড হচ্ছে",
+      "🔄 PWA আপডেট উন্নত - নতুন আপডেট সাথে সাথে চালু হবে",
+      "🌐 Exit dialog ৩ ভাষায় দেখাবে"
+    ],
+    "en": [
+      "✅ Exit confirmation modal added - App won't close accidentally",
+      "🔍 Symptom checker fixed - 46 symptoms now loading",
+      "🔄 PWA update improved - New updates apply instantly",
+      "🌐 3 languages support for exit dialog"
+    ],
+    "hi": [
+      "✅ Exit confirmation modal जोड़ा गया - गलती से बंद नहीं होगा",
+      "🔍 Symptom checker ठीक किया - 46 लक्षण अब लोड हो रहे हैं",
+      "🔄 PWA अपडेट बेहतर - नए अपडेट तुरंत लागू होंगे",
+      "🌐 Exit dialog 3 भाषाओं में दिखेगा"
+    ]
+  }
+}
