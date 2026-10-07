@@ -11133,6 +11133,9 @@ let lastBackPress = 0;
 var __exiting = false;
 
 window.addEventListener('popstate', function() {
+// ===== DEBUG =====
+alert('🔙 Back pressed!\n__exiting: ' + __exiting + '\npageStack: ' + pageStack.join(' > ') + '\nlength: ' + pageStack.length);
+// ===== END DEBUG =====
   if (__exiting) return;
   const mainApp = document.getElementById('mainApp');
   // মেইন অ্যাপ না দেখালে modal দেখাব না
