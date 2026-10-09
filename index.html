@@ -11560,14 +11560,23 @@ function checkUpdateToast() {
   try {
     if (sessionStorage.getItem('dm_justUpdated') === '1') {
       sessionStorage.removeItem('dm_justUpdated');
-      // reload flag ও clear করি (পরের session-এ নতুন করে detect হবে)
-      setTimeout(function() {
-        try { sessionStorage.removeItem('dm_sw_reloaded'); } catch(e) {}
-      }, 5000);
+      try { sessionStorage.removeItem('dm_sw_reloaded'); } catch(e) {}
+      
+      // দিন-ভিত্তিক flag — আজ দেখানো হয়েছে?
+      const today = new Date().toISOString().split('T')[0];
+      const lastShown = localStorage.getItem('dm_update_toast_date');
+      
+      if (lastShown === today) {
+        console.log('✅ Update toast already shown today');
+        return;
+      }
+      
+      // আজ এখনো দেখানো হয়নি → localStorage-এ save
+      try { localStorage.setItem('dm_update_toast_date', today); } catch(e) {}
       
       setTimeout(function() {
         if (typeof toast === 'function') {
-          toast('🔄 অ্যাপ আপডেট হয়েছে! নতুন সংস্করণ চালু হয়েছে');
+          toast('🔄 অ্যাপ আপডেট হয়েছে!');
         } else {
           showSimpleUpdateToast();
         }
