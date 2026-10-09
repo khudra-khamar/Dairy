@@ -1,10 +1,10 @@
 // ========== DAIRY MANAGER — SERVICE WORKER ==========
-// Version: v5.0 (updated with Feed Guide + Admin features)
+// Version: v6.0 (Full Network-First — no version bump needed)
 
-const CACHE_NAME = 'dairy-manager-v28';
-const RUNTIME_CACHE = 'dairy-runtime-v28';
+const CACHE_NAME = 'dairy-manager-net-first';
+const RUNTIME_CACHE = 'dairy-runtime-net-first';
 
-// Files to cache on install
+// Files to cache on install (offline fallback)
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -29,24 +29,22 @@ self.addEventListener('install', function(event) {
         console.warn('[SW] Precache error:', err);
         return Promise.resolve();
       });
+    }).then(function() {
+      return self.skipWaiting();
     })
-}).then(function() {
-  return self.skipWaiting();
-})
   );
 });
 
-// ========== MESSAGE (Auto-Update Notification) ==========
+// ========== MESSAGE ==========
 self.addEventListener('message', function(event) {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-
 // ========== ACTIVATE ==========
 self.addEventListener('activate', function(event) {
-console.log('[SW] Activating...');
+  console.log('[SW] Activating...');
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
       return Promise.all(
@@ -63,21 +61,23 @@ console.log('[SW] Activating...');
   );
 });
 
-// ========== FETCH ==========
+// ========== FETCH — FULL NETWORK FIRST ==========
 self.addEventListener('fetch', function(event) {
   const url = new URL(event.request.url);
   
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
   
-  // Skip chrome-extension or other protocols
+  // Skip chrome-extension / non-http protocols
   if (!url.protocol.startsWith('http')) return;
   
-  // Firebase / Google — network only, no cache
+  // ===== Firebase / Google — Network only, no cache =====
   if (url.hostname.includes('gstatic.com') || 
       url.hostname.includes('google-analytics.com') ||
       url.hostname.includes('firebase') ||
-      url.hostname.includes('googletagmanager.com')) {
+      url.hostname.includes('googletagmanager.com') ||
+      url.hostname.includes('googleapis.com') ||
+      url.hostname.includes('identitytoolkit')) {
     event.respondWith(
       fetch(event.request).catch(function() {
         return new Response('', { status: 200, statusText: 'Offline' });
@@ -86,64 +86,42 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   
-  // ===== HTML / Navigation — NETWORK FIRST =====
-  // HTML সবসময় নতুন version check করে — পুরনো cache ব্যবহার করে না
-  const isHTML = event.request.mode === 'navigate' || 
-                 url.pathname.endsWith('.html') ||
-                 url.pathname.endsWith('/') ||
-                 url.pathname === '/Dairy' ||
-                 url.pathname === '/Dairy/';
-  
-  if (isHTML) {
-    event.respondWith(
-      fetch(event.request).then(function(response) {
-        // নতুন version পেলে cache-ও update করি
-        if (response && response.status === 200) {
+  // ===== Everything else — NETWORK FIRST =====
+  // HTML, JS, JSON, CSS, images, manifest — সব network first
+  event.respondWith(
+    fetch(event.request).then(function(response) {
+      // Success → cache-এ update করি (offline fallback-এর জন্য)
+      if (response && response.status === 200 && response.type !== 'opaque') {
+        try {
           const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
+          caches.open(RUNTIME_CACHE).then(function(cache) {
             cache.put(event.request, responseToCache);
           });
+        } catch(e) {
+          console.warn('[SW] Cache put failed:', e);
         }
-        return response;
-      }).catch(function() {
-        // Network fail → cache fallback
-        return caches.match(event.request).then(function(cached) {
-          return cached || caches.match('./index.html');
-        });
-      })
-    );
-    return;
-  }
-  
-  // ===== Other assets — CACHE FIRST =====
-  event.respondWith(
-    caches.match(event.request).then(function(cachedResponse) {
-      if (cachedResponse) {
-        return cachedResponse;
       }
-      
-      return fetch(event.request).then(function(response) {
-        if (!response || response.status !== 200 || response.type === 'error') {
-          return response;
-        }
+      return response;
+    }).catch(function(err) {
+      // Network fail → cache fallback (offline)
+      console.log('[SW] Network failed, using cache:', url.pathname);
+      return caches.match(event.request).then(function(cached) {
+        if (cached) return cached;
         
-        const responseToCache = response.clone();
-        caches.open(RUNTIME_CACHE).then(function(cache) {
-          cache.put(event.request, responseToCache);
-        });
-        
-        return response;
-      }).catch(function() {
+        // HTML navigation হলে index.html fallback
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
-        return new Response('Offline', { status: 503, statusText: 'Offline' });
+        
+        // কিছুই না পেলে
+        return new Response('Offline', { 
+          status: 503, 
+          statusText: 'Offline',
+          headers: { 'Content-Type': 'text/plain' }
+        });
       });
     })
   );
 });
 
-// ========== MESSAGE (for skipWaiting) ==========
-
-
-console.log('[SW] Service Worker loaded');
+console.log('[SW] Service Worker loaded — FULL NETWORK FIRST');
