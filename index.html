@@ -11517,42 +11517,42 @@ if (splashErr) splashErr.remove();
 initApp();
 
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
-// ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ SW registered:', reg.scope);
       
-      reg.addEventListener('updatefound', function() {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-        
-        newWorker.addEventListener('statechange', function() {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('🔄 New version installed — ready to activate');
-            // flag save করি reload-এর আগে
-            try { sessionStorage.setItem('dm_justUpdated', '1'); } catch(e) {}
-          }
-        });
-      });
-      
-      // প্রতি ৩০ মিনিটে update check
-      setInterval(function() { reg.update(); }, 30 * 60 * 1000);
+      // প্রতি ৩০ মিনিটে background update check
+      setInterval(function() { 
+        try { reg.update(); } catch(e) {} 
+      }, 30 * 60 * 1000);
       
     }).catch(function(err) {
       console.log('❌ SW failed:', err);
     });
   });
   
-  // নতুন SW controller হলে → auto reload
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', function() {
-    if (refreshing) return;
-    refreshing = true;
-    try { sessionStorage.setItem('dm_justUpdated', '1'); } catch(e) {}
-    console.log('✅ New SW active — reloading page');
-    window.location.reload();
-  });
+  // ===== Reload LOOP prevent =====
+  // শুধু session-এ একবারই reload হবে
+  if (sessionStorage.getItem('dm_sw_reloaded') === '1') {
+    // ইতিমধ্যে reload হয়েছে — আর reload করব না
+    console.log('✅ SW already reloaded this session');
+  } else {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      if (refreshing) return;
+      refreshing = true;
+      
+      // one-time flag set
+      try { 
+        sessionStorage.setItem('dm_sw_reloaded', '1');
+        sessionStorage.setItem('dm_justUpdated', '1');
+      } catch(e) {}
+      
+      console.log('🔄 New SW active — reloading once');
+      window.location.reload();
+    });
+  }
 }
 
 // ===== Update Toast =====
@@ -11560,11 +11560,15 @@ function checkUpdateToast() {
   try {
     if (sessionStorage.getItem('dm_justUpdated') === '1') {
       sessionStorage.removeItem('dm_justUpdated');
+      // reload flag ও clear করি (পরের session-এ নতুন করে detect হবে)
+      setTimeout(function() {
+        try { sessionStorage.removeItem('dm_sw_reloaded'); } catch(e) {}
+      }, 5000);
+      
       setTimeout(function() {
         if (typeof toast === 'function') {
           toast('🔄 অ্যাপ আপডেট হয়েছে! নতুন সংস্করণ চালু হয়েছে');
         } else {
-          // Fallback — নিজস্ব toast
           showSimpleUpdateToast();
         }
       }, 1200);
@@ -11584,7 +11588,6 @@ function showSimpleUpdateToast() {
   }, 3000);
 }
 
-// Page load-এ check করি
 window.addEventListener('load', function() {
   setTimeout(checkUpdateToast, 800);
 });
