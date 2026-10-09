@@ -1917,6 +1917,7 @@ cfm_clear: '🗑️ Yes, Clear All',
 cfm_done: '✅ Yes, Done',
 cfm_replace: '🔄 Yes, Replace',
 cfm_merge: '🔀 Merge',
+notif_disable_confirm: 'Disable notifications?',
     export_done:'📤 Downloaded', import_ok:'✅ Import successful',
 import_bad:'❌ Invalid file', error:'❌ Error',
 import_title:'📥 Backup Restore',
@@ -2072,6 +2073,7 @@ cfm_clear: '🗑️ হ্যাঁ, সব মুছুন',
 cfm_done: '✅ হ্যাঁ, Done',
 cfm_replace: '🔄 হ্যাঁ, Replace',
 cfm_merge: '🔀 Merge করুন',
+notif_disable_confirm: 'নোটিফিকেশন বন্ধ করবেন?',
     export_done:'📤 ডাউনলোড হয়েছে', import_ok:'✅ ইমপোর্ট সফল',
 import_bad:'❌ ফাইল সঠিক নয়', error:'❌ ত্রুটি',
 import_title:'📥 ব্যাকআপ রিস্টোর',
@@ -2227,6 +2229,7 @@ cfm_clear: '🗑️ हाँ, सब मिटाएं',
 cfm_done: '✅ हाँ, हो गया',
 cfm_replace: '🔄 हाँ, बदलें',
 cfm_merge: '🔀 Merge',
+notif_disable_confirm: 'नोटिफिकेशन बंद करें?',
     export_done:'📤 डाउनलोड हो गया', import_ok:'✅ आयात सफल',
 import_bad:'❌ अमान्य फाइल', error:'❌ त्रुटि',
 import_title:'📥 बैकअप रिस्टोर',
@@ -2866,7 +2869,12 @@ async function saveFCMToken(token) {
 }
 
 async function disableNotifications() {
-  if (!confirm('Notification বন্ধ করবেন?')) return;
+smartConfirm(t('notif_disable_confirm') || 'Disable Notifications?', function() {
+    _doDisableNotifications();
+  });
+}
+
+async function _doDisableNotifications() {
   
   try {
     if (window._messaging) {
@@ -11133,27 +11141,26 @@ let lastBackPress = 0;
 var __exiting = false;
 
 window.addEventListener('popstate', function() {
-// ===== DEBUG =====
-alert('🔙 Back pressed!\n__exiting: ' + __exiting + '\npageStack: ' + pageStack.join(' > ') + '\nlength: ' + pageStack.length);
-// ===== END DEBUG =====
   if (__exiting) return;
+  
   const mainApp = document.getElementById('mainApp');
-  // মেইন অ্যাপ না দেখালে modal দেখাব না
-  if (!mainApp || mainApp.style.display === 'none') {
-    history.pushState(null, '', location.href);
-    return;
-  }
+  if (!mainApp || mainApp.style.display === 'none') return;
+  
   if (pageStack.length > 1) {
+    // ভিতরের page থেকে Home-এ ফিরি
     pageStack.pop();
     const prev = pageStack[pageStack.length - 1];
     document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
     const el = document.getElementById('page-' + prev);
     if (el) el.classList.add('active');
     window.scrollTo(0, 0);
+    // history আবার push করি — যাতে পরের back ধরতে পারি
     history.pushState(null, '', location.href);
-} else {
+  } else {
+    // Home-এ আছি — Modal দেখাই
+    // আগে history-তে আবার push করি, যাতে Modal-এর পর back কাজ করে
+    history.pushState(null, '', location.href);
     document.getElementById('exitModal').style.display = 'flex';
-    history.pushState(null, "", location.href);
   }
 });
 
@@ -11162,6 +11169,196 @@ function syncHistoryWithPage() {
   // প্রতি page change-এ history push
   history.pushState(null, '', location.href);
 }
+
+// ============================================
+// UNIVERSAL CONFIRM MODAL
+// ============================================
+window._cfmCallback = null;
+
+function showConfirm(options) {
+  return new Promise(function(resolve) {
+    const opts = options || {};
+    
+    const overlay = document.getElementById('cfmOverlay');
+    const box = document.getElementById('cfmBox');
+    const iconEl = document.getElementById('cfmIcon');
+    const titleEl = document.getElementById('cfmTitle');
+    const msgEl = document.getElementById('cfmMessage');
+    const cancelBtn = document.getElementById('cfmCancelBtn');
+    const confirmBtn = document.getElementById('cfmConfirmBtn');
+    
+    if (!overlay || !box) {
+      // Fallback — native confirm
+      const fallback = window.confirm(opts.title || 'Are you sure?');
+      resolve(fallback);
+      return;
+    }
+    
+    // Set content
+    iconEl.textContent = opts.icon || '⚠️';
+    titleEl.textContent = opts.title || t('confirm_del') || 'Are you sure?';
+    msgEl.textContent = opts.message || '';
+    msgEl.style.display = opts.message ? 'block' : 'none';
+    
+    // Cancel button
+    cancelBtn.textContent = opts.cancelText || t('cfm_no') || '❌ No';
+    
+    // Confirm button
+    confirmBtn.textContent = opts.confirmText || t('cfm_yes') || '✅ Yes';
+    confirmBtn.style.background = opts.confirmColor || '#2E7D32';
+    
+    // Show modal
+    overlay.style.display = 'flex';
+    setTimeout(function() {
+      box.style.transform = 'scale(1)';
+      box.style.opacity = '1';
+    }, 10);
+    
+    // Cleanup old handlers
+    if (window._cfmCancelHandler) {
+      cancelBtn.removeEventListener('click', window._cfmCancelHandler);
+    }
+    if (window._cfmConfirmHandler) {
+      confirmBtn.removeEventListener('click', window._cfmConfirmHandler);
+    }
+    if (window._cfmOverlayHandler) {
+      overlay.removeEventListener('click', window._cfmOverlayHandler);
+    }
+    
+    function close() {
+      box.style.transform = 'scale(0.9)';
+      box.style.opacity = '0';
+      setTimeout(function() {
+        overlay.style.display = 'none';
+      }, 200);
+    }
+    
+    // Cancel handler
+    window._cfmCancelHandler = function() {
+      close();
+      resolve(false);
+      if (typeof opts.onCancel === 'function') {
+        try { opts.onCancel(); } catch(e) {}
+      }
+    };
+    cancelBtn.addEventListener('click', window._cfmCancelHandler);
+    
+    // Confirm handler
+    window._cfmConfirmHandler = function() {
+      close();
+      resolve(true);
+      if (typeof opts.onConfirm === 'function') {
+        try { opts.onConfirm(); } catch(e) { console.error('onConfirm error:', e); }
+      }
+    };
+    confirmBtn.addEventListener('click', window._cfmConfirmHandler);
+    
+    // Click outside to cancel
+    window._cfmOverlayHandler = function(e) {
+      if (e.target === overlay) {
+        close();
+        resolve(false);
+      }
+    };
+    overlay.addEventListener('click', window._cfmOverlayHandler);
+  });
+}
+
+// ============================================
+// SHORTCUT FUNCTIONS
+// ============================================
+function cfmDelete(title, message, onConfirm) {
+  return showConfirm({
+    icon: '🗑️',
+    title: title || t('confirm_del'),
+    message: message || '',
+    confirmText: t('cfm_delete'),
+    confirmColor: '#C62828',
+    onConfirm: onConfirm
+  });
+}
+
+function cfmLogout(onConfirm) {
+  return showConfirm({
+    icon: '🚪',
+    title: 'Logout করবেন?',
+    message: 'Trial থাকলে App চলবে, তবে Login বন্ধ হবে।',
+    confirmText: t('cfm_logout'),
+    confirmColor: '#C62828',
+    onConfirm: onConfirm
+  });
+}
+
+function cfmSave(title, message, onConfirm) {
+  return showConfirm({
+    icon: '💾',
+    title: title || 'Save করবেন?',
+    message: message || '',
+    confirmText: t('cfm_save'),
+    confirmColor: '#2E7D32',
+    onConfirm: onConfirm
+  });
+}
+
+function cfmDone(title, message, onConfirm) {
+  return showConfirm({
+    icon: '✅',
+    title: title || 'কাজটি সম্পন্ন?',
+    message: message || '',
+    confirmText: t('cfm_done'),
+    confirmColor: '#2E7D32',
+    onConfirm: onConfirm
+  });
+}
+
+// ============================================
+// SMART CONFIRM REPLACEMENT — Legacy Wrapper
+// ============================================
+function smartConfirm(message, callback) {
+  if (!message) message = 'Are you sure?';
+  
+  const msg = String(message).toLowerCase();
+  let icon = '⚠️';
+  let color = '#2E7D32';
+  let confirmText = t('cfm_yes') || '✅ Yes';
+  
+  // Message দেখে icon detect
+  if (msg.indexOf('delete') !== -1 || msg.indexOf('মুছ') !== -1 || msg.indexOf('clear') !== -1 || msg.indexOf('মুছে') !== -1) {
+    icon = '🗑️';
+    color = '#C62828';
+    confirmText = t('cfm_delete') || '🗑️ Yes, Delete';
+  } else if (msg.indexOf('logout') !== -1 || msg.indexOf('লগআউট') !== -1) {
+    icon = '🚪';
+    color = '#C62828';
+    confirmText = t('cfm_logout') || '🚪 Yes, Logout';
+  } else if (msg.indexOf('notification') !== -1 || msg.indexOf('নোটিফিকেশন') !== -1 || msg.indexOf('বন্ধ') !== -1) {
+    icon = '🔕';
+    color = '#EF6C00';
+    confirmText = t('cfm_no') || '✅ Yes';
+  } else if (msg.indexOf('call') !== -1 || msg.indexOf('কল') !== -1 || msg.indexOf('ফোন') !== -1) {
+    icon = '📞';
+    color = '#1976D2';
+    confirmText = t('cfm_yes') || '📞 Yes, Call';
+  } else if (msg.indexOf('save') !== -1 || msg.indexOf('সেভ') !== -1) {
+    icon = '💾';
+    color = '#2E7D32';
+    confirmText = t('cfm_save') || '💾 Yes, Save';
+  } else if (msg.indexOf('calved') !== -1 || msg.indexOf('প্রসব') !== -1 || msg.indexOf('🍼') !== -1) {
+    icon = '🍼';
+    color = '#2E7D32';
+    confirmText = t('cfm_yes') || '🍼 Yes';
+  }
+  
+  showConfirm({
+    icon: icon,
+    title: message,
+    message: '',
+    confirmText: confirmText,
+    confirmColor: color,
+    onConfirm: callback
+  });
+}
+
 
 function exitAppChoose(yes) {
   document.getElementById('exitModal').style.display = 'none';
@@ -11174,8 +11371,7 @@ function exitAppChoose(yes) {
   setTimeout(function(){ toast('⬅️ বের হতে Back বাটন চাপুন'); }, 600);
 }
 
-history.pushState(null, '', location.href);
-history.pushState(null, '', location.href);
+history.pushState(null, '', location.href); // Single push - fixed to prevent exit modal on update check
 
 // ========== WAIT FOR AUTH + CHECK LICENSE ==========
 function waitForAuthThenCheckLicense() {
@@ -11410,6 +11606,24 @@ document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
       <button onclick="exitAppChoose(false)" data-t="exit_no" style="flex:1;padding:12px;border:none;border-radius:10px;background:#f0f0f0;font-weight:700;">No</button>
       <button onclick="exitAppChoose(true)" data-t="exit_yes" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2E7D32;color:#fff;font-weight:700;">Yes</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== UNIVERSAL CONFIRM MODAL ===== -->
+<div id="cfmOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
+  <div id="cfmBox" style="background:#fff;border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:center;transform:scale(0.9);opacity:0;transition:all 0.2s ease;">
+    
+    <div id="cfmIcon" style="font-size:56px;line-height:1;margin-bottom:12px;">⚠️</div>
+    
+    <h3 id="cfmTitle" style="margin:0 0 8px;color:#2E7D32;font-size:18px;font-weight:800;line-height:1.3;">শিরোনাম</h3>
+    
+    <p id="cfmMessage" style="margin:0 0 20px;color:#666;font-size:14px;line-height:1.5;">বার্তা</p>
+    
+    <div style="display:flex;gap:10px;">
+      <button id="cfmCancelBtn" style="flex:1;padding:14px;background:#f0f0f0;color:#555;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">❌ না</button>
+      <button id="cfmConfirmBtn" style="flex:1;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">✅ হ্যাঁ</button>
+    </div>
+    
   </div>
 </div>
 
