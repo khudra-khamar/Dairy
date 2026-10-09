@@ -1916,6 +1916,8 @@ cfm_exit: '🚪 Yes, Exit',
 cfm_clear: '🗑️ Yes, Clear All',
 cfm_done: '✅ Yes, Done',
 cfm_replace: '🔄 Yes, Replace',
+guest_trial_saved: '✅ Guest Trial saved',
+guest_trial_updated: '✅ Guest Trial updated',
 cfm_merge: '🔀 Merge',
 notif_disable_confirm: 'Disable notifications?',
     export_done:'📤 Downloaded', import_ok:'✅ Import successful',
@@ -2072,6 +2074,8 @@ cfm_exit: '🚪 হ্যাঁ, বন্ধ করুন',
 cfm_clear: '🗑️ হ্যাঁ, সব মুছুন',
 cfm_done: '✅ হ্যাঁ, Done',
 cfm_replace: '🔄 হ্যাঁ, Replace',
+guest_trial_saved: '✅ Guest Trial সেভ হয়েছে',
+guest_trial_updated: '✅ Guest Trial আপডেট হয়েছে',
 cfm_merge: '🔀 Merge করুন',
 notif_disable_confirm: 'নোটিফিকেশন বন্ধ করবেন?',
     export_done:'📤 ডাউনলোড হয়েছে', import_ok:'✅ ইমপোর্ট সফল',
@@ -2228,6 +2232,8 @@ cfm_exit: '🚪 हाँ, बंद करें',
 cfm_clear: '🗑️ हाँ, सब मिटाएं',
 cfm_done: '✅ हाँ, हो गया',
 cfm_replace: '🔄 हाँ, बदलें',
+guest_trial_saved: '✅ Guest Trial सेव हुआ',
+guest_trial_updated: '✅ Guest Trial अपडेट हुआ',
 cfm_merge: '🔀 Merge',
 notif_disable_confirm: 'नोटिफिकेशन बंद करें?',
     export_done:'📤 डाउनलोड हो गया', import_ok:'✅ आयात सफल',
@@ -4946,7 +4952,7 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+window._toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
 }
 // ========== HOME ==========
 function debugPhotos() {
@@ -9879,6 +9885,9 @@ async function saveGuestTrialUser() {
         converted: false
       });
       console.log('✅ Guest trial user created:', deviceId);
+      setTimeout(function() {
+  if (typeof toast === 'function') toast(t('guest_trial_saved'));
+}, 2800);
     } else {
       // Already আছে — lastSeen update
       await ref.update({
@@ -9889,6 +9898,9 @@ async function saveGuestTrialUser() {
 });
 
       console.log('✅ Guest trial user updated:', deviceId);
+      setTimeout(function() {
+  if (typeof toast === 'function') toast(t('guest_trial_updated'));
+}, 2800);
     }
     toast('✅ Guest saved: ' + deviceId.slice(0, 10));
   } catch(e) {
