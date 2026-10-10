@@ -11623,28 +11623,41 @@ if ('serviceWorker' in navigator) {
     });
   });
   
-  // ===== Reload LOOP prevent =====
-  // শুধু session-এ একবারই reload হবে
-  if (sessionStorage.getItem('dm_sw_reloaded') === '1') {
-    // ইতিমধ্যে reload হয়েছে — আর reload করব না
-    console.log('✅ SW already reloaded this session');
-  } else {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function() {
-      if (refreshing) return;
-      refreshing = true;
-      
-      // one-time flag set
-      try { 
-        sessionStorage.setItem('dm_sw_reloaded', '1');
-        sessionStorage.setItem('dm_justUpdated', '1');
-      } catch(e) {}
-      
-      console.log('🔄 New SW active — reloading once');
-      window.location.reload();
-    });
-  }
+  // ===== Reload LOOP prevent (time-based) =====
+  // ৫ মিনিটে একবারই reload হবে — loop বন্ধ
+  const SW_RELOAD_COOLDOWN = 5 * 60 * 1000; // ৫ মিনিট
+  let refreshing = false;
+  
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (refreshing) return;
+    refreshing = true;
+    
+    // localStorage-এ শেষ reload time দেখি
+    let lastReload = 0;
+    try {
+      lastReload = parseInt(localStorage.getItem('dm_last_sw_reload') || '0', 10);
+    } catch(e) {}
+    
+    const now = Date.now();
+    const elapsed = now - lastReload;
+    
+    if (elapsed < SW_RELOAD_COOLDOWN) {
+      console.log('⏳ SW reload cooldown — skip (elapsed: ' + Math.round(elapsed/1000) + 's)');
+      refreshing = false;
+      return;
+    }
+    
+    // Reload time save করি
+    try {
+      localStorage.setItem('dm_last_sw_reload', String(now));
+      sessionStorage.setItem('dm_justUpdated', '1');
+    } catch(e) {}
+    
+    console.log('🔄 New SW active — reloading once');
+    window.location.reload();
+  });
 }
+
 
 // ===== Update Toast =====
 function checkUpdateToast() {
