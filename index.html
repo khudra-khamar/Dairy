@@ -11603,8 +11603,34 @@ async function initApp() {
       setTimeout(function() { if (splashEarly && splashEarly.parentNode) splashEarly.remove(); }, 350);
     }
 
-    // Background tasks after home shown
+// Background tasks after home shown - FIXED for FCM auto notification 5-6 AM
     try { if (typeof fetchAlertSettings === 'function') fetchAlertSettings(); } catch(e){}
+
+    // Retry syncAlerts after Firebase ready - ensures 5-6 AM push works
+    function retryAlertSyncForFCM() {
+      var attempts = 0;
+      var maxAttempts = 30; // 30 * 1s = 30 sec retry
+      function trySync() {
+        attempts++;
+        if (window._db && window._fbReady) {
+          try {
+            if (typeof syncAlertsToFirestore === 'function') {
+              syncAlertsToFirestore();
+              console.log('✅ FCM Alert Sync retried after Firebase ready - 5-6 AM push will work');
+            }
+            if (typeof saveFCMToken === 'function' && DB.fcmToken) {
+              saveFCMToken(DB.fcmToken);
+            }
+          } catch(e){ console.warn('Retry sync failed', e); }
+          return;
+        }
+        if (attempts < maxAttempts) {
+          setTimeout(trySync, 1000);
+        }
+      }
+      setTimeout(trySync, 2000);
+    }
+    retryAlertSyncForFCM();
     
     // ===== Firestore থেকে Setup Restore করি - background এ =====
 // Local setupDone না থাকলে কিন্তু Firestore-এ থাকলে → restore
