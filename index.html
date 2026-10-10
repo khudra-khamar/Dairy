@@ -10390,51 +10390,12 @@ async function checkLicense() {
   proceedAfterLogin();
 }
 
-async function checkLicenseOnLoad() {
+// ========== LOCAL-ONLY License Check (দ্রুত) ==========
+function checkLicenseOnLoad() {
   const devShow = document.getElementById('deviceIdShow');
   if (devShow) devShow.textContent = DB.deviceId;
 
-  // ===== Step 1: Login করা User-এর UID License =====
-  const user = window._auth && window._auth.currentUser;
-  if (user && user.uid && window._db) {
-    try {
-      const licDoc = await window._db.collection('licenses').doc(user.uid).get();
-      if (licDoc.exists) {
-        const data = licDoc.data();
-        if (data.active !== false && data.expiry) {
-          const expDate = new Date(data.expiry + 'T23:59:59');
-          const daysLeft = Math.ceil((expDate - new Date()) / 86400000);
-          
-          if (daysLeft > 0) {
-            DB.license = {
-              code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
-              expiry: data.expiry,
-              trial: false,
-              uid: user.uid
-            };
-            saveDB();
-            console.log('✅ UID License active:', data.expiry);
-            proceedAfterLogin();
-            return true;
-          }
-          
-          if (daysLeft <= -GRACE_DAYS) {
-            document.getElementById('licenseScreen').style.display = 'flex';
-            return false;
-          }
-          
-          if (daysLeft <= 0) {
-            showGraceScreen(daysLeft);
-            return true;
-          }
-        }
-      }
-    } catch(e) {
-      console.warn('UID license check failed:', e);
-    }
-  }
-
-  // ===== Step 2: Trial check =====
+  // ===== Step 1: Local Trial check =====
   if (DB.license.trial && DB.license.expiry) {
     const exp = new Date(DB.license.expiry + 'T00:00:00');
     const daysLeft = Math.ceil((exp - new Date()) / 86400000);
@@ -10455,7 +10416,7 @@ async function checkLicenseOnLoad() {
     }
   }
   
-  // ===== Step 3: Device-based License =====
+  // ===== Step 2: Local Device-based License =====
   if (DB.license.code && DB.license.expiry) {
     const exp = new Date(DB.license.expiry + 'T00:00:00');
     const daysLeft = Math.ceil((exp - new Date()) / 86400000);
@@ -10469,6 +10430,80 @@ async function checkLicenseOnLoad() {
       document.getElementById('licenseScreen').style.display = 'flex';
       return false;
     }
+    
+    if (daysLeft <= 0) {
+      showGraceScreen(daysLeft);
+      return true;
+    }
+  }
+  
+  // ===== Step 3: UID License (Login user) — check DB.license.uid =====
+  if (DB.license.uid && DB.license.expiry && !DB.license.trial) {
+    const exp = new Date(DB.license.expiry + 'T00:00:00');
+    const daysLeft = Math.ceil((exp - new Date()) / 86400000);
+    
+    if (daysLeft > 0) {
+      proceedAfterLogin();
+      return true;
+    }
+    
+    if (daysLeft <= -GRACE_DAYS) {
+      document.getElementById('licenseScreen').style.display = 'flex';
+      return false;
+    }
+    
+    if (daysLeft <= 0) {
+      showGraceScreen(daysLeft);
+      return true;
+    }
+  }
+  
+  // ===== Step 4: License নেই =====
+  document.getElementById('licenseScreen').style.display = 'flex';
+  return false;
+}
+
+// ========== BACKGROUND: Firebase UID License Check ==========
+async function checkLicenseFromFirebase() {
+  try {
+    const user = window._auth && window._auth.currentUser;
+    if (!user || !user.uid || !window._db) return;
+    
+    const licDoc = await window._db.collection('licenses').doc(user.uid).get();
+    if (!licDoc.exists) return;
+    
+    const data = licDoc.data();
+    if (data.active === false || !data.expiry) return;
+    
+    const expDate = new Date(data.expiry + 'T23:59:59');
+    const daysLeft = Math.ceil((expDate - new Date()) / 86400000);
+    
+    if (daysLeft > 0) {
+      // Local license update
+      DB.license = {
+        code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
+        expiry: data.expiry,
+        trial: false,
+        uid: user.uid
+      };
+      if (typeof saveDB === 'function') saveDB();
+      console.log('✅ UID License verified (background):', data.expiry);
+      
+      // License screen দেখানো থাকলে Home-এ নিয়ে যাই
+      const licScreen = document.getElementById('licenseScreen');
+      if (licScreen && licScreen.style.display === 'flex') {
+        proceedAfterLogin();
+      }
+      return;
+    }
+    
+    if (daysLeft <= 0) {
+      console.log('⚠️ UID license expiring/expired');
+    }
+  } catch(e) {
+    console.warn('Background license check failed:', e);
+  }
+}
     
     if (daysLeft <= 0) {
       showGraceScreen(daysLeft);
@@ -11484,6 +11519,13 @@ function waitForAuthThenCheckLicense() {
       const unsub = window._auth.onAuthStateChanged(function(user) {
         unsub();
         console.log('✅ Auth state:', user ? user.email : 'guest');
+
+        // ==== Background-এ Firebase License Check ====
+if (user && user.uid && typeof checkLicenseFromFirebase === 'function') {
+  setTimeout(function() {
+    checkLicenseFromFirebase();
+  }, 800);
+}
         
         // ==== Login User হলে UID License re-check ====
         if (user && user.uid && window._db) {
