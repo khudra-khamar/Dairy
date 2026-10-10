@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Firebase Preconnect — দ্রুত connection -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://firebaseinstallations.googleapis.com">
+<link rel="dns-prefetch" href="https://fcmregistrations.googleapis.com">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#2E7D32">
@@ -1728,6 +1734,12 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 
 </div>
 <!-- ========== mainApp End ========== -->
+
+<!-- Firebase SDK Preload — দ্রুত download -->
+<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" as="script">
+<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" as="script">
+<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js" as="script">
+<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js" as="script">
 
 <!-- Firebase SDK (deferred for fast load) -->
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -3606,7 +3618,7 @@ const MANUAL_CONTENT = {
       '🔔 घंटी — अलर्ट केंद्र',
       '⋮ मेनू — Help, Share, Settings, About'
     ]},
-    { icon: '🐮', title: 'नया पशु जोड़ें', steps: [
+    { icon: '??', title: 'नया पशु जोड़ें', steps: [
       'होम → ➕ Add New Animal',
       'प्रकार चुनें: गाय / भैंस / बछड़ा / बछिया / सांड',
       'Tag No (जैसे C001) और नाम भरें',
