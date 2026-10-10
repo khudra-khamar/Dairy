@@ -10622,6 +10622,64 @@ function disablePin() {
 
 // ========== SETUP WIZARD (Simplified — Language Only) ==========
 // শুধু Language Select → সরাসরি Login Screen
+// ============================================
+// SAVE DEVICE SETUP TO FIRESTORE
+// ============================================
+async function saveDeviceSetupToFirestore() {
+  try {
+    if (!window._db || !DB.deviceId) return;
+    if (!DB.settings || !DB.settings.setupDone) return;
+    
+    const ref = window._db.collection('devices').doc(DB.deviceId);
+    await ref.set({
+      deviceId: DB.deviceId,
+      setupDone: true,
+      lang: DB.settings.lang || 'bn',
+      preset: DB.settings.preset || 'advanced',
+      farmName: DB.settings.farmName || '',
+      ownerName: DB.settings.ownerName || '',
+      phone: DB.settings.phone || '',
+      lastUpdated: Date.now(),
+      appVersion: '3.0'
+    }, { merge: true });
+    
+    console.log('✅ Device setup saved to Firestore:', DB.deviceId);
+  } catch(e) {
+    console.warn('Device setup save failed:', e);
+  }
+}
+
+// ============================================
+// LOAD DEVICE SETUP FROM FIRESTORE
+// ============================================
+async function loadDeviceSetupFromFirestore() {
+  try {
+    if (!window._db || !DB.deviceId) return false;
+    
+    const snap = await window._db.collection('devices').doc(DB.deviceId).get();
+    if (!snap.exists) return false;
+    
+    const d = snap.data();
+    if (!d.setupDone) return false;
+    
+    // Local restore
+    DB.settings.setupDone = true;
+    if (d.lang) DB.settings.lang = d.lang;
+    if (d.preset) DB.settings.preset = d.preset;
+    if (d.farmName) DB.settings.farmName = d.farmName;
+    if (d.ownerName) DB.settings.ownerName = d.ownerName;
+    if (d.phone) DB.settings.phone = d.phone;
+    
+    if (typeof saveDB === 'function') saveDB();
+    
+    console.log('✅ Device setup restored from Firestore');
+    return true;
+  } catch(e) {
+    console.warn('Device setup load failed:', e);
+    return false;
+  }
+}
+
 
 function chooseSetupLang(l) {
   DB.settings.lang = l;
@@ -10650,6 +10708,13 @@ function chooseSetupLang(l) {
   }
   
   console.log('✅ Language set:', l);
+  
+  // Firestore-এও save করি — storage wipe হলে setup না আসে
+  setTimeout(function() {
+    if (typeof saveDeviceSetupToFirestore === 'function') {
+      saveDeviceSetupToFirestore();
+    }
+  }, 500);
 }
 
 
@@ -11483,6 +11548,20 @@ async function initApp() {
     
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
+    
+    // ===== Firestore থেকে Setup Restore করি =====
+// Local setupDone না থাকলে কিন্তু Firestore-এ থাকলে → restore
+if (!DB.settings.setupDone && DB.deviceId && window._db) {
+  try {
+    const restored = await loadDeviceSetupFromFirestore();
+    if (restored) {
+      console.log('✅ Setup restored from Firestore');
+    }
+  } catch(e) {
+    console.warn('Setup restore failed:', e);
+  }
+}
+
     
 // Step 6: Setup wizard or license check
 if (!DB.settings.setupDone) {
