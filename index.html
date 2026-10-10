@@ -11462,61 +11462,91 @@ function exitAppChoose(yes) {
 
 history.pushState(null, '', location.href); // Single push - fixed to prevent exit modal on update check
 
-// ========== WAIT FOR AUTH + CHECK LICENSE (Fast) ==========
+// ========== FAST STARTUP — Local First, Firebase Background ==========
 function waitForAuthThenCheckLicense() {
-  // ===== Step 1: Local Data দিয়ে সাথে সাথে License Screen দেখাই =====
-  // Firebase Auth-এর জন্য অপেক্ষা না করি
+  // ===== Step 1: সাথে সাথে Local Data দিয়ে UI দেখাই =====
   setTimeout(function() {
     if (typeof checkLicenseOnLoad === 'function') {
-      try { checkLicenseOnLoad(); } catch(e) { console.warn(e); }
+      try { checkLicenseOnLoad(); } catch(e) { console.warn('Local check failed:', e); }
     }
-  }, 300);
+  }, 50);
   
-  // ===== Step 2: Background-এ Auth ready হলে আবার check =====
-  if (!window._auth) {
-    // Auth এখনো load হয়নি — 3 সেকেন্ড পর্যন্ত অপেক্ষা করি (background-এ)
-    let attempts = 0;
-    const maxAttempts = 15; // 3 সেকেন্ড
+  // ===== Step 2: Firebase Background-এ Load =====
+  let attempts = 0;
+  const maxAttempts = 50;
+  
+  function bgFirebase() {
+    attempts++;
     
-    function bgCheck() {
-      attempts++;
+    if (window._auth && window._fbReady) {
+      console.log('✅ Firebase ready (background)');
       
-      if (window._auth) {
-        // Auth ready — UID license check
-        const unsub = window._auth.onAuthStateChanged(function(user) {
-          unsub();
-          console.log('✅ Auth ready (background):', user ? user.email : 'Not logged in');
-          
-          // যদি Login করা থাকে, UID license আবার check করি
-          if (user && typeof checkLicenseOnLoad === 'function') {
-            setTimeout(function() {
-              try { checkLicenseOnLoad(); } catch(e) {}
-            }, 500);
-          }
-        });
-        return;
-      }
-      
-      if (attempts < maxAttempts) {
-        setTimeout(bgCheck, 200);
-      } else {
-        console.log('⚠️ Auth background timeout — app continues with local data');
-      }
+      const unsub = window._auth.onAuthStateChanged(function(user) {
+        unsub();
+        console.log('✅ Auth state:', user ? user.email : 'guest');
+        
+        // ==== Login User হলে UID License re-check ====
+        if (user && user.uid && window._db) {
+          window._db.collection('licenses').doc(user.uid).get()
+            .then(function(doc) {
+              if (doc.exists) {
+                const data = doc.data();
+                if (data.active !== false && data.expiry) {
+                  const expDate = new Date(data.expiry + 'T23:59:59');
+                  if (expDate > new Date()) {
+                    DB.license = {
+                      code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
+                      expiry: data.expiry,
+                      trial: false,
+                      uid: user.uid
+                    };
+                    if (typeof saveDB === 'function') saveDB();
+                    console.log('✅ UID license verified (background)');
+                  }
+                }
+              }
+            })
+            .catch(function(e) { console.warn('UID check failed:', e); });
+        }
+        
+        // ==== Alert Sync (background) ====
+        setTimeout(function() {
+          try {
+            if (typeof syncAlertsToFirestore === 'function') {
+              syncAlertsToFirestore();
+            }
+          } catch(e) {}
+        }, 1500);
+        
+        // ==== Notification UI Update (background) ====
+        setTimeout(function() {
+          try {
+            if (typeof updateNotificationUI === 'function') {
+              updateNotificationUI();
+            }
+          } catch(e) {}
+        }, 2500);
+        
+        // ==== License Expiry Warning (background) ====
+        setTimeout(function() {
+          try {
+            if (typeof checkLicenseWarning === 'function') {
+              checkLicenseWarning();
+            }
+          } catch(e) {}
+        }, 3500);
+      });
+      return;
     }
     
-    bgCheck();
-  } else {
-    // Auth আগেই ready
-    const unsub = window._auth.onAuthStateChanged(function(user) {
-      unsub();
-      console.log('✅ Auth already ready:', user ? user.email : 'Not logged in');
-      if (user && typeof checkLicenseOnLoad === 'function') {
-        setTimeout(function() {
-          try { checkLicenseOnLoad(); } catch(e) {}
-        }, 500);
-      }
-    });
+    if (attempts < maxAttempts) {
+      setTimeout(bgFirebase, 200);
+    } else {
+      console.log('⚠️ Firebase background timeout');
+    }
   }
+  
+  bgFirebase();
 }
 
 // ========== INIT ==========
@@ -11620,14 +11650,7 @@ if (!DB.settings.setupDone) {
   waitForAuthThenCheckLicense();
 }
     
-    idbLog('App initialized successfully');
-    // Splash মুছি
-const splash = document.getElementById('dmSplash');
-if (splash) {
-  splash.style.transition = 'opacity 0.3s';
-  splash.style.opacity = '0';
-  setTimeout(function() { if (splash && splash.parentNode) splash.remove(); }, 350);
-}
+
   } catch(e) {
     idbLog('Init error: ' + e.message);
     // Error হলেও splash মুছি
@@ -11643,6 +11666,16 @@ if (splashErr) splashErr.remove();
 
 // Start the app
 initApp();
+
+// ===== Splash ১ সেকেন্ডে Auto-hide =====
+setTimeout(function() {
+  const s = document.getElementById('dmSplash');
+  if (s) {
+    s.style.transition = 'opacity 0.4s';
+    s.style.opacity = '0';
+    setTimeout(function() { if (s && s.parentNode) s.remove(); }, 400);
+  }
+}, 1000);
 
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
