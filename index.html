@@ -11450,36 +11450,61 @@ function exitAppChoose(yes) {
 
 history.pushState(null, '', location.href); // Single push - fixed to prevent exit modal on update check
 
-// ========== WAIT FOR AUTH + CHECK LICENSE ==========
+// ========== WAIT FOR AUTH + CHECK LICENSE (Fast) ==========
 function waitForAuthThenCheckLicense() {
-  let attempts = 0;
-  const maxAttempts = 30; // 6 সেকেন্ড
+  // ===== Step 1: Local Data দিয়ে সাথে সাথে License Screen দেখাই =====
+  // Firebase Auth-এর জন্য অপেক্ষা না করি
+  setTimeout(function() {
+    if (typeof checkLicenseOnLoad === 'function') {
+      try { checkLicenseOnLoad(); } catch(e) { console.warn(e); }
+    }
+  }, 300);
   
-  function tryCheck() {
-    attempts++;
+  // ===== Step 2: Background-এ Auth ready হলে আবার check =====
+  if (!window._auth) {
+    // Auth এখনো load হয়নি — 3 সেকেন্ড পর্যন্ত অপেক্ষা করি (background-এ)
+    let attempts = 0;
+    const maxAttempts = 15; // 3 সেকেন্ড
     
-    // Auth ready?
-    if (window._auth) {
-      // onAuthStateChanged দিয়ে final check
-      const unsub = window._auth.onAuthStateChanged(function(user) {
-        unsub();
-        console.log('✅ Auth ready:', user ? user.email : 'Not logged in');
-        checkLicenseOnLoad();
-      });
-      return;
+    function bgCheck() {
+      attempts++;
+      
+      if (window._auth) {
+        // Auth ready — UID license check
+        const unsub = window._auth.onAuthStateChanged(function(user) {
+          unsub();
+          console.log('✅ Auth ready (background):', user ? user.email : 'Not logged in');
+          
+          // যদি Login করা থাকে, UID license আবার check করি
+          if (user && typeof checkLicenseOnLoad === 'function') {
+            setTimeout(function() {
+              try { checkLicenseOnLoad(); } catch(e) {}
+            }, 500);
+          }
+        });
+        return;
+      }
+      
+      if (attempts < maxAttempts) {
+        setTimeout(bgCheck, 200);
+      } else {
+        console.log('⚠️ Auth background timeout — app continues with local data');
+      }
     }
     
-    // Auth ready না — আবার চেষ্টা
-    if (attempts < maxAttempts) {
-      setTimeout(tryCheck, 200);
-    } else {
-      // Timeout — তবু check করি
-      console.warn('⚠️ Auth timeout — checking anyway');
-      checkLicenseOnLoad();
-    }
+    bgCheck();
+  } else {
+    // Auth আগেই ready
+    const unsub = window._auth.onAuthStateChanged(function(user) {
+      unsub();
+      console.log('✅ Auth already ready:', user ? user.email : 'Not logged in');
+      if (user && typeof checkLicenseOnLoad === 'function') {
+        setTimeout(function() {
+          try { checkLicenseOnLoad(); } catch(e) {}
+        }, 500);
+      }
+    });
   }
-  
-  tryCheck();
 }
 
 // ========== INIT ==========
