@@ -1,9 +1,8 @@
-// ========== DAIRY MANAGER — SERVICE WORKER ==========
-// Version: v7.0 — HTML Network-First, Data Day-Cache
+ // ========== DAIRY MANAGER — SERVICE WORKER ==========
+// Version: v8.0 — Hybrid Strategy
 
-const CACHE_NAME = 'dairy-manager-v7';
-const RUNTIME_CACHE = 'dairy-runtime-v7';
-const DATA_CACHE = 'dairy-data-v7';
+const CACHE_NAME = 'dairy-manager-v8';
+const RUNTIME_CACHE = 'dairy-runtime-v8';
 
 const PRECACHE_URLS = [
   './',
@@ -48,9 +47,7 @@ self.addEventListener('activate', function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.map(function(cacheName) {
-          if (cacheName !== CACHE_NAME && 
-              cacheName !== RUNTIME_CACHE && 
-              cacheName !== DATA_CACHE) {
+          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
             console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -66,7 +63,6 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
   const url = new URL(event.request.url);
   
-  // Skip non-GET
   if (event.request.method !== 'GET') return;
   if (!url.protocol.startsWith('http')) return;
   
@@ -85,7 +81,7 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   
-  // ===== HTML — Network First (always) =====
+  // ===== HTML / Navigation — Network First =====
   const isHTML = event.request.mode === 'navigate' || 
                  url.pathname.endsWith('.html') ||
                  url.pathname.endsWith('/') ||
@@ -111,68 +107,26 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   
-  // ===== Data files (JS/JSON) — Day Cache =====
-  const isData = url.pathname.endsWith('.js') || url.pathname.endsWith('.json');
-  
-  if (isData) {
-    event.respondWith(dayCacheStrategy(event.request));
-    return;
-  }
-  
-  // ===== Other (images, css) — Cache First =====
+  // ===== JS / JSON / CSS / Images — Cache First + Background Update =====
   event.respondWith(
-    caches.match(event.request).then(function(cached) {
-      if (cached) return cached;
-      return fetch(event.request).then(function(response) {
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
+    caches.match(event.request).then(function(cachedResponse) {
+      // Background-এ নতুন version check (stale-while-revalidate)
+      const fetchPromise = fetch(event.request).then(function(networkResponse) {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
           caches.open(RUNTIME_CACHE).then(function(cache) {
             cache.put(event.request, responseToCache);
           });
         }
-        return response;
+        return networkResponse;
       }).catch(function() {
-        return new Response('Offline', { status: 503 });
+        return null;
       });
+      
+      // Cache থাকলে সাথে সাথে দেখাই (background-এ update হবে)
+      return cachedResponse || fetchPromise;
     })
   );
 });
 
-// ===== DAY CACHE STRATEGY =====
-// প্রতিদিন একবার নতুন version check করে — বাকি সময় cache থেকে দ্রুত serve
-async function dayCacheStrategy(request) {
-  const cache = await caches.open(DATA_CACHE);
-  const cachedResponse = await cache.match(request);
-  
-  // আজকের date — cache key হিসেবে ব্যবহার করি
-  const today = new Date().toISOString().split('T')[0];
-  const dateKey = 'day-' + today + '-' + request.url;
-  
-  // আজ কি cache update করেছি?
-  const dayCache = await caches.open(DATA_CACHE);
-  const todayCheck = await dayCache.match(dateKey);
-  
-  if (todayCheck && cachedResponse) {
-    // আজ already update করা হয়েছে → cache থেকে serve
-    console.log('[SW] Day cache hit:', request.url);
-    return cachedResponse;
-  }
-  
-  // আজ এখনো update করা হয়নি → network থেকে আনি
-  try {
-    const response = await fetch(request);
-    if (response && response.status === 200) {
-      // Data cache-এ save
-      cache.put(request, response.clone());
-      // আজকের date marker save
-      cache.put(dateKey, new Response('updated'));
-    }
-    return response;
-  } catch(e) {
-    // Network fail → cache থেকে
-    if (cachedResponse) return cachedResponse;
-    return new Response('Offline', { status: 503 });
-  }
-}
-
-console.log('[SW] Service Worker loaded — v7 Day Cache');
+console.log('[SW] Service Worker loaded — v8 Hybrid');
