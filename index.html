@@ -16,7 +16,6 @@
 <title>Dairy Manager</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,'Noto Sans Bengali','Noto Sans Devanagari',sans-serif; -webkit-tap-highlight-color:transparent; }
 body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
@@ -1736,10 +1735,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <!-- ========== mainApp End ========== -->
 
 <!-- Firebase SDK Preload — দ্রুত download -->
-<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" as="script">
-<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" as="script">
-<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js" as="script">
-<link rel="preload" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js" as="script">
 
 <!-- Firebase SDK (deferred for fast load) -->
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1822,8 +1817,8 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </script>
 
 
-<script src="first-aid-data.js"></script>
-<script src="symptom-data.js"></script>
+<script defer src="first-aid-data.js"></script>
+<script defer src="symptom-data.js"></script>
 
 <script>
 
@@ -7776,7 +7771,10 @@ function renderReports() {
 
   const ctxF = document.getElementById('chartFinance');
   const ctxM = document.getElementById('chartMilk');
-  if (ctxF && typeof Chart !== 'undefined' && mL.length > 0) {
+  if (ctxF && mL.length > 0) {
+    if (typeof Chart === 'undefined') {
+      ensureChartJs().then(function(){ if(typeof renderReports === 'function') renderReports(); });
+    } else {
     chart1 = new Chart(ctxF, {
       type: 'bar',
       data: {
@@ -7789,7 +7787,7 @@ function renderReports() {
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
   }
-  if (ctxM && typeof Chart !== 'undefined' && mlL.length > 0) {
+  if (ctxM && mlL.length > 0 && typeof Chart !== 'undefined') {
     chart2 = new Chart(ctxM, {
       type: 'line',
       data: {
@@ -10390,12 +10388,51 @@ async function checkLicense() {
   proceedAfterLogin();
 }
 
-// ========== LOCAL-ONLY License Check (দ্রুত) ==========
-function checkLicenseOnLoad() {
+async function checkLicenseOnLoad() {
   const devShow = document.getElementById('deviceIdShow');
   if (devShow) devShow.textContent = DB.deviceId;
 
-  // ===== Step 1: Local Trial check =====
+  // ===== Step 1: Login করা User-এর UID License =====
+  const user = window._auth && window._auth.currentUser;
+  if (user && user.uid && window._db) {
+    try {
+      const licDoc = await window._db.collection('licenses').doc(user.uid).get();
+      if (licDoc.exists) {
+        const data = licDoc.data();
+        if (data.active !== false && data.expiry) {
+          const expDate = new Date(data.expiry + 'T23:59:59');
+          const daysLeft = Math.ceil((expDate - new Date()) / 86400000);
+          
+          if (daysLeft > 0) {
+            DB.license = {
+              code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
+              expiry: data.expiry,
+              trial: false,
+              uid: user.uid
+            };
+            saveDB();
+            console.log('✅ UID License active:', data.expiry);
+            proceedAfterLogin();
+            return true;
+          }
+          
+          if (daysLeft <= -GRACE_DAYS) {
+            document.getElementById('licenseScreen').style.display = 'flex';
+            return false;
+          }
+          
+          if (daysLeft <= 0) {
+            showGraceScreen(daysLeft);
+            return true;
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('UID license check failed:', e);
+    }
+  }
+
+  // ===== Step 2: Trial check =====
   if (DB.license.trial && DB.license.expiry) {
     const exp = new Date(DB.license.expiry + 'T00:00:00');
     const daysLeft = Math.ceil((exp - new Date()) / 86400000);
@@ -10416,7 +10453,7 @@ function checkLicenseOnLoad() {
     }
   }
   
-  // ===== Step 2: Local Device-based License =====
+  // ===== Step 3: Device-based License =====
   if (DB.license.code && DB.license.expiry) {
     const exp = new Date(DB.license.expiry + 'T00:00:00');
     const daysLeft = Math.ceil((exp - new Date()) / 86400000);
@@ -10430,80 +10467,6 @@ function checkLicenseOnLoad() {
       document.getElementById('licenseScreen').style.display = 'flex';
       return false;
     }
-    
-    if (daysLeft <= 0) {
-      showGraceScreen(daysLeft);
-      return true;
-    }
-  }
-  
-  // ===== Step 3: UID License (Login user) — check DB.license.uid =====
-  if (DB.license.uid && DB.license.expiry && !DB.license.trial) {
-    const exp = new Date(DB.license.expiry + 'T00:00:00');
-    const daysLeft = Math.ceil((exp - new Date()) / 86400000);
-    
-    if (daysLeft > 0) {
-      proceedAfterLogin();
-      return true;
-    }
-    
-    if (daysLeft <= -GRACE_DAYS) {
-      document.getElementById('licenseScreen').style.display = 'flex';
-      return false;
-    }
-    
-    if (daysLeft <= 0) {
-      showGraceScreen(daysLeft);
-      return true;
-    }
-  }
-  
-  // ===== Step 4: License নেই =====
-  document.getElementById('licenseScreen').style.display = 'flex';
-  return false;
-}
-
-// ========== BACKGROUND: Firebase UID License Check ==========
-async function checkLicenseFromFirebase() {
-  try {
-    const user = window._auth && window._auth.currentUser;
-    if (!user || !user.uid || !window._db) return;
-    
-    const licDoc = await window._db.collection('licenses').doc(user.uid).get();
-    if (!licDoc.exists) return;
-    
-    const data = licDoc.data();
-    if (data.active === false || !data.expiry) return;
-    
-    const expDate = new Date(data.expiry + 'T23:59:59');
-    const daysLeft = Math.ceil((expDate - new Date()) / 86400000);
-    
-    if (daysLeft > 0) {
-      // Local license update
-      DB.license = {
-        code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
-        expiry: data.expiry,
-        trial: false,
-        uid: user.uid
-      };
-      if (typeof saveDB === 'function') saveDB();
-      console.log('✅ UID License verified (background):', data.expiry);
-      
-      // License screen দেখানো থাকলে Home-এ নিয়ে যাই
-      const licScreen = document.getElementById('licenseScreen');
-      if (licScreen && licScreen.style.display === 'flex') {
-        proceedAfterLogin();
-      }
-      return;
-    }
-    
-    if (daysLeft <= 0) {
-      console.log('⚠️ UID license expiring/expired');
-    }
-  } catch(e) {
-    console.warn('Background license check failed:', e);
-  }
-}
     
     if (daysLeft <= 0) {
       showGraceScreen(daysLeft);
@@ -11497,111 +11460,70 @@ function exitAppChoose(yes) {
 
 history.pushState(null, '', location.href); // Single push - fixed to prevent exit modal on update check
 
-// ========== FAST STARTUP — Local First, Firebase Background ==========
+// ========== WAIT FOR AUTH + CHECK LICENSE (Fast) ==========
 function waitForAuthThenCheckLicense() {
-  // ===== Step 1: সাথে সাথে Local Data দিয়ে UI দেখাই =====
+  // ===== Step 1: Local Data দিয়ে সাথে সাথে License Screen দেখাই =====
+  // Firebase Auth-এর জন্য অপেক্ষা না করি
   setTimeout(function() {
     if (typeof checkLicenseOnLoad === 'function') {
-      try { checkLicenseOnLoad(); } catch(e) { console.warn('Local check failed:', e); }
+      try { checkLicenseOnLoad(); } catch(e) { console.warn(e); }
     }
-  }, 50);
+  }, 300);
   
-  // ===== Step 2: Firebase Background-এ Load =====
-  let attempts = 0;
-  const maxAttempts = 50;
-  
-  function bgFirebase() {
-    attempts++;
+  // ===== Step 2: Background-এ Auth ready হলে আবার check =====
+  if (!window._auth) {
+    // Auth এখনো load হয়নি — 3 সেকেন্ড পর্যন্ত অপেক্ষা করি (background-এ)
+    let attempts = 0;
+    const maxAttempts = 15; // 3 সেকেন্ড
     
-    if (window._auth && window._fbReady) {
-      console.log('✅ Firebase ready (background)');
+    function bgCheck() {
+      attempts++;
       
-      const unsub = window._auth.onAuthStateChanged(function(user) {
-        unsub();
-        console.log('✅ Auth state:', user ? user.email : 'guest');
-
-        // ==== Background-এ Firebase License Check ====
-if (user && user.uid && typeof checkLicenseFromFirebase === 'function') {
-  setTimeout(function() {
-    checkLicenseFromFirebase();
-  }, 800);
-}
-        
-        // ==== Login User হলে UID License re-check ====
-        if (user && user.uid && window._db) {
-          window._db.collection('licenses').doc(user.uid).get()
-            .then(function(doc) {
-              if (doc.exists) {
-                const data = doc.data();
-                if (data.active !== false && data.expiry) {
-                  const expDate = new Date(data.expiry + 'T23:59:59');
-                  if (expDate > new Date()) {
-                    DB.license = {
-                      code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
-                      expiry: data.expiry,
-                      trial: false,
-                      uid: user.uid
-                    };
-                    if (typeof saveDB === 'function') saveDB();
-                    console.log('✅ UID license verified (background)');
-                  }
-                }
-              }
-            })
-            .catch(function(e) { console.warn('UID check failed:', e); });
-        }
-        
-        // ==== Alert Sync (background) ====
-        setTimeout(function() {
-          try {
-            if (typeof syncAlertsToFirestore === 'function') {
-              syncAlertsToFirestore();
-            }
-          } catch(e) {}
-        }, 1500);
-        
-        // ==== Notification UI Update (background) ====
-        setTimeout(function() {
-          try {
-            if (typeof updateNotificationUI === 'function') {
-              updateNotificationUI();
-            }
-          } catch(e) {}
-        }, 2500);
-        
-        // ==== License Expiry Warning (background) ====
-        setTimeout(function() {
-          try {
-            if (typeof checkLicenseWarning === 'function') {
-              checkLicenseWarning();
-            }
-          } catch(e) {}
-        }, 3500);
-      });
-      return;
+      if (window._auth) {
+        // Auth ready — UID license check
+        const unsub = window._auth.onAuthStateChanged(function(user) {
+          unsub();
+          console.log('✅ Auth ready (background):', user ? user.email : 'Not logged in');
+          
+          // যদি Login করা থাকে, UID license আবার check করি
+          if (user && typeof checkLicenseOnLoad === 'function') {
+            setTimeout(function() {
+              try { checkLicenseOnLoad(); } catch(e) {}
+            }, 500);
+          }
+        });
+        return;
+      }
+      
+      if (attempts < maxAttempts) {
+        setTimeout(bgCheck, 200);
+      } else {
+        console.log('⚠️ Auth background timeout — app continues with local data');
+      }
     }
     
-    if (attempts < maxAttempts) {
-      setTimeout(bgFirebase, 200);
-    } else {
-      console.log('⚠️ Firebase background timeout');
-    }
+    bgCheck();
+  } else {
+    // Auth আগেই ready
+    const unsub = window._auth.onAuthStateChanged(function(user) {
+      unsub();
+      console.log('✅ Auth already ready:', user ? user.email : 'Not logged in');
+      if (user && typeof checkLicenseOnLoad === 'function') {
+        setTimeout(function() {
+          try { checkLicenseOnLoad(); } catch(e) {}
+        }, 500);
+      }
+    });
   }
-  
-  bgFirebase();
 }
 
-// ========== INIT ==========
+// ========== INIT - OPTIMIZED FOR FAST LOAD ==========
 async function initApp() {
   try {
-    // Step 1: Initialize IndexedDB
     await initIndexedDB();
-    
-    // Step 2: Try to load from IndexedDB
     const hasIDBData = await loadDBAsync();
-    await fetchAlertSettings();
+    await fetchAlertSettings().catch(()=>{});
     
-    // Step 3: If IDB has no data, try localStorage (migration)
     if (!hasIDBData || DB.cows.length === 0) {
       const localData = localStorage.getItem('dairyDBv3');
       if (localData) {
@@ -11618,7 +11540,6 @@ async function initApp() {
       }
     }
     
-    // Step 4: Normalize DB structure
     if (!DB.cows) DB.cows = [];
     if (!DB.milk) DB.milk = [];
     if (!DB.finance) DB.finance = [];
@@ -11644,12 +11565,10 @@ async function initApp() {
     if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
     if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
     
-    // Default Preset Advanced
     if (!DB.settings.preset) DB.settings.preset = 'advanced';
     if (!DB.settings.price) DB.settings.price = 40;
     if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
     
-    // Step 5: Device ID
     if (!DB.deviceId) {
       DB.deviceId = generateDeviceId();
       await saveDBAsync();
@@ -11658,66 +11577,73 @@ async function initApp() {
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
     
-    // ===== Firestore থেকে Setup Restore করি =====
-// Local setupDone না থাকলে কিন্তু Firestore-এ থাকলে → restore
-if (!DB.settings.setupDone && DB.deviceId && window._db) {
-  try {
-    const restored = await loadDeviceSetupFromFirestore();
-    if (restored) {
-      console.log('✅ Setup restored from Firestore');
+    // FAST PATH: Show Home immediately from local data
+    if (!DB.settings.setupDone) {
+      const setupEl = document.getElementById('setupScreen');
+      if (setupEl) setupEl.style.display = 'flex';
+      const step1 = document.getElementById('setupStep1');
+      if (step1) step1.style.display = 'block';
+      const licEl = document.getElementById('licenseScreen');
+      if (licEl) licEl.style.display = 'none';
+    } else {
+      const setupEl = document.getElementById('setupScreen');
+      if (setupEl) setupEl.style.display = 'none';
+      try {
+        if (typeof applyLang === 'function') applyLang();
+        if (typeof renderHome === 'function') renderHome();
+        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
+      } catch(e){ console.warn('Fast render failed', e); }
     }
-  } catch(e) {
-    console.warn('Setup restore failed:', e);
-  }
-}
+    
+    idbLog('App initialized successfully - fast path');
+    // Splash Remove Immediately - THIS IS THE MAIN FIX for 10s delay
+    const splash = document.getElementById('dmSplash');
+    if (splash) {
+      splash.style.transition = 'opacity 0.3s';
+      splash.style.opacity = '0';
+      setTimeout(function() { if (splash && splash.parentNode) splash.remove(); }, 350);
+    }
 
-    
-// Step 6: Setup wizard or license check
-if (!DB.settings.setupDone) {
-  // প্রথমবার — Language Screen দেখাই
-  const setupEl = document.getElementById('setupScreen');
-  if (setupEl) setupEl.style.display = 'flex';
-  
-  const step1 = document.getElementById('setupStep1');
-  if (step1) step1.style.display = 'block';
-  
-  const licEl = document.getElementById('licenseScreen');
-  if (licEl) licEl.style.display = 'none';
-} else {
-  // Setup শেষ → License/Main App flow
-  const setupEl = document.getElementById('setupScreen');
-  if (setupEl) setupEl.style.display = 'none';
-  
-  // Firebase Auth ready হওয়ার অপেক্ষা করি
-  waitForAuthThenCheckLicense();
-}
-    
+    // Background tasks - do not block UI
+    setTimeout(function(){
+      // Firestore setup restore in background
+      if (!DB.settings.setupDone && DB.deviceId && window._db) {
+        loadDeviceSetupFromFirestore().then(function(restored){
+          if(restored) console.log('✅ Setup restored from Firestore');
+        }).catch(function(e){ console.warn('Setup restore failed:', e); });
+      }
+      // License check in background
+      waitForAuthThenCheckLicense();
+    }, 100);
 
   } catch(e) {
     idbLog('Init error: ' + e.message);
-    // Error হলেও splash মুছি
-const splashErr = document.getElementById('dmSplash');
-if (splashErr) splashErr.remove();
+    const splashErr = document.getElementById('dmSplash');
+    if (splashErr) splashErr.remove();
     console.error('Init error:', e);
     loadDB();
-    const dShow = document.getElementById('deviceIdShow');
-    if (dShow) dShow.textContent = DB.deviceId;
+    const dShow2 = document.getElementById('deviceIdShow');
+    if (dShow2) dShow2.textContent = DB.deviceId;
     waitForAuthThenCheckLicense();
   }
 }
 
+
+
+// Lazy load Chart.js only when reports need it - keeps home fast
+function ensureChartJs() {
+  return new Promise(function(resolve, reject){
+    if (window.Chart) { resolve(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    s.onload = function(){ console.log('✅ Chart.js loaded lazily'); resolve(); };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
 // Start the app
 initApp();
-
-// ===== Splash ১ সেকেন্ডে Auto-hide =====
-setTimeout(function() {
-  const s = document.getElementById('dmSplash');
-  if (s) {
-    s.style.transition = 'opacity 0.4s';
-    s.style.opacity = '0';
-    setTimeout(function() { if (s && s.parentNode) s.remove(); }, 400);
-  }
-}, 1000);
 
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
