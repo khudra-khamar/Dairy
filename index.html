@@ -7772,9 +7772,7 @@ function renderReports() {
   const ctxF = document.getElementById('chartFinance');
   const ctxM = document.getElementById('chartMilk');
   if (ctxF && mL.length > 0) {
-    if (typeof Chart === 'undefined') {
-      ensureChartJs().then(function(){ if(typeof renderReports === 'function') renderReports(); });
-    } else {
+    if (typeof Chart === 'undefined') { ensureChartJs().then(function(){ try{ renderReports(); }catch(e){} }); } else {
     chart1 = new Chart(ctxF, {
       type: 'bar',
       data: {
@@ -7787,7 +7785,9 @@ function renderReports() {
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
   }
-  if (ctxM && mlL.length > 0 && typeof Chart !== 'undefined') {
+    }
+
+  if (ctxM && typeof Chart !== 'undefined' && mlL.length > 0) { // will render if Chart loaded
     chart2 = new Chart(ctxM, {
       type: 'line',
       data: {
@@ -11517,13 +11517,17 @@ function waitForAuthThenCheckLicense() {
   }
 }
 
-// ========== INIT - OPTIMIZED FOR FAST LOAD ==========
+// ========== INIT ==========
 async function initApp() {
   try {
+    // Step 1: Initialize IndexedDB - fast local only
     await initIndexedDB();
-    const hasIDBData = await loadDBAsync();
-    await fetchAlertSettings().catch(()=>{});
     
+    // Step 2: Try to load from IndexedDB
+    const hasIDBData = await loadDBAsync();
+    // fetchAlertSettings moved to background - don't block
+    
+    // Step 3: If IDB has no data, try localStorage (migration)
     if (!hasIDBData || DB.cows.length === 0) {
       const localData = localStorage.getItem('dairyDBv3');
       if (localData) {
@@ -11540,6 +11544,7 @@ async function initApp() {
       }
     }
     
+    // Step 4: Normalize DB structure
     if (!DB.cows) DB.cows = [];
     if (!DB.milk) DB.milk = [];
     if (!DB.finance) DB.finance = [];
@@ -11565,10 +11570,12 @@ async function initApp() {
     if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
     if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
     
+    // Default Preset Advanced
     if (!DB.settings.preset) DB.settings.preset = 'advanced';
     if (!DB.settings.price) DB.settings.price = 40;
     if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
     
+    // Step 5: Device ID
     if (!DB.deviceId) {
       DB.deviceId = generateDeviceId();
       await saveDBAsync();
@@ -11576,74 +11583,99 @@ async function initApp() {
     
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
-    
-    // FAST PATH: Show Home immediately from local data
-    if (!DB.settings.setupDone) {
-      const setupEl = document.getElementById('setupScreen');
-      if (setupEl) setupEl.style.display = 'flex';
-      const step1 = document.getElementById('setupStep1');
-      if (step1) step1.style.display = 'block';
-      const licEl = document.getElementById('licenseScreen');
-      if (licEl) licEl.style.display = 'none';
-    } else {
-      const setupEl = document.getElementById('setupScreen');
-      if (setupEl) setupEl.style.display = 'none';
-      try {
+
+    // ===== FAST RENDER - Home immediately from local data =====
+    try {
+      if (DB.settings.setupDone) {
         if (typeof applyLang === 'function') applyLang();
         if (typeof renderHome === 'function') renderHome();
         if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
-      } catch(e){ console.warn('Fast render failed', e); }
-    }
-    
-    idbLog('App initialized successfully - fast path');
-    // Splash Remove Immediately - THIS IS THE MAIN FIX for 10s delay
-    const splash = document.getElementById('dmSplash');
-    if (splash) {
-      splash.style.transition = 'opacity 0.3s';
-      splash.style.opacity = '0';
-      setTimeout(function() { if (splash && splash.parentNode) splash.remove(); }, 350);
-    }
-
-    // Background tasks - do not block UI
-    setTimeout(function(){
-      // Firestore setup restore in background
-      if (!DB.settings.setupDone && DB.deviceId && window._db) {
-        loadDeviceSetupFromFirestore().then(function(restored){
-          if(restored) console.log('✅ Setup restored from Firestore');
-        }).catch(function(e){ console.warn('Setup restore failed:', e); });
+        const setupEl = document.getElementById('setupScreen');
+        if (setupEl) setupEl.style.display = 'none';
       }
-      // License check in background
-      waitForAuthThenCheckLicense();
-    }, 100);
+    } catch(e){ console.warn('Fast render error', e); }
 
+    // Splash remove immediately - MAIN FIX
+    const splashEarly = document.getElementById('dmSplash');
+    if (splashEarly) {
+      splashEarly.style.transition = 'opacity 0.3s';
+      splashEarly.style.opacity = '0';
+      setTimeout(function() { if (splashEarly && splashEarly.parentNode) splashEarly.remove(); }, 350);
+    }
+
+    // Background tasks after home shown
+    try { if (typeof fetchAlertSettings === 'function') fetchAlertSettings(); } catch(e){}
+    
+    // ===== Firestore থেকে Setup Restore করি - background এ =====
+// Local setupDone না থাকলে কিন্তু Firestore-এ থাকলে → restore
+if (!DB.settings.setupDone && DB.deviceId && window._db) {
+  try {
+    const restored = await loadDeviceSetupFromFirestore();
+    if (restored) {
+      console.log('✅ Setup restored from Firestore');
+    }
+  } catch(e) {
+    console.warn('Setup restore failed:', e);
+  }
+}
+
+    
+// Step 6: Setup wizard or license check
+if (!DB.settings.setupDone) {
+  // প্রথমবার — Language Screen দেখাই
+  const setupEl = document.getElementById('setupScreen');
+  if (setupEl) setupEl.style.display = 'flex';
+  
+  const step1 = document.getElementById('setupStep1');
+  if (step1) step1.style.display = 'block';
+  
+  const licEl = document.getElementById('licenseScreen');
+  if (licEl) licEl.style.display = 'none';
+} else {
+  // Setup শেষ → License/Main App flow
+  const setupEl = document.getElementById('setupScreen');
+  if (setupEl) setupEl.style.display = 'none';
+  
+  // Firebase Auth ready হওয়ার অপেক্ষা করি
+  waitForAuthThenCheckLicense();
+}
+    
+    idbLog('App initialized successfully - splash already removed');
   } catch(e) {
     idbLog('Init error: ' + e.message);
-    const splashErr = document.getElementById('dmSplash');
-    if (splashErr) splashErr.remove();
+    // Error হলেও splash মুছি
+const splashErr = document.getElementById('dmSplash');
+if (splashErr) splashErr.remove();
     console.error('Init error:', e);
     loadDB();
-    const dShow2 = document.getElementById('deviceIdShow');
-    if (dShow2) dShow2.textContent = DB.deviceId;
+    const dShow = document.getElementById('deviceIdShow');
+    if (dShow) dShow.textContent = DB.deviceId;
     waitForAuthThenCheckLicense();
   }
 }
 
+// Start the app
+initApp();
 
 
-// Lazy load Chart.js only when reports need it - keeps home fast
-function ensureChartJs() {
-  return new Promise(function(resolve, reject){
-    if (window.Chart) { resolve(); return; }
-    var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-    s.onload = function(){ console.log('✅ Chart.js loaded lazily'); resolve(); };
-    s.onerror = reject;
+// Lazy Chart.js - keeps home fast, loads only when reports need it
+function ensureChartJs(){
+  return new Promise(function(res, rej){
+    if(window.Chart){ res(); return; }
+    var s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/chart.js';
+    s.onload=function(){ console.log('✅ Chart.js lazy loaded'); res(); };
+    s.onerror=rej;
     document.head.appendChild(s);
   });
 }
-
-// Start the app
-initApp();
+// Patch renderReports to lazy load
+(function(){
+  var origRenderReports = window.renderReports;
+  if(typeof origRenderReports !== 'undefined'){
+    // will be overwritten later, so we patch after load
+  }
+})();
 
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
