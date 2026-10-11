@@ -1778,21 +1778,22 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         console.warn('Auth persistence failed:', e.message);
       });
     
-    // Register Firebase Messaging Service Worker
+    // Unified SW - Use existing sw.js registration for FCM (Fix double SW conflict)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-        scope: './'
-      }).then(function(registration) {
-        console.log('✅ FCM SW registered:', registration.scope);
-        window._fcmSWReg = registration;
-        try {
-          window._messaging.useServiceWorker(registration);
-          console.log('✅ Firebase using custom SW');
-        } catch(e) {
-          console.warn('useServiceWorker failed:', e.message);
+      navigator.serviceWorker.getRegistration().then(function(reg) {
+        if (reg) {
+          window._fcmSWReg = reg;
+          try {
+            if (window._messaging && window._messaging.useServiceWorker) {
+              window._messaging.useServiceWorker(reg);
+              console.log('✅ FCM using existing SW:', reg.scope);
+            }
+          } catch(e) {
+            console.warn('useServiceWorker failed:', e.message);
+          }
+        } else {
+          console.log('⏳ No SW yet, FCM will use default');
         }
-      }).catch(function(err) {
-        console.warn('⚠️ FCM SW registration failed:', err.message);
       });
     }
     
@@ -7771,8 +7772,7 @@ function renderReports() {
 
   const ctxF = document.getElementById('chartFinance');
   const ctxM = document.getElementById('chartMilk');
-  if (ctxF && mL.length > 0) {
-    if (typeof Chart === 'undefined') { ensureChartJs().then(function(){ try{ renderReports(); }catch(e){} }); } else {
+  if (ctxF && typeof Chart !== 'undefined' && mL.length > 0) {
     chart1 = new Chart(ctxF, {
       type: 'bar',
       data: {
@@ -7785,9 +7785,7 @@ function renderReports() {
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
   }
-    }
-
-  if (ctxM && typeof Chart !== 'undefined' && mlL.length > 0) { // will render if Chart loaded
+  if (ctxM && typeof Chart !== 'undefined' && mlL.length > 0) {
     chart2 = new Chart(ctxM, {
       type: 'line',
       data: {
@@ -11520,12 +11518,10 @@ function waitForAuthThenCheckLicense() {
 // ========== INIT ==========
 async function initApp() {
   try {
-    // Step 1: Initialize IndexedDB - fast local only
+    // Step 1: Initialize IndexedDB - FAST
     await initIndexedDB();
-    
-    // Step 2: Try to load from IndexedDB
     const hasIDBData = await loadDBAsync();
-    // fetchAlertSettings moved to background - don't block
+    // fetchAlertSettings moved to background - don't block UI
     
     // Step 3: If IDB has no data, try localStorage (migration)
     if (!hasIDBData || DB.cows.length === 0) {
@@ -11584,7 +11580,7 @@ async function initApp() {
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
 
-    // ===== FAST RENDER - Home immediately from local data =====
+    // ===== FAST RENDER - Home immediately =====
     try {
       if (DB.settings.setupDone) {
         if (typeof applyLang === 'function') applyLang();
@@ -11593,9 +11589,8 @@ async function initApp() {
         const setupEl = document.getElementById('setupScreen');
         if (setupEl) setupEl.style.display = 'none';
       }
-    } catch(e){ console.warn('Fast render error', e); }
+    } catch(e){}
 
-    // Splash remove immediately - MAIN FIX
     const splashEarly = document.getElementById('dmSplash');
     if (splashEarly) {
       splashEarly.style.transition = 'opacity 0.3s';
@@ -11603,36 +11598,29 @@ async function initApp() {
       setTimeout(function() { if (splashEarly && splashEarly.parentNode) splashEarly.remove(); }, 350);
     }
 
-// Background tasks after home shown - FIXED for FCM auto notification 5-6 AM
     try { if (typeof fetchAlertSettings === 'function') fetchAlertSettings(); } catch(e){}
-
-    // Retry syncAlerts after Firebase ready - ensures 5-6 AM push works
-    function retryAlertSyncForFCM() {
-      var attempts = 0;
-      var maxAttempts = 30; // 30 * 1s = 30 sec retry
-      function trySync() {
+    
+    // Background retry for FCM Alert Sync - ensures 5-6 AM push
+    (function retryAlertSyncForFCM(){
+      var attempts=0;
+      function trySync(){
         attempts++;
         if (window._db && window._fbReady) {
           try {
             if (typeof syncAlertsToFirestore === 'function') {
               syncAlertsToFirestore();
-              console.log('✅ FCM Alert Sync retried after Firebase ready - 5-6 AM push will work');
+              console.log('✅ Auto Alert Sync for 5-6 AM push');
+              localStorage.setItem('lastFcmSync', new Date().toLocaleString('bn-BD'));
             }
-            if (typeof saveFCMToken === 'function' && DB.fcmToken) {
-              saveFCMToken(DB.fcmToken);
-            }
-          } catch(e){ console.warn('Retry sync failed', e); }
+          } catch(e){}
           return;
         }
-        if (attempts < maxAttempts) {
-          setTimeout(trySync, 1000);
-        }
+        if (attempts<30) setTimeout(trySync, 1000);
       }
       setTimeout(trySync, 2000);
-    }
-    retryAlertSyncForFCM();
-    
-    // ===== Firestore থেকে Setup Restore করি - background এ =====
+    })();
+
+    // ===== Firestore থেকে Setup Restore করি - background =====
 // Local setupDone না থাকলে কিন্তু Firestore-এ থাকলে → restore
 if (!DB.settings.setupDone && DB.deviceId && window._db) {
   try {
@@ -11682,26 +11670,6 @@ if (splashErr) splashErr.remove();
 
 // Start the app
 initApp();
-
-
-// Lazy Chart.js - keeps home fast, loads only when reports need it
-function ensureChartJs(){
-  return new Promise(function(res, rej){
-    if(window.Chart){ res(); return; }
-    var s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/chart.js';
-    s.onload=function(){ console.log('✅ Chart.js lazy loaded'); res(); };
-    s.onerror=rej;
-    document.head.appendChild(s);
-  });
-}
-// Patch renderReports to lazy load
-(function(){
-  var origRenderReports = window.renderReports;
-  if(typeof origRenderReports !== 'undefined'){
-    // will be overwritten later, so we patch after load
-  }
-})();
 
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
