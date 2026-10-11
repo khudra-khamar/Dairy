@@ -1674,43 +1674,13 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 
 </div>
 <!-- ========== BOTTOM NAVIGATION ========== -->
-
-<!-- VET MODULE MINIMAL - NO CRASH -->
-<div class="page" id="page-vet">
-  <div class="page-header"><button class="back-icon" onclick="showPage('home')">←</button><h2>🩺 Vet Panel</h2></div>
-  <div class="container">
-    <div style="background:#E8F5E9;padding:12px;border-radius:12px;margin-bottom:12px;">
-      <div style="font-weight:700;color:#1B5E20;">🔒 Vet Only - Special</div>
-      <div style="font-size:11px;color:#555;">Case + Stock + 105 Medicine</div>
-    </div>
-    <div class="cards">
-      <div class="card" onclick="showPage('vet-case')"><div class="icon">📋</div><div class="label">Case Taking</div></div>
-      <div class="card" onclick="showPage('vet-stock')"><div class="icon">💊</div><div class="label">Stock</div></div>
-      <div class="card" onclick="showPage('vet-medicines')"><div class="icon">🔬</div><div class="label">105 Medicine</div></div>
-      <div class="card" onclick="showPage('vet-farmers')"><div class="icon">👨‍🌾</div><div class="label">Farmers</div></div>
-    </div>
-  </div>
-</div>
-<div class="page" id="page-vet-case"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>📋 Case Taking</h2></div><div class="container"><div id="vetCaseContent">Loading vet module... Please upload vet-data.js</div></div></div>
-<div class="page" id="page-vet-medicines"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>🔬 Medicines</h2></div><div class="container"><div id="vetMedContent">Upload vet-data.js to see 105 medicines</div></div></div>
-<div class="page" id="page-vet-stock"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>💊 Stock</h2></div><div class="container"><div id="vetStockContent">Stock management - Coming soon</div></div></div>
-<div class="page" id="page-vet-farmers"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>👨‍🌾 Farmers</h2></div><div class="container"><div id="vetFarmerContent">Farmer list</div></div></div>
-
-<div id="vetPinModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999999;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:16px;padding:20px;width:85%;max-width:320px;text-align:center;">
-    <div style="font-size:40px;">🩺</div><h3 style="margin:8px 0;color:#1B5E20;">Vet PIN</h3>
-    <input id="vetPinInput" type="password" placeholder="PIN 1234" style="width:100%;padding:12px;border:2px solid #E0E0E0;border-radius:10px;margin:12px 0;text-align:center;font-size:18px;">
-    <div style="display:flex;gap:8px;"><button onclick="closeVetPin()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#f0f0f0;">Cancel</button><button onclick="checkVetPin()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2E7D32;color:#fff;font-weight:700;">OK</button></div>
-  </div>
-</div>
-
 <div class="bottom-nav" id="bottomNav">
   <div class="nav-item active" data-nav="home" onclick="showPage('home')"><span class="nav-icon">🏠</span><span>Home</span></div>
   <div class="nav-item" data-nav="cows" onclick="showPage('cows')"><span class="nav-icon">🐮</span><span>Animals</span></div>
   <div class="nav-item" data-nav="milk" onclick="showPage('milk')"><span class="nav-icon">🥛</span><span>Milk</span></div>
   <div class="nav-item" data-nav="finance" onclick="showPage('finance')"><span class="nav-icon">💰</span><span>Finance</span></div>
   <div class="nav-item" data-nav="feed-stock" onclick="showPage('feed-stock')"><span class="nav-icon">🌾</span><span>Feed</span></div>
-  <div class="nav-item" data-nav="vet" onclick="openVetModule()"><span class="nav-icon">🩺</span><span>Vet</span></div>
+  <div class="nav-item" data-nav="vet" onclick="location.href='./vet.html'"><span class="nav-icon">🩺</span><span>Vet</span></div>
   <div class="nav-item" data-nav="settings" onclick="showPage('settings')"><span class="nav-icon">⚙️</span><span>Settings</span></div>
 </div>
 
@@ -4952,7 +4922,7 @@ function showPage(p) {
   const el = document.getElementById('page-' + p);
   if (el) el.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-  const navMap = { home:0, cows:1, milk:2, finance:3, 'feed-stock':4, vet:5, settings:6, notes:6 };
+  const navMap = { home:0, cows:1, milk:2, finance:3, 'feed-stock':4, vet:5, settings:6 };
   const idx = navMap[p];
   if (idx !== undefined) {
     const items = document.querySelectorAll('.nav-item');
@@ -8005,44 +7975,7 @@ function buildPdfHtml() {
       Dairy Manager • Generated: ${formatDate(new Date())}<br>
       Total Days: ${d.days} • Entries: ${d.entries.length}
     </div>
-    
-<script>
-// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
-function openVetModule(){
-  try{
-    var unlocked = sessionStorage.getItem('vet_unlocked');
-    if(unlocked === '1'){ showPage('vet'); return; }
-    var modal = document.getElementById('vetPinModal');
-    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
-  }catch(e){ console.log('vet open error', e); showPage('vet'); }
-}
-function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
-function checkVetPin(){
-  try{
-    var entered = document.getElementById('vetPinInput').value;
-    var saved = localStorage.getItem('vet_pin') || '1234';
-    if(entered === saved){
-      sessionStorage.setItem('vet_unlocked','1');
-      closeVetPin();
-      showPage('vet');
-      if(typeof toast==='function') toast('Vet Unlocked');
-    } else {
-      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
-    }
-  }catch(e){ console.log(e); }
-}
-// Ensure splash always removed after 3 sec even if init fails
-setTimeout(function(){
-  var splash = document.getElementById('dmSplash');
-  if(splash && splash.style.display !== 'none'){
-    console.log('Force removing splash after 3s');
-    splash.style.display='none';
-    splash.remove();
-  }
-}, 3000);
-</script>
-
-</body></html>`;
+    </body></html>`;
 }
 
 function downloadPdf() {
@@ -8876,44 +8809,7 @@ function generateRetailPDF(customerId, month) {
     '<div class="row total"><span>' + (due > 0 ? '⚠️ Due' : '✅ Clear') + '</span><span>' + Math.abs(due).toFixed(0) + ' Rs</span></div>' +
     '</div>' +
     '<div class="footer">Generated by Dairy Manager • ' + formatDate(new Date()) + '</div>' +
-    '
-<script>
-// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
-function openVetModule(){
-  try{
-    var unlocked = sessionStorage.getItem('vet_unlocked');
-    if(unlocked === '1'){ showPage('vet'); return; }
-    var modal = document.getElementById('vetPinModal');
-    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
-  }catch(e){ console.log('vet open error', e); showPage('vet'); }
-}
-function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
-function checkVetPin(){
-  try{
-    var entered = document.getElementById('vetPinInput').value;
-    var saved = localStorage.getItem('vet_pin') || '1234';
-    if(entered === saved){
-      sessionStorage.setItem('vet_unlocked','1');
-      closeVetPin();
-      showPage('vet');
-      if(typeof toast==='function') toast('Vet Unlocked');
-    } else {
-      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
-    }
-  }catch(e){ console.log(e); }
-}
-// Ensure splash always removed after 3 sec even if init fails
-setTimeout(function(){
-  var splash = document.getElementById('dmSplash');
-  if(splash && splash.style.display !== 'none'){
-    console.log('Force removing splash after 3s');
-    splash.style.display='none';
-    splash.remove();
-  }
-}, 3000);
-</script>
-
-</body></html>';
+    '</body></html>';
   
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
@@ -9510,44 +9406,7 @@ function buildSaleBillHtml(c) {
     Generated by Dairy Manager • ${formatDate(new Date())}<br>
     Contact: ${phone || '9800696104'}
   </div>
-  
-<script>
-// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
-function openVetModule(){
-  try{
-    var unlocked = sessionStorage.getItem('vet_unlocked');
-    if(unlocked === '1'){ showPage('vet'); return; }
-    var modal = document.getElementById('vetPinModal');
-    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
-  }catch(e){ console.log('vet open error', e); showPage('vet'); }
-}
-function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
-function checkVetPin(){
-  try{
-    var entered = document.getElementById('vetPinInput').value;
-    var saved = localStorage.getItem('vet_pin') || '1234';
-    if(entered === saved){
-      sessionStorage.setItem('vet_unlocked','1');
-      closeVetPin();
-      showPage('vet');
-      if(typeof toast==='function') toast('Vet Unlocked');
-    } else {
-      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
-    }
-  }catch(e){ console.log(e); }
-}
-// Ensure splash always removed after 3 sec even if init fails
-setTimeout(function(){
-  var splash = document.getElementById('dmSplash');
-  if(splash && splash.style.display !== 'none'){
-    console.log('Force removing splash after 3s');
-    splash.style.display='none';
-    splash.remove();
-  }
-}, 3000);
-</script>
-
-</body></html>`;
+  </body></html>`;
 }
 
 function openSaleBill(id) {
@@ -11946,43 +11805,6 @@ document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     
   </div>
 </div>
-
-
-<script>
-// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
-function openVetModule(){
-  try{
-    var unlocked = sessionStorage.getItem('vet_unlocked');
-    if(unlocked === '1'){ showPage('vet'); return; }
-    var modal = document.getElementById('vetPinModal');
-    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
-  }catch(e){ console.log('vet open error', e); showPage('vet'); }
-}
-function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
-function checkVetPin(){
-  try{
-    var entered = document.getElementById('vetPinInput').value;
-    var saved = localStorage.getItem('vet_pin') || '1234';
-    if(entered === saved){
-      sessionStorage.setItem('vet_unlocked','1');
-      closeVetPin();
-      showPage('vet');
-      if(typeof toast==='function') toast('Vet Unlocked');
-    } else {
-      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
-    }
-  }catch(e){ console.log(e); }
-}
-// Ensure splash always removed after 3 sec even if init fails
-setTimeout(function(){
-  var splash = document.getElementById('dmSplash');
-  if(splash && splash.style.display !== 'none'){
-    console.log('Force removing splash after 3s');
-    splash.style.display='none';
-    splash.remove();
-  }
-}, 3000);
-</script>
 
 </body>
 </html>
