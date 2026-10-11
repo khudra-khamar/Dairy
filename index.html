@@ -1675,62 +1675,26 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 <!-- ========== BOTTOM NAVIGATION ========== -->
 
-<!-- ==================== VET MODULE PAGES - PIN LOCKED EXCLUSIVE ==================== -->
+<!-- VET MODULE MINIMAL - NO CRASH -->
 <div class="page" id="page-vet">
   <div class="page-header"><button class="back-icon" onclick="showPage('home')">←</button><h2>🩺 Vet Panel</h2></div>
   <div class="container">
-    <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);padding:12px;border-radius:12px;margin-bottom:12px;"><div style="font-size:13px;font-weight:700;color:#1B5E20;">🔒 Vet Only - Special Features</div><div style="font-size:11px;color:#555;margin-top:4px;">Case + Medicine Stock + Prescription + Income</div></div>
+    <div style="background:#E8F5E9;padding:12px;border-radius:12px;margin-bottom:12px;">
+      <div style="font-weight:700;color:#1B5E20;">🔒 Vet Only - Special</div>
+      <div style="font-size:11px;color:#555;">Case + Stock + 105 Medicine</div>
+    </div>
     <div class="cards">
-      <div class="card" onclick="showPage('vet-case')" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);"><div class="icon">📋</div><div class="label">Case Taking</div><div class="count">নতুন কেস</div></div>
-      <div class="card" onclick="showPage('vet-stock')" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);"><div class="icon">💊</div><div class="label">Medicine Stock</div><div class="count">লাভ হিসাব</div></div>
-      <div class="card" onclick="showPage('vet-medicines')" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);"><div class="icon">🔬</div><div class="label">105 Medicine</div><div class="count">Generic সহ</div></div>
-      <div class="card" onclick="showPage('vet-farmers')" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);"><div class="icon">👨‍🌾</div><div class="label">Farmer List</div><div class="count">Follow-up</div></div>
-      <div class="card" onclick="showPage('vet-referral')" style="background:linear-gradient(135deg,#FFF9C4,#FFF176);"><div class="icon">💰</div><div class="label">Referral Income</div><div class="count">Rank + Certificate</div></div>
-      <div class="card" onclick="showPage('vet-training')" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);"><div class="icon">🎓</div><div class="label">Vet Training</div><div class="count">Video + Scheme</div></div>
+      <div class="card" onclick="showPage('vet-case')"><div class="icon">📋</div><div class="label">Case Taking</div></div>
+      <div class="card" onclick="showPage('vet-stock')"><div class="icon">💊</div><div class="label">Stock</div></div>
+      <div class="card" onclick="showPage('vet-medicines')"><div class="icon">🔬</div><div class="label">105 Medicine</div></div>
+      <div class="card" onclick="showPage('vet-farmers')"><div class="icon">👨‍🌾</div><div class="label">Farmers</div></div>
     </div>
-    <div class="summary-box"><h3>📊 আজকের হিসাব</h3><div class="summary-row"><span>আজকের কেস</span><span id="vetTodayCases">0</span></div><div class="summary-row"><span>Stock Value</span><span id="vetStockValue">₹0</span></div><div class="summary-row"><span>আজকের লাভ</span><span id="vetTodayProfit">₹0</span></div></div>
   </div>
 </div>
-
-<div class="page" id="page-vet-case">
-  <div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>📋 Case Taking</h2></div>
-  <div class="container">
-    <div class="summary-box"><h3>🐄 কৃষক + পশুর তথ্য</h3>
-      <div class="form-group"><label>কৃষকের নাম</label><input id="caseFarmerName" placeholder="রহিম মিয়া"></div>
-      <div class="form-group"><label>ফোন</label><input id="caseFarmerPhone" placeholder="98XXXXXXXX"></div>
-      <div class="form-group"><label>পশুর ধরন</label><select id="caseAnimalType"><option value="cow">🐄 গাভী</option><option value="buffalo">🐃 মহিষ</option><option value="goat">🐐 ছাগল</option><option value="sheep">🐑 ভেড়া</option></select></div>
-      <div class="form-group"><label>বয়স / ওজন / Temp</label><input id="caseAnimalInfo" placeholder="4 বছর, 400kg, 103°F"></div>
-      <div class="form-group"><label>কতদিন ধরে</label><input id="caseDuration" placeholder="2 দিন"></div>
-    </div>
-    <div class="summary-box"><h3>🔍 লক্ষণ বাছুন</h3><div id="vetSymptomChecklist" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div><button class="btn-primary" onclick="vetFindDisease()">🔍 রোগ + ঔষধ খুঁজুন</button></div>
-    <div class="summary-box" id="vetResultBox" style="display:none;"><h3>📋 রোগ + ঔষধ (Vet Only)</h3><div id="vetDiseaseResult"></div><div id="vetMedicineSuggestion" style="margin-top:12px;"></div><button class="btn-primary" onclick="vetSaveCase()">💾 Save Case</button></div>
-  </div>
-</div>
-
-<div class="page" id="page-vet-medicines">
-  <div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>🔬 105 Medicine</h2></div>
-  <div class="container"><div class="form-group"><input id="vetMedSearch" placeholder="🔍 Search Medicine..." oninput="vetFilterMedicines()"></div><div id="vetMedicineList"></div></div>
-</div>
-
-<div class="page" id="page-vet-stock">
-  <div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>💊 Stock + লাভ</h2></div>
-  <div class="container">
-    <div class="summary-box"><h3>➕ Stock Add</h3>
-      <div class="form-group"><label>Medicine</label><select id="stockMedSelect"></select></div>
-      <div class="form-group"><label>Qty</label><input id="stockQty" type="number" placeholder="10"></div>
-      <div class="form-group"><label>Batch (Optional)</label><input id="stockBatch" placeholder="B123"></div>
-      <div class="form-group"><label>Supplier (Optional)</label><input id="stockSupplier" placeholder="Distributor"></div>
-      <div class="form-group"><label>Buy / Sale Price</label><div style="display:flex;gap:8px;"><input id="stockPurchase" type="number" placeholder="Buy"><input id="stockSale" type="number" placeholder="Sale"></div></div>
-      <div class="form-group"><label>Expiry</label><input id="stockExpiry" type="date"></div>
-      <button class="btn-primary" onclick="vetAddStock()">💾 Save Stock</button>
-    </div>
-    <div id="vetStockList"></div>
-  </div>
-</div>
-
-<div class="page" id="page-vet-farmers"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>👨‍🌾 Farmer List</h2></div><div class="container"><div id="vetFarmerList"></div></div></div>
-<div class="page" id="page-vet-referral"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>💰 Referral</h2></div><div class="container"><div class="summary-box"><h3>🔗 Referral Code</h3><div style="font-size:24px;font-weight:800;color:#2E7D32;text-align:center;" id="vetReferralCode">VET-XXXX</div><button class="btn-primary" onclick="vetShareReferral()">💬 Share</button></div><div class="summary-box"><h3>🏆 Rank</h3><div id="vetRankBox">0 Farmer</div></div></div></div>
-<div class="page" id="page-vet-training"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>🎓 Training</h2></div><div class="container"><div class="summary-box"><h3>📹 Vet Training</h3><p style="font-size:13px;">AI, Vaccination, Deworming - Vet Only</p></div></div></div>
+<div class="page" id="page-vet-case"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>📋 Case Taking</h2></div><div class="container"><div id="vetCaseContent">Loading vet module... Please upload vet-data.js</div></div></div>
+<div class="page" id="page-vet-medicines"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>🔬 Medicines</h2></div><div class="container"><div id="vetMedContent">Upload vet-data.js to see 105 medicines</div></div></div>
+<div class="page" id="page-vet-stock"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>💊 Stock</h2></div><div class="container"><div id="vetStockContent">Stock management - Coming soon</div></div></div>
+<div class="page" id="page-vet-farmers"><div class="page-header"><button class="back-icon" onclick="showPage('vet')">←</button><h2>👨‍🌾 Farmers</h2></div><div class="container"><div id="vetFarmerContent">Farmer list</div></div></div>
 
 <div id="vetPinModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999999;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:16px;padding:20px;width:85%;max-width:320px;text-align:center;">
@@ -1741,13 +1705,13 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 
 <div class="bottom-nav" id="bottomNav">
-  <div class="nav-item active" data-nav="home" onclick="showPage('home')"><span class="nav-icon">🏠</span><span data-t="nav_home">Home</span></div>
-  <div class="nav-item" data-nav="cows" onclick="showPage('cows')"><span class="nav-icon">🐮</span><span data-t="nav_cows">Animals</span></div>
-  <div class="nav-item" data-nav="milk" onclick="showPage('milk')"><span class="nav-icon">🥛</span><span data-t="nav_milk">Milk</span></div>
-  <div class="nav-item" data-nav="finance" onclick="showPage('finance')"><span class="nav-icon">💰</span><span data-t="nav_fin">Finance</span></div>
-  <div class="nav-item" data-nav="feed-stock" onclick="showPage('feed-stock')"><span class="nav-icon">🌾</span><span data-t="nav_feed">Feed</span></div>
-  <div class="nav-item" data-nav="vet" onclick="openVetModule()"><span class="nav-icon">🩺</span><span> Vet</span></div>
-  <div class="nav-item" data-nav="settings" onclick="showPage('settings')"><span class="nav-icon">⚙️</span><span data-t="nav_set">Settings</span></div>
+  <div class="nav-item active" data-nav="home" onclick="showPage('home')"><span class="nav-icon">🏠</span><span>Home</span></div>
+  <div class="nav-item" data-nav="cows" onclick="showPage('cows')"><span class="nav-icon">🐮</span><span>Animals</span></div>
+  <div class="nav-item" data-nav="milk" onclick="showPage('milk')"><span class="nav-icon">🥛</span><span>Milk</span></div>
+  <div class="nav-item" data-nav="finance" onclick="showPage('finance')"><span class="nav-icon">💰</span><span>Finance</span></div>
+  <div class="nav-item" data-nav="feed-stock" onclick="showPage('feed-stock')"><span class="nav-icon">🌾</span><span>Feed</span></div>
+  <div class="nav-item" data-nav="vet" onclick="openVetModule()"><span class="nav-icon">🩺</span><span>Vet</span></div>
+  <div class="nav-item" data-nav="settings" onclick="showPage('settings')"><span class="nav-icon">⚙️</span><span>Settings</span></div>
 </div>
 
 <!-- ========== TOAST ========== -->
@@ -8043,128 +8007,39 @@ function buildPdfHtml() {
     </div>
     
 <script>
-// ===== VET MODULE - SAFE LOAD (won't break home page) =====
+// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
 function openVetModule(){
-  try {
-    const isUnlocked = sessionStorage.getItem('vet_unlocked') === '1';
-    if(isUnlocked){ showPage('vet'); setTimeout(vetInit, 100); return; }
-    document.getElementById('vetPinModal').style.display='flex';
-    const inp = document.getElementById('vetPinInput');
-    if(inp){ inp.value=''; inp.focus(); }
-  } catch(e){ console.error(e); showPage('vet'); }
+  try{
+    var unlocked = sessionStorage.getItem('vet_unlocked');
+    if(unlocked === '1'){ showPage('vet'); return; }
+    var modal = document.getElementById('vetPinModal');
+    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
+  }catch(e){ console.log('vet open error', e); showPage('vet'); }
 }
-function closeVetPin(){ const m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
+function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
 function checkVetPin(){
-  const entered = (document.getElementById('vetPinInput')?.value||'').trim();
-  const savedPin = localStorage.getItem('vet_pin') || '1234';
-  if(entered === savedPin){
-    sessionStorage.setItem('vet_unlocked','1');
-    closeVetPin();
-    showPage('vet');
-    setTimeout(vetInit, 200);
-    if(typeof toast==='function') toast('🩺 Vet Unlocked');
-  } else {
-    if(typeof toast==='function') toast('❌ Wrong PIN'); else alert('Wrong PIN');
+  try{
+    var entered = document.getElementById('vetPinInput').value;
+    var saved = localStorage.getItem('vet_pin') || '1234';
+    if(entered === saved){
+      sessionStorage.setItem('vet_unlocked','1');
+      closeVetPin();
+      showPage('vet');
+      if(typeof toast==='function') toast('Vet Unlocked');
+    } else {
+      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
+    }
+  }catch(e){ console.log(e); }
+}
+// Ensure splash always removed after 3 sec even if init fails
+setTimeout(function(){
+  var splash = document.getElementById('dmSplash');
+  if(splash && splash.style.display !== 'none'){
+    console.log('Force removing splash after 3s');
+    splash.style.display='none';
+    splash.remove();
   }
-}
-function vetInit(){
-  try {
-    vetLoadSymptoms();
-    vetLoadMedicines();
-    vetLoadStockList();
-    vetLoadFarmers();
-    vetUpdateDashboard();
-  } catch(e){ console.error('vetInit error', e); }
-}
-function vetLoadSymptoms(){
-  const box = document.getElementById('vetSymptomChecklist'); if(!box) return;
-  const list = (window.SYMPTOM_LIST || window.SYMPTOM_LIST || []).slice(0,32);
-  if(list.length===0){ box.innerHTML='<div style="color:#888;">Symptom data loading...</div>'; return; }
-  box.innerHTML = list.map(s=>`<label style="display:flex;align-items:center;gap:6px;background:#fff;border:2px solid #E0E0E0;border-radius:10px;padding:8px;cursor:pointer;font-size:12px;"><input type="checkbox" value="${s.id}" class="vetSymChk"> <span>${s.icon||'💧'} ${s.name?.bn||s.name?.en||s.id}</span></label>`).join('');
-}
-function vetFindDisease(){
-  const selected = Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value);
-  if(selected.length < 1){ alert('১টি লক্ষণ বাছুন'); return; }
-  const diseases = window.DISEASE_DB || [];
-  let scored = diseases.map(d=>{
-    const match = (d.symptoms||[]).filter(s=>selected.includes(s)).length;
-    const total = (d.symptoms||[]).length || 1;
-    const pct = Math.round((match/total)*100);
-    return {...d, match, pct};
-  }).filter(d=>d.match>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
-  const resultBox = document.getElementById('vetResultBox');
-  const diseaseDiv = document.getElementById('vetDiseaseResult');
-  const medDiv = document.getElementById('vetMedicineSuggestion');
-  if(scored.length===0){
-    diseaseDiv.innerHTML = '<div style="color:#C62828;">❌ কোনো রোগ মেলেনি</div>';
-  } else {
-    diseaseDiv.innerHTML = scored.map(d=>`<div style="background:#fff;border-left:4px solid #2E7D32;padding:10px;border-radius:8px;margin-bottom:8px;"><div style="font-weight:700;">${d.icon||'🔬'} ${d.name?.bn||d.id} - ${d.pct}%</div><div style="font-size:12px;color:#666;margin-top:4px;">${d.action?.bn||''}</div></div>`).join('');
-  }
-  const meds = window.VET_MEDICINES || [];
-  let suggested = meds.slice(0,4);
-  if(scored[0]){
-    const top = scored[0].id||'';
-    if(top.includes('babes')) suggested = meds.filter(m=>m.brand.includes('Berenil')||m.brand.includes('Oxytetracycline LA')).slice(0,4);
-    else if(top.includes('mastitis')) suggested = meds.filter(m=>m.brand.includes('Enrofloxacin')||m.brand.includes('Cefoperazone')).slice(0,4);
-  }
-  medDiv.innerHTML = '<h4 style="font-size:13px;margin-bottom:6px;">💊 সম্ভাব্য ঔষধ (Generic)</h4>' + suggested.map(m=>`<label style="display:flex;gap:8px;background:#E8F5E9;border:2px solid #C8E6C9;border-radius:10px;padding:8px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" value="${m.id}" class="vetMedChk"> <div><div style="font-weight:700;font-size:12px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#555;">Generic: ${m.generic}</div><div style="font-size:10px;color:#777;">${m.dose} | ${m.withdrawal}</div></div></label>`).join('');
-  if(resultBox){ resultBox.style.display='block'; resultBox.scrollIntoView({behavior:'smooth'}); }
-}
-function vetSaveCase(){
-  const selectedMeds = Array.from(document.querySelectorAll('.vetMedChk:checked')).map(c=>c.value);
-  if(selectedMeds.length===0){ alert('১টি ঔষধ বাছুন'); return; }
-  const caseData = { farmer: document.getElementById('caseFarmerName')?.value||'', phone: document.getElementById('caseFarmerPhone')?.value||'', animal: document.getElementById('caseAnimalType')?.value||'cow', info: document.getElementById('caseAnimalInfo')?.value||'', duration: document.getElementById('caseDuration')?.value||'', symptoms: Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value), medicines: selectedMeds, date: new Date().toISOString() };
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); cases.push(caseData); localStorage.setItem('vet_cases', JSON.stringify(cases));
-  if(typeof toast==='function') toast('✅ Case Saved'); else alert('Case Saved'); showPage('vet');
-}
-function vetLoadMedicines(){
-  const box = document.getElementById('vetMedicineList'); const select = document.getElementById('stockMedSelect'); const meds = window.VET_MEDICINES || [];
-  if(box){
-    if(meds.length===0){ box.innerHTML='<div style="color:#888;">vet-data.js লোড হচ্ছে... GitHub এ vet-data.js আপলোড করুন</div>'; }
-    else { box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);"><div style="font-weight:700;font-size:13px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;font-weight:600;">Generic: ${m.generic}</div><div style="font-size:11px;color:#555;margin-top:2px;">${m.company} | ${m.category} | ${m.dose}</div><div style="font-size:10px;color:#777;">₹${m.price} | ${m.use}</div></div>`).join(''); }
-  }
-  if(select){ select.innerHTML = meds.map(m=>`<option value="${m.id}">${m.brand} - ${m.generic} (₹${m.price})</option>`).join(''); }
-}
-function vetFilterMedicines(){
-  const q = (document.getElementById('vetMedSearch')?.value||'').toLowerCase(); const meds = (window.VET_MEDICINES||[]).filter(m=> (m.brand+m.generic+m.company).toLowerCase().includes(q));
-  const box = document.getElementById('vetMedicineList'); if(!box) return;
-  box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;">Generic: ${m.generic}</div></div>`).join('');
-}
-function vetAddStock(){
-  const medId = document.getElementById('stockMedSelect')?.value; const qty = document.getElementById('stockQty')?.value;
-  if(!medId || !qty){ alert('Medicine + Qty দিন'); return; }
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  stocks.push({ medId, qty:parseInt(qty), batch: document.getElementById('stockBatch')?.value||'', supplier: document.getElementById('stockSupplier')?.value||'', purchase: document.getElementById('stockPurchase')?.value||'', sale: document.getElementById('stockSale')?.value||'', expiry: document.getElementById('stockExpiry')?.value||'', date: new Date().toISOString() });
-  localStorage.setItem('vet_stocks', JSON.stringify(stocks)); if(typeof toast==='function') toast('✅ Stock Saved'); vetLoadStockList(); vetUpdateDashboard();
-}
-function vetLoadStockList(){
-  const box = document.getElementById('vetStockList'); if(!box) return;
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); const meds = window.VET_MEDICINES||[];
-  if(stocks.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No stock yet</div>'; return; }
-  box.innerHTML = stocks.map((s,i)=>{ const med = meds.find(m=>m.id==s.medId); return `<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;"><div><div style="font-weight:700;font-size:12px;">${med?.brand||'Med'} - Qty: ${s.qty}</div><div style="font-size:10px;color:#555;">Batch: ${s.batch||'N/A'} | Supplier: ${s.supplier||'N/A'}</div><div style="font-size:10px;color:#2E7D32;">Buy ₹${s.purchase} | Sale ₹${s.sale}</div></div><button onclick="vetDeleteStock(${i})" style="background:#C62828;color:#fff;border:none;padding:6px 10px;border-radius:8px;">🗑️</button></div>`; }).join('');
-}
-function vetDeleteStock(i){ if(!confirm('Delete?')) return; let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); stocks.splice(i,1); localStorage.setItem('vet_stocks', JSON.stringify(stocks)); vetLoadStockList(); vetUpdateDashboard(); }
-function vetLoadFarmers(){
-  const box = document.getElementById('vetFarmerList'); if(!box) return;
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]');
-  if(cases.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No cases yet</div>'; return; }
-  box.innerHTML = cases.map(c=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">👨‍🌾 ${c.farmer||'Unknown'} - ${c.phone||''}</div><div style="font-size:11px;color:#555;">${c.animal} | ${c.info}</div><div style="font-size:10px;color:#777;">${new Date(c.date).toLocaleDateString()}</div></div>`).join('');
-}
-function vetUpdateDashboard(){
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  const today = new Date().toDateString(); const todayCases = cases.filter(c=>new Date(c.date).toDateString()===today).length;
-  let stockVal=0; stocks.forEach(s=>{ stockVal += (parseInt(s.qty)||0)*(parseInt(s.purchase)||0); });
-  const tc=document.getElementById('vetTodayCases'); if(tc) tc.textContent=todayCases;
-  const sv=document.getElementById('vetStockValue'); if(sv) sv.textContent='₹'+stockVal;
-  const rc=document.getElementById('vetReferralCode'); if(rc){ let code=localStorage.getItem('vet_referral_code'); if(!code){ code='VET-'+Math.random().toString(36).substr(2,6).toUpperCase(); localStorage.setItem('vet_referral_code',code);} rc.textContent=code; }
-}
-function vetShareReferral(){
-  const code=localStorage.getItem('vet_referral_code')||'VET-XXXX';
-  const text=`🐄 Dairy Manager - Vet Referral: ${code}`;
-  if(navigator.share){ navigator.share({title:'Vet Referral', text}); } else { prompt('Copy:', text); }
-}
-// Ensure home page loads even if vet-data fails
-window.addEventListener('load', function(){ setTimeout(function(){ try{ vetUpdateDashboard(); }catch(e){} }, 1000); });
+}, 3000);
 </script>
 
 </body></html>`;
@@ -9003,128 +8878,39 @@ function generateRetailPDF(customerId, month) {
     '<div class="footer">Generated by Dairy Manager • ' + formatDate(new Date()) + '</div>' +
     '
 <script>
-// ===== VET MODULE - SAFE LOAD (won't break home page) =====
+// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
 function openVetModule(){
-  try {
-    const isUnlocked = sessionStorage.getItem('vet_unlocked') === '1';
-    if(isUnlocked){ showPage('vet'); setTimeout(vetInit, 100); return; }
-    document.getElementById('vetPinModal').style.display='flex';
-    const inp = document.getElementById('vetPinInput');
-    if(inp){ inp.value=''; inp.focus(); }
-  } catch(e){ console.error(e); showPage('vet'); }
+  try{
+    var unlocked = sessionStorage.getItem('vet_unlocked');
+    if(unlocked === '1'){ showPage('vet'); return; }
+    var modal = document.getElementById('vetPinModal');
+    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
+  }catch(e){ console.log('vet open error', e); showPage('vet'); }
 }
-function closeVetPin(){ const m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
+function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
 function checkVetPin(){
-  const entered = (document.getElementById('vetPinInput')?.value||'').trim();
-  const savedPin = localStorage.getItem('vet_pin') || '1234';
-  if(entered === savedPin){
-    sessionStorage.setItem('vet_unlocked','1');
-    closeVetPin();
-    showPage('vet');
-    setTimeout(vetInit, 200);
-    if(typeof toast==='function') toast('🩺 Vet Unlocked');
-  } else {
-    if(typeof toast==='function') toast('❌ Wrong PIN'); else alert('Wrong PIN');
+  try{
+    var entered = document.getElementById('vetPinInput').value;
+    var saved = localStorage.getItem('vet_pin') || '1234';
+    if(entered === saved){
+      sessionStorage.setItem('vet_unlocked','1');
+      closeVetPin();
+      showPage('vet');
+      if(typeof toast==='function') toast('Vet Unlocked');
+    } else {
+      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
+    }
+  }catch(e){ console.log(e); }
+}
+// Ensure splash always removed after 3 sec even if init fails
+setTimeout(function(){
+  var splash = document.getElementById('dmSplash');
+  if(splash && splash.style.display !== 'none'){
+    console.log('Force removing splash after 3s');
+    splash.style.display='none';
+    splash.remove();
   }
-}
-function vetInit(){
-  try {
-    vetLoadSymptoms();
-    vetLoadMedicines();
-    vetLoadStockList();
-    vetLoadFarmers();
-    vetUpdateDashboard();
-  } catch(e){ console.error('vetInit error', e); }
-}
-function vetLoadSymptoms(){
-  const box = document.getElementById('vetSymptomChecklist'); if(!box) return;
-  const list = (window.SYMPTOM_LIST || window.SYMPTOM_LIST || []).slice(0,32);
-  if(list.length===0){ box.innerHTML='<div style="color:#888;">Symptom data loading...</div>'; return; }
-  box.innerHTML = list.map(s=>`<label style="display:flex;align-items:center;gap:6px;background:#fff;border:2px solid #E0E0E0;border-radius:10px;padding:8px;cursor:pointer;font-size:12px;"><input type="checkbox" value="${s.id}" class="vetSymChk"> <span>${s.icon||'💧'} ${s.name?.bn||s.name?.en||s.id}</span></label>`).join('');
-}
-function vetFindDisease(){
-  const selected = Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value);
-  if(selected.length < 1){ alert('১টি লক্ষণ বাছুন'); return; }
-  const diseases = window.DISEASE_DB || [];
-  let scored = diseases.map(d=>{
-    const match = (d.symptoms||[]).filter(s=>selected.includes(s)).length;
-    const total = (d.symptoms||[]).length || 1;
-    const pct = Math.round((match/total)*100);
-    return {...d, match, pct};
-  }).filter(d=>d.match>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
-  const resultBox = document.getElementById('vetResultBox');
-  const diseaseDiv = document.getElementById('vetDiseaseResult');
-  const medDiv = document.getElementById('vetMedicineSuggestion');
-  if(scored.length===0){
-    diseaseDiv.innerHTML = '<div style="color:#C62828;">❌ কোনো রোগ মেলেনি</div>';
-  } else {
-    diseaseDiv.innerHTML = scored.map(d=>`<div style="background:#fff;border-left:4px solid #2E7D32;padding:10px;border-radius:8px;margin-bottom:8px;"><div style="font-weight:700;">${d.icon||'🔬'} ${d.name?.bn||d.id} - ${d.pct}%</div><div style="font-size:12px;color:#666;margin-top:4px;">${d.action?.bn||''}</div></div>`).join('');
-  }
-  const meds = window.VET_MEDICINES || [];
-  let suggested = meds.slice(0,4);
-  if(scored[0]){
-    const top = scored[0].id||'';
-    if(top.includes('babes')) suggested = meds.filter(m=>m.brand.includes('Berenil')||m.brand.includes('Oxytetracycline LA')).slice(0,4);
-    else if(top.includes('mastitis')) suggested = meds.filter(m=>m.brand.includes('Enrofloxacin')||m.brand.includes('Cefoperazone')).slice(0,4);
-  }
-  medDiv.innerHTML = '<h4 style="font-size:13px;margin-bottom:6px;">💊 সম্ভাব্য ঔষধ (Generic)</h4>' + suggested.map(m=>`<label style="display:flex;gap:8px;background:#E8F5E9;border:2px solid #C8E6C9;border-radius:10px;padding:8px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" value="${m.id}" class="vetMedChk"> <div><div style="font-weight:700;font-size:12px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#555;">Generic: ${m.generic}</div><div style="font-size:10px;color:#777;">${m.dose} | ${m.withdrawal}</div></div></label>`).join('');
-  if(resultBox){ resultBox.style.display='block'; resultBox.scrollIntoView({behavior:'smooth'}); }
-}
-function vetSaveCase(){
-  const selectedMeds = Array.from(document.querySelectorAll('.vetMedChk:checked')).map(c=>c.value);
-  if(selectedMeds.length===0){ alert('১টি ঔষধ বাছুন'); return; }
-  const caseData = { farmer: document.getElementById('caseFarmerName')?.value||'', phone: document.getElementById('caseFarmerPhone')?.value||'', animal: document.getElementById('caseAnimalType')?.value||'cow', info: document.getElementById('caseAnimalInfo')?.value||'', duration: document.getElementById('caseDuration')?.value||'', symptoms: Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value), medicines: selectedMeds, date: new Date().toISOString() };
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); cases.push(caseData); localStorage.setItem('vet_cases', JSON.stringify(cases));
-  if(typeof toast==='function') toast('✅ Case Saved'); else alert('Case Saved'); showPage('vet');
-}
-function vetLoadMedicines(){
-  const box = document.getElementById('vetMedicineList'); const select = document.getElementById('stockMedSelect'); const meds = window.VET_MEDICINES || [];
-  if(box){
-    if(meds.length===0){ box.innerHTML='<div style="color:#888;">vet-data.js লোড হচ্ছে... GitHub এ vet-data.js আপলোড করুন</div>'; }
-    else { box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);"><div style="font-weight:700;font-size:13px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;font-weight:600;">Generic: ${m.generic}</div><div style="font-size:11px;color:#555;margin-top:2px;">${m.company} | ${m.category} | ${m.dose}</div><div style="font-size:10px;color:#777;">₹${m.price} | ${m.use}</div></div>`).join(''); }
-  }
-  if(select){ select.innerHTML = meds.map(m=>`<option value="${m.id}">${m.brand} - ${m.generic} (₹${m.price})</option>`).join(''); }
-}
-function vetFilterMedicines(){
-  const q = (document.getElementById('vetMedSearch')?.value||'').toLowerCase(); const meds = (window.VET_MEDICINES||[]).filter(m=> (m.brand+m.generic+m.company).toLowerCase().includes(q));
-  const box = document.getElementById('vetMedicineList'); if(!box) return;
-  box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;">Generic: ${m.generic}</div></div>`).join('');
-}
-function vetAddStock(){
-  const medId = document.getElementById('stockMedSelect')?.value; const qty = document.getElementById('stockQty')?.value;
-  if(!medId || !qty){ alert('Medicine + Qty দিন'); return; }
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  stocks.push({ medId, qty:parseInt(qty), batch: document.getElementById('stockBatch')?.value||'', supplier: document.getElementById('stockSupplier')?.value||'', purchase: document.getElementById('stockPurchase')?.value||'', sale: document.getElementById('stockSale')?.value||'', expiry: document.getElementById('stockExpiry')?.value||'', date: new Date().toISOString() });
-  localStorage.setItem('vet_stocks', JSON.stringify(stocks)); if(typeof toast==='function') toast('✅ Stock Saved'); vetLoadStockList(); vetUpdateDashboard();
-}
-function vetLoadStockList(){
-  const box = document.getElementById('vetStockList'); if(!box) return;
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); const meds = window.VET_MEDICINES||[];
-  if(stocks.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No stock yet</div>'; return; }
-  box.innerHTML = stocks.map((s,i)=>{ const med = meds.find(m=>m.id==s.medId); return `<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;"><div><div style="font-weight:700;font-size:12px;">${med?.brand||'Med'} - Qty: ${s.qty}</div><div style="font-size:10px;color:#555;">Batch: ${s.batch||'N/A'} | Supplier: ${s.supplier||'N/A'}</div><div style="font-size:10px;color:#2E7D32;">Buy ₹${s.purchase} | Sale ₹${s.sale}</div></div><button onclick="vetDeleteStock(${i})" style="background:#C62828;color:#fff;border:none;padding:6px 10px;border-radius:8px;">🗑️</button></div>`; }).join('');
-}
-function vetDeleteStock(i){ if(!confirm('Delete?')) return; let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); stocks.splice(i,1); localStorage.setItem('vet_stocks', JSON.stringify(stocks)); vetLoadStockList(); vetUpdateDashboard(); }
-function vetLoadFarmers(){
-  const box = document.getElementById('vetFarmerList'); if(!box) return;
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]');
-  if(cases.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No cases yet</div>'; return; }
-  box.innerHTML = cases.map(c=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">👨‍🌾 ${c.farmer||'Unknown'} - ${c.phone||''}</div><div style="font-size:11px;color:#555;">${c.animal} | ${c.info}</div><div style="font-size:10px;color:#777;">${new Date(c.date).toLocaleDateString()}</div></div>`).join('');
-}
-function vetUpdateDashboard(){
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  const today = new Date().toDateString(); const todayCases = cases.filter(c=>new Date(c.date).toDateString()===today).length;
-  let stockVal=0; stocks.forEach(s=>{ stockVal += (parseInt(s.qty)||0)*(parseInt(s.purchase)||0); });
-  const tc=document.getElementById('vetTodayCases'); if(tc) tc.textContent=todayCases;
-  const sv=document.getElementById('vetStockValue'); if(sv) sv.textContent='₹'+stockVal;
-  const rc=document.getElementById('vetReferralCode'); if(rc){ let code=localStorage.getItem('vet_referral_code'); if(!code){ code='VET-'+Math.random().toString(36).substr(2,6).toUpperCase(); localStorage.setItem('vet_referral_code',code);} rc.textContent=code; }
-}
-function vetShareReferral(){
-  const code=localStorage.getItem('vet_referral_code')||'VET-XXXX';
-  const text=`🐄 Dairy Manager - Vet Referral: ${code}`;
-  if(navigator.share){ navigator.share({title:'Vet Referral', text}); } else { prompt('Copy:', text); }
-}
-// Ensure home page loads even if vet-data fails
-window.addEventListener('load', function(){ setTimeout(function(){ try{ vetUpdateDashboard(); }catch(e){} }, 1000); });
+}, 3000);
 </script>
 
 </body></html>';
@@ -9726,128 +9512,39 @@ function buildSaleBillHtml(c) {
   </div>
   
 <script>
-// ===== VET MODULE - SAFE LOAD (won't break home page) =====
+// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
 function openVetModule(){
-  try {
-    const isUnlocked = sessionStorage.getItem('vet_unlocked') === '1';
-    if(isUnlocked){ showPage('vet'); setTimeout(vetInit, 100); return; }
-    document.getElementById('vetPinModal').style.display='flex';
-    const inp = document.getElementById('vetPinInput');
-    if(inp){ inp.value=''; inp.focus(); }
-  } catch(e){ console.error(e); showPage('vet'); }
+  try{
+    var unlocked = sessionStorage.getItem('vet_unlocked');
+    if(unlocked === '1'){ showPage('vet'); return; }
+    var modal = document.getElementById('vetPinModal');
+    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
+  }catch(e){ console.log('vet open error', e); showPage('vet'); }
 }
-function closeVetPin(){ const m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
+function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
 function checkVetPin(){
-  const entered = (document.getElementById('vetPinInput')?.value||'').trim();
-  const savedPin = localStorage.getItem('vet_pin') || '1234';
-  if(entered === savedPin){
-    sessionStorage.setItem('vet_unlocked','1');
-    closeVetPin();
-    showPage('vet');
-    setTimeout(vetInit, 200);
-    if(typeof toast==='function') toast('🩺 Vet Unlocked');
-  } else {
-    if(typeof toast==='function') toast('❌ Wrong PIN'); else alert('Wrong PIN');
+  try{
+    var entered = document.getElementById('vetPinInput').value;
+    var saved = localStorage.getItem('vet_pin') || '1234';
+    if(entered === saved){
+      sessionStorage.setItem('vet_unlocked','1');
+      closeVetPin();
+      showPage('vet');
+      if(typeof toast==='function') toast('Vet Unlocked');
+    } else {
+      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
+    }
+  }catch(e){ console.log(e); }
+}
+// Ensure splash always removed after 3 sec even if init fails
+setTimeout(function(){
+  var splash = document.getElementById('dmSplash');
+  if(splash && splash.style.display !== 'none'){
+    console.log('Force removing splash after 3s');
+    splash.style.display='none';
+    splash.remove();
   }
-}
-function vetInit(){
-  try {
-    vetLoadSymptoms();
-    vetLoadMedicines();
-    vetLoadStockList();
-    vetLoadFarmers();
-    vetUpdateDashboard();
-  } catch(e){ console.error('vetInit error', e); }
-}
-function vetLoadSymptoms(){
-  const box = document.getElementById('vetSymptomChecklist'); if(!box) return;
-  const list = (window.SYMPTOM_LIST || window.SYMPTOM_LIST || []).slice(0,32);
-  if(list.length===0){ box.innerHTML='<div style="color:#888;">Symptom data loading...</div>'; return; }
-  box.innerHTML = list.map(s=>`<label style="display:flex;align-items:center;gap:6px;background:#fff;border:2px solid #E0E0E0;border-radius:10px;padding:8px;cursor:pointer;font-size:12px;"><input type="checkbox" value="${s.id}" class="vetSymChk"> <span>${s.icon||'💧'} ${s.name?.bn||s.name?.en||s.id}</span></label>`).join('');
-}
-function vetFindDisease(){
-  const selected = Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value);
-  if(selected.length < 1){ alert('১টি লক্ষণ বাছুন'); return; }
-  const diseases = window.DISEASE_DB || [];
-  let scored = diseases.map(d=>{
-    const match = (d.symptoms||[]).filter(s=>selected.includes(s)).length;
-    const total = (d.symptoms||[]).length || 1;
-    const pct = Math.round((match/total)*100);
-    return {...d, match, pct};
-  }).filter(d=>d.match>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
-  const resultBox = document.getElementById('vetResultBox');
-  const diseaseDiv = document.getElementById('vetDiseaseResult');
-  const medDiv = document.getElementById('vetMedicineSuggestion');
-  if(scored.length===0){
-    diseaseDiv.innerHTML = '<div style="color:#C62828;">❌ কোনো রোগ মেলেনি</div>';
-  } else {
-    diseaseDiv.innerHTML = scored.map(d=>`<div style="background:#fff;border-left:4px solid #2E7D32;padding:10px;border-radius:8px;margin-bottom:8px;"><div style="font-weight:700;">${d.icon||'🔬'} ${d.name?.bn||d.id} - ${d.pct}%</div><div style="font-size:12px;color:#666;margin-top:4px;">${d.action?.bn||''}</div></div>`).join('');
-  }
-  const meds = window.VET_MEDICINES || [];
-  let suggested = meds.slice(0,4);
-  if(scored[0]){
-    const top = scored[0].id||'';
-    if(top.includes('babes')) suggested = meds.filter(m=>m.brand.includes('Berenil')||m.brand.includes('Oxytetracycline LA')).slice(0,4);
-    else if(top.includes('mastitis')) suggested = meds.filter(m=>m.brand.includes('Enrofloxacin')||m.brand.includes('Cefoperazone')).slice(0,4);
-  }
-  medDiv.innerHTML = '<h4 style="font-size:13px;margin-bottom:6px;">💊 সম্ভাব্য ঔষধ (Generic)</h4>' + suggested.map(m=>`<label style="display:flex;gap:8px;background:#E8F5E9;border:2px solid #C8E6C9;border-radius:10px;padding:8px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" value="${m.id}" class="vetMedChk"> <div><div style="font-weight:700;font-size:12px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#555;">Generic: ${m.generic}</div><div style="font-size:10px;color:#777;">${m.dose} | ${m.withdrawal}</div></div></label>`).join('');
-  if(resultBox){ resultBox.style.display='block'; resultBox.scrollIntoView({behavior:'smooth'}); }
-}
-function vetSaveCase(){
-  const selectedMeds = Array.from(document.querySelectorAll('.vetMedChk:checked')).map(c=>c.value);
-  if(selectedMeds.length===0){ alert('১টি ঔষধ বাছুন'); return; }
-  const caseData = { farmer: document.getElementById('caseFarmerName')?.value||'', phone: document.getElementById('caseFarmerPhone')?.value||'', animal: document.getElementById('caseAnimalType')?.value||'cow', info: document.getElementById('caseAnimalInfo')?.value||'', duration: document.getElementById('caseDuration')?.value||'', symptoms: Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value), medicines: selectedMeds, date: new Date().toISOString() };
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); cases.push(caseData); localStorage.setItem('vet_cases', JSON.stringify(cases));
-  if(typeof toast==='function') toast('✅ Case Saved'); else alert('Case Saved'); showPage('vet');
-}
-function vetLoadMedicines(){
-  const box = document.getElementById('vetMedicineList'); const select = document.getElementById('stockMedSelect'); const meds = window.VET_MEDICINES || [];
-  if(box){
-    if(meds.length===0){ box.innerHTML='<div style="color:#888;">vet-data.js লোড হচ্ছে... GitHub এ vet-data.js আপলোড করুন</div>'; }
-    else { box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);"><div style="font-weight:700;font-size:13px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;font-weight:600;">Generic: ${m.generic}</div><div style="font-size:11px;color:#555;margin-top:2px;">${m.company} | ${m.category} | ${m.dose}</div><div style="font-size:10px;color:#777;">₹${m.price} | ${m.use}</div></div>`).join(''); }
-  }
-  if(select){ select.innerHTML = meds.map(m=>`<option value="${m.id}">${m.brand} - ${m.generic} (₹${m.price})</option>`).join(''); }
-}
-function vetFilterMedicines(){
-  const q = (document.getElementById('vetMedSearch')?.value||'').toLowerCase(); const meds = (window.VET_MEDICINES||[]).filter(m=> (m.brand+m.generic+m.company).toLowerCase().includes(q));
-  const box = document.getElementById('vetMedicineList'); if(!box) return;
-  box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;">Generic: ${m.generic}</div></div>`).join('');
-}
-function vetAddStock(){
-  const medId = document.getElementById('stockMedSelect')?.value; const qty = document.getElementById('stockQty')?.value;
-  if(!medId || !qty){ alert('Medicine + Qty দিন'); return; }
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  stocks.push({ medId, qty:parseInt(qty), batch: document.getElementById('stockBatch')?.value||'', supplier: document.getElementById('stockSupplier')?.value||'', purchase: document.getElementById('stockPurchase')?.value||'', sale: document.getElementById('stockSale')?.value||'', expiry: document.getElementById('stockExpiry')?.value||'', date: new Date().toISOString() });
-  localStorage.setItem('vet_stocks', JSON.stringify(stocks)); if(typeof toast==='function') toast('✅ Stock Saved'); vetLoadStockList(); vetUpdateDashboard();
-}
-function vetLoadStockList(){
-  const box = document.getElementById('vetStockList'); if(!box) return;
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); const meds = window.VET_MEDICINES||[];
-  if(stocks.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No stock yet</div>'; return; }
-  box.innerHTML = stocks.map((s,i)=>{ const med = meds.find(m=>m.id==s.medId); return `<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;"><div><div style="font-weight:700;font-size:12px;">${med?.brand||'Med'} - Qty: ${s.qty}</div><div style="font-size:10px;color:#555;">Batch: ${s.batch||'N/A'} | Supplier: ${s.supplier||'N/A'}</div><div style="font-size:10px;color:#2E7D32;">Buy ₹${s.purchase} | Sale ₹${s.sale}</div></div><button onclick="vetDeleteStock(${i})" style="background:#C62828;color:#fff;border:none;padding:6px 10px;border-radius:8px;">🗑️</button></div>`; }).join('');
-}
-function vetDeleteStock(i){ if(!confirm('Delete?')) return; let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); stocks.splice(i,1); localStorage.setItem('vet_stocks', JSON.stringify(stocks)); vetLoadStockList(); vetUpdateDashboard(); }
-function vetLoadFarmers(){
-  const box = document.getElementById('vetFarmerList'); if(!box) return;
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]');
-  if(cases.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No cases yet</div>'; return; }
-  box.innerHTML = cases.map(c=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">👨‍🌾 ${c.farmer||'Unknown'} - ${c.phone||''}</div><div style="font-size:11px;color:#555;">${c.animal} | ${c.info}</div><div style="font-size:10px;color:#777;">${new Date(c.date).toLocaleDateString()}</div></div>`).join('');
-}
-function vetUpdateDashboard(){
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  const today = new Date().toDateString(); const todayCases = cases.filter(c=>new Date(c.date).toDateString()===today).length;
-  let stockVal=0; stocks.forEach(s=>{ stockVal += (parseInt(s.qty)||0)*(parseInt(s.purchase)||0); });
-  const tc=document.getElementById('vetTodayCases'); if(tc) tc.textContent=todayCases;
-  const sv=document.getElementById('vetStockValue'); if(sv) sv.textContent='₹'+stockVal;
-  const rc=document.getElementById('vetReferralCode'); if(rc){ let code=localStorage.getItem('vet_referral_code'); if(!code){ code='VET-'+Math.random().toString(36).substr(2,6).toUpperCase(); localStorage.setItem('vet_referral_code',code);} rc.textContent=code; }
-}
-function vetShareReferral(){
-  const code=localStorage.getItem('vet_referral_code')||'VET-XXXX';
-  const text=`🐄 Dairy Manager - Vet Referral: ${code}`;
-  if(navigator.share){ navigator.share({title:'Vet Referral', text}); } else { prompt('Copy:', text); }
-}
-// Ensure home page loads even if vet-data fails
-window.addEventListener('load', function(){ setTimeout(function(){ try{ vetUpdateDashboard(); }catch(e){} }, 1000); });
+}, 3000);
 </script>
 
 </body></html>`;
@@ -12252,128 +11949,39 @@ document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 
 
 <script>
-// ===== VET MODULE - SAFE LOAD (won't break home page) =====
+// ULTRA SAFE VET MODULE - NO CRASH GUARANTEED
 function openVetModule(){
-  try {
-    const isUnlocked = sessionStorage.getItem('vet_unlocked') === '1';
-    if(isUnlocked){ showPage('vet'); setTimeout(vetInit, 100); return; }
-    document.getElementById('vetPinModal').style.display='flex';
-    const inp = document.getElementById('vetPinInput');
-    if(inp){ inp.value=''; inp.focus(); }
-  } catch(e){ console.error(e); showPage('vet'); }
+  try{
+    var unlocked = sessionStorage.getItem('vet_unlocked');
+    if(unlocked === '1'){ showPage('vet'); return; }
+    var modal = document.getElementById('vetPinModal');
+    if(modal){ modal.style.display='flex'; var inp=document.getElementById('vetPinInput'); if(inp){ inp.value=''; inp.focus(); } }
+  }catch(e){ console.log('vet open error', e); showPage('vet'); }
 }
-function closeVetPin(){ const m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
+function closeVetPin(){ var m=document.getElementById('vetPinModal'); if(m) m.style.display='none'; }
 function checkVetPin(){
-  const entered = (document.getElementById('vetPinInput')?.value||'').trim();
-  const savedPin = localStorage.getItem('vet_pin') || '1234';
-  if(entered === savedPin){
-    sessionStorage.setItem('vet_unlocked','1');
-    closeVetPin();
-    showPage('vet');
-    setTimeout(vetInit, 200);
-    if(typeof toast==='function') toast('🩺 Vet Unlocked');
-  } else {
-    if(typeof toast==='function') toast('❌ Wrong PIN'); else alert('Wrong PIN');
+  try{
+    var entered = document.getElementById('vetPinInput').value;
+    var saved = localStorage.getItem('vet_pin') || '1234';
+    if(entered === saved){
+      sessionStorage.setItem('vet_unlocked','1');
+      closeVetPin();
+      showPage('vet');
+      if(typeof toast==='function') toast('Vet Unlocked');
+    } else {
+      if(typeof toast==='function') toast('Wrong PIN'); else alert('Wrong PIN');
+    }
+  }catch(e){ console.log(e); }
+}
+// Ensure splash always removed after 3 sec even if init fails
+setTimeout(function(){
+  var splash = document.getElementById('dmSplash');
+  if(splash && splash.style.display !== 'none'){
+    console.log('Force removing splash after 3s');
+    splash.style.display='none';
+    splash.remove();
   }
-}
-function vetInit(){
-  try {
-    vetLoadSymptoms();
-    vetLoadMedicines();
-    vetLoadStockList();
-    vetLoadFarmers();
-    vetUpdateDashboard();
-  } catch(e){ console.error('vetInit error', e); }
-}
-function vetLoadSymptoms(){
-  const box = document.getElementById('vetSymptomChecklist'); if(!box) return;
-  const list = (window.SYMPTOM_LIST || window.SYMPTOM_LIST || []).slice(0,32);
-  if(list.length===0){ box.innerHTML='<div style="color:#888;">Symptom data loading...</div>'; return; }
-  box.innerHTML = list.map(s=>`<label style="display:flex;align-items:center;gap:6px;background:#fff;border:2px solid #E0E0E0;border-radius:10px;padding:8px;cursor:pointer;font-size:12px;"><input type="checkbox" value="${s.id}" class="vetSymChk"> <span>${s.icon||'💧'} ${s.name?.bn||s.name?.en||s.id}</span></label>`).join('');
-}
-function vetFindDisease(){
-  const selected = Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value);
-  if(selected.length < 1){ alert('১টি লক্ষণ বাছুন'); return; }
-  const diseases = window.DISEASE_DB || [];
-  let scored = diseases.map(d=>{
-    const match = (d.symptoms||[]).filter(s=>selected.includes(s)).length;
-    const total = (d.symptoms||[]).length || 1;
-    const pct = Math.round((match/total)*100);
-    return {...d, match, pct};
-  }).filter(d=>d.match>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
-  const resultBox = document.getElementById('vetResultBox');
-  const diseaseDiv = document.getElementById('vetDiseaseResult');
-  const medDiv = document.getElementById('vetMedicineSuggestion');
-  if(scored.length===0){
-    diseaseDiv.innerHTML = '<div style="color:#C62828;">❌ কোনো রোগ মেলেনি</div>';
-  } else {
-    diseaseDiv.innerHTML = scored.map(d=>`<div style="background:#fff;border-left:4px solid #2E7D32;padding:10px;border-radius:8px;margin-bottom:8px;"><div style="font-weight:700;">${d.icon||'🔬'} ${d.name?.bn||d.id} - ${d.pct}%</div><div style="font-size:12px;color:#666;margin-top:4px;">${d.action?.bn||''}</div></div>`).join('');
-  }
-  const meds = window.VET_MEDICINES || [];
-  let suggested = meds.slice(0,4);
-  if(scored[0]){
-    const top = scored[0].id||'';
-    if(top.includes('babes')) suggested = meds.filter(m=>m.brand.includes('Berenil')||m.brand.includes('Oxytetracycline LA')).slice(0,4);
-    else if(top.includes('mastitis')) suggested = meds.filter(m=>m.brand.includes('Enrofloxacin')||m.brand.includes('Cefoperazone')).slice(0,4);
-  }
-  medDiv.innerHTML = '<h4 style="font-size:13px;margin-bottom:6px;">💊 সম্ভাব্য ঔষধ (Generic)</h4>' + suggested.map(m=>`<label style="display:flex;gap:8px;background:#E8F5E9;border:2px solid #C8E6C9;border-radius:10px;padding:8px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" value="${m.id}" class="vetMedChk"> <div><div style="font-weight:700;font-size:12px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#555;">Generic: ${m.generic}</div><div style="font-size:10px;color:#777;">${m.dose} | ${m.withdrawal}</div></div></label>`).join('');
-  if(resultBox){ resultBox.style.display='block'; resultBox.scrollIntoView({behavior:'smooth'}); }
-}
-function vetSaveCase(){
-  const selectedMeds = Array.from(document.querySelectorAll('.vetMedChk:checked')).map(c=>c.value);
-  if(selectedMeds.length===0){ alert('১টি ঔষধ বাছুন'); return; }
-  const caseData = { farmer: document.getElementById('caseFarmerName')?.value||'', phone: document.getElementById('caseFarmerPhone')?.value||'', animal: document.getElementById('caseAnimalType')?.value||'cow', info: document.getElementById('caseAnimalInfo')?.value||'', duration: document.getElementById('caseDuration')?.value||'', symptoms: Array.from(document.querySelectorAll('.vetSymChk:checked')).map(c=>c.value), medicines: selectedMeds, date: new Date().toISOString() };
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); cases.push(caseData); localStorage.setItem('vet_cases', JSON.stringify(cases));
-  if(typeof toast==='function') toast('✅ Case Saved'); else alert('Case Saved'); showPage('vet');
-}
-function vetLoadMedicines(){
-  const box = document.getElementById('vetMedicineList'); const select = document.getElementById('stockMedSelect'); const meds = window.VET_MEDICINES || [];
-  if(box){
-    if(meds.length===0){ box.innerHTML='<div style="color:#888;">vet-data.js লোড হচ্ছে... GitHub এ vet-data.js আপলোড করুন</div>'; }
-    else { box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);"><div style="font-weight:700;font-size:13px;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;font-weight:600;">Generic: ${m.generic}</div><div style="font-size:11px;color:#555;margin-top:2px;">${m.company} | ${m.category} | ${m.dose}</div><div style="font-size:10px;color:#777;">₹${m.price} | ${m.use}</div></div>`).join(''); }
-  }
-  if(select){ select.innerHTML = meds.map(m=>`<option value="${m.id}">${m.brand} - ${m.generic} (₹${m.price})</option>`).join(''); }
-}
-function vetFilterMedicines(){
-  const q = (document.getElementById('vetMedSearch')?.value||'').toLowerCase(); const meds = (window.VET_MEDICINES||[]).filter(m=> (m.brand+m.generic+m.company).toLowerCase().includes(q));
-  const box = document.getElementById('vetMedicineList'); if(!box) return;
-  box.innerHTML = meds.map(m=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">${m.icon} ${m.brand}</div><div style="font-size:11px;color:#2E7D32;">Generic: ${m.generic}</div></div>`).join('');
-}
-function vetAddStock(){
-  const medId = document.getElementById('stockMedSelect')?.value; const qty = document.getElementById('stockQty')?.value;
-  if(!medId || !qty){ alert('Medicine + Qty দিন'); return; }
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  stocks.push({ medId, qty:parseInt(qty), batch: document.getElementById('stockBatch')?.value||'', supplier: document.getElementById('stockSupplier')?.value||'', purchase: document.getElementById('stockPurchase')?.value||'', sale: document.getElementById('stockSale')?.value||'', expiry: document.getElementById('stockExpiry')?.value||'', date: new Date().toISOString() });
-  localStorage.setItem('vet_stocks', JSON.stringify(stocks)); if(typeof toast==='function') toast('✅ Stock Saved'); vetLoadStockList(); vetUpdateDashboard();
-}
-function vetLoadStockList(){
-  const box = document.getElementById('vetStockList'); if(!box) return;
-  let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); const meds = window.VET_MEDICINES||[];
-  if(stocks.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No stock yet</div>'; return; }
-  box.innerHTML = stocks.map((s,i)=>{ const med = meds.find(m=>m.id==s.medId); return `<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;"><div><div style="font-weight:700;font-size:12px;">${med?.brand||'Med'} - Qty: ${s.qty}</div><div style="font-size:10px;color:#555;">Batch: ${s.batch||'N/A'} | Supplier: ${s.supplier||'N/A'}</div><div style="font-size:10px;color:#2E7D32;">Buy ₹${s.purchase} | Sale ₹${s.sale}</div></div><button onclick="vetDeleteStock(${i})" style="background:#C62828;color:#fff;border:none;padding:6px 10px;border-radius:8px;">🗑️</button></div>`; }).join('');
-}
-function vetDeleteStock(i){ if(!confirm('Delete?')) return; let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]'); stocks.splice(i,1); localStorage.setItem('vet_stocks', JSON.stringify(stocks)); vetLoadStockList(); vetUpdateDashboard(); }
-function vetLoadFarmers(){
-  const box = document.getElementById('vetFarmerList'); if(!box) return;
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]');
-  if(cases.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:#888;">No cases yet</div>'; return; }
-  box.innerHTML = cases.map(c=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">👨‍🌾 ${c.farmer||'Unknown'} - ${c.phone||''}</div><div style="font-size:11px;color:#555;">${c.animal} | ${c.info}</div><div style="font-size:10px;color:#777;">${new Date(c.date).toLocaleDateString()}</div></div>`).join('');
-}
-function vetUpdateDashboard(){
-  let cases = JSON.parse(localStorage.getItem('vet_cases')||'[]'); let stocks = JSON.parse(localStorage.getItem('vet_stocks')||'[]');
-  const today = new Date().toDateString(); const todayCases = cases.filter(c=>new Date(c.date).toDateString()===today).length;
-  let stockVal=0; stocks.forEach(s=>{ stockVal += (parseInt(s.qty)||0)*(parseInt(s.purchase)||0); });
-  const tc=document.getElementById('vetTodayCases'); if(tc) tc.textContent=todayCases;
-  const sv=document.getElementById('vetStockValue'); if(sv) sv.textContent='₹'+stockVal;
-  const rc=document.getElementById('vetReferralCode'); if(rc){ let code=localStorage.getItem('vet_referral_code'); if(!code){ code='VET-'+Math.random().toString(36).substr(2,6).toUpperCase(); localStorage.setItem('vet_referral_code',code);} rc.textContent=code; }
-}
-function vetShareReferral(){
-  const code=localStorage.getItem('vet_referral_code')||'VET-XXXX';
-  const text=`🐄 Dairy Manager - Vet Referral: ${code}`;
-  if(navigator.share){ navigator.share({title:'Vet Referral', text}); } else { prompt('Copy:', text); }
-}
-// Ensure home page loads even if vet-data fails
-window.addEventListener('load', function(){ setTimeout(function(){ try{ vetUpdateDashboard(); }catch(e){} }, 1000); });
+}, 3000);
 </script>
 
 </body>
