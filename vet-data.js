@@ -1,112 +1,107 @@
-// ============================================
-// VET DATA - 100+ MEDICINE DATABASE + 70 DISEASES
-// Version: 1.0 - Safe Emoji + Generic Name + 3 Languages
-// For vet.html - Medicine Stock + Case Taking
-// ============================================
-
 window.VET_MEDICINES = [
-  // 1-25: ANTIBIOTIC
-  { id:1, brand:'Enrofloxacin 10%', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk, 7 days meat', use:'Mastitis, Pneumonia, Diarrhea', price:180, icon:'💊' },
-  { id:2, brand:'Ceftiofur', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis, Pneumonia', price:350, icon:'💊' },
-  { id:3, brand:'Oxytetracycline LA', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk, 28 days meat', use:'Babesiosis, Anaplasmosis, Pneumonia', price:220, icon:'💊' },
-  { id:4, brand:'Amoxicillin + Clavulanate', generic:'Amoxicillin 200mg + Clavulanate 50mg', company:'Intas', category:'Antibiotic', dose:'10mg/kg IM', route:'IM', withdrawal:'3 days', use:'Mastitis, Skin infection', price:250, icon:'💊' },
-  { id:5, brand:'Penicillin G', generic:'Procaine Penicillin 400000 IU + Benzyl Penicillin', company:'Alembic', category:'Antibiotic', dose:'10000 IU/kg IM', route:'IM', withdrawal:'3 days', use:'BQ, HS, Wound', price:150, icon:'💉' },
-  { id:6, brand:'Gentamicin', generic:'Gentamicin Sulphate 80mg/ml', company:'Neon', category:'Antibiotic', dose:'4mg/kg IM', route:'IM/IV', withdrawal:'5 days', use:'Severe infection, Peritonitis', price:180, icon:'💊' },
-  { id:7, brand:'Sulphadimidine', generic:'Sulphadimidine 33% 100ml', company:'Alembic', category:'Antibiotic', dose:'100mg/kg IV', route:'IV', withdrawal:'5 days', use:'HS, Coccidiosis, Diarrhea', price:120, icon:'💧' },
-  { id:8, brand:'Enro + Bromhexine', generic:'Enrofloxacin 100mg + Bromhexine 15mg', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pneumonia, Bronchitis', price:200, icon:'🌬️' },
-  { id:9, brand:'Cefoperazone', generic:'Cefoperazone 250mg (Intramammary)', company:'Pfizer', category:'Antibiotic', dose:'1 tube per quarter', route:'Intramammary', withdrawal:'3 days', use:'Mastitis', price:85, icon:'🔴' },
-  { id:10, brand:'Tylosin', generic:'Tylosin Tartrate 200mg/ml', company:'Wockhardt', category:'Antibiotic', dose:'10mg/kg IM', route:'IM', withdrawal:'4 days', use:'Pneumonia, Dysentery', price:280, icon:'💊' },
-
-  // 11-25: More Antibiotics
-  { id:11, brand:'Marbofloxacin', generic:'Marbofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'2mg/kg IM', route:'IM', withdrawal:'3 days', use:'Mastitis, Pneumonia', price:320, icon:'💊' },
-  { id:12, brand:'Cefquinome', generic:'Cefquinome Sulphate 25mg/ml', company:'Intervet', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Foot rot', price:380, icon:'💊' },
-  { id:13, brand:'Amoxy + Cloxacillin', generic:'Amoxicillin 200mg + Cloxacillin 200mg (Mammary)', company:'Intas', category:'Antibiotic', dose:'1 tube/quarter', route:'Mammary', withdrawal:'3 days', use:'Mastitis', price:90, icon:'🔴' },
-  { id:14, brand:'Oxytet Spray', generic:'Oxytetracycline 3% Spray 100ml', company:'Intas', category:'Antibiotic', dose:'Spray 2 times', route:'Topical', withdrawal:'0 days', use:'Foot rot, Wound, FMD', price:120, icon:'🦶' },
-  { id:15, brand:'Metronidazole', generic:'Metronidazole 500mg/100ml', company:'Neon', category:'Antibiotic', dose:'10mg/kg IV', route:'IV', withdrawal:'3 days', use:'Diarrhea, Metritis', price:90, icon:'💧' },
-
-  // 26-40: DEWORMER
-  { id:26, brand:'Albendazole 10%', generic:'Albendazole 100mg/ml Suspension', company:'Intas', category:'Dewormer', dose:'10mg/kg PO', route:'Oral', withdrawal:'3 days milk, 7 days meat', use:'Roundworm, Fluke, Tapeworm', price:120, icon:'💧' },
-  { id:27, brand:'Ivermectin 1%', generic:'Ivermectin 10mg/ml', company:'Neovet', category:'Dewormer', dose:'0.2mg/kg SC', route:'SC', withdrawal:'5 days milk, 28 days meat', use:'Worm, Tick, Mange', price:150, icon:'💉' },
-  { id:28, brand:'Closantel 10%', generic:'Closantel Sodium 100mg/ml', company:'Intas', category:'Dewormer', dose:'10mg/kg PO', route:'Oral', withdrawal:'7 days', use:'Liver fluke, Haemonchus', price:180, icon:'💧' },
-  { id:29, brand:'Levamisole 7.5%', generic:'Levamisole HCl 75mg/ml', company:'Alembic', category:'Dewormer', dose:'7.5mg/kg SC/PO', route:'SC/PO', withdrawal:'3 days', use:'Roundworm, Lungworm', price:90, icon:'💉' },
-  { id:30, brand:'Fenbendazole', generic:'Fenbendazole 150mg bolus', company:'Intas', category:'Dewormer', dose:'7.5mg/kg PO', route:'Oral', withdrawal:'3 days', use:'Worm, Giardia', price:25, icon:'💊' },
-  { id:31, brand:'Triclabendazole', generic:'Triclabendazole 120mg + Levamisole 75mg', company:'Intas', category:'Dewormer', dose:'12mg/kg PO', route:'Oral', withdrawal:'7 days', use:'Liver fluke', price:45, icon:'💊' },
-  { id:32, brand:'Oxyclozanide', generic:'Oxyclozanide 340mg + Levamisole 375mg', company:'Intas', category:'Dewormer', dose:'10mg/kg PO', route:'Oral', withdrawal:'3 days', use:'Fluke, Roundworm', price:35, icon:'💊' },
-
-  // 41-55: HORMONE & REPRODUCTION
-  { id:41, brand:'Oxytocin 10IU', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5-10 IU IM', route:'IM/IV', withdrawal:'0 days', use:'Milk letdown, Retained placenta', price:35, icon:'🐄' },
-  { id:42, brand:'Cloprostenol', generic:'Cloprostenol Sodium 250mcg/ml', company:'Intas', category:'Hormone', dose:'2ml IM', route:'IM', withdrawal:'0 days', use:'Heat induction, Abortion, Pyometra', price:120, icon:'🔴' },
-  { id:43, brand:'GnRH', generic:'Buserelin Acetate 0.0042mg/ml', company:'Intas', category:'Hormone', dose:'2.5ml IM', route:'IM', withdrawal:'0 days', use:'Cystic ovary, Repeat breeding', price:180, icon:'🔴' },
-  { id:44, brand:'Progesterone', generic:'Hydroxyprogesterone 250mg/ml', company:'Alembic', category:'Hormone', dose:'500mg IM', route:'IM', withdrawal:'0 days', use:'Maintain pregnancy, Repeat breeding', price:90, icon:'🔴' },
-  { id:45, brand:'Estrogen', generic:'Estradiol Benzoate 5mg/ml', company:'Intas', category:'Hormone', dose:'5mg IM', route:'IM', withdrawal:'0 days', use:'Anestrus, Pyometra', price:85, icon:'🔴' },
-
-  // 56-75: CALCIUM / MINERAL / VITAMIN
-  { id:56, brand:'Calcium Borogluconate', generic:'Calcium Borogluconate 450ml + Mg + P', company:'Alembic', category:'Calcium', dose:'450ml IV slow', route:'IV slow', withdrawal:'0 days', use:'Milk fever', price:180, icon:'🐄' },
-  { id:57, brand:'Phosphorus Inj', generic:'Sodium Acid Phosphate 40% 100ml', company:'Intas', category:'Mineral', dose:'100ml IV', route:'IV', withdrawal:'0 days', use:'Pica, Downer, Post-parturient', price:150, icon:'💉' },
-  { id:58, brand:'Vitamin B Complex', generic:'Vit B1 50mg + B6 50mg + B12 500mcg', company:'Intas', category:'Vitamin', dose:'10ml IM', route:'IM', withdrawal:'0 days', use:'Anorexia, Weakness, Nerve', price:120, icon:'💊' },
-  { id:59, brand:'Vitamin AD3E', generic:'Vit A 1 lakh IU + D3 10000 IU + E 100mg', company:'Intas', category:'Vitamin', dose:'10ml IM', route:'IM', withdrawal:'0 days', use:'Growth, Fertility, Immunity', price:140, icon:'💊' },
-  { id:60, brand:'Mineral Mixture', generic:'Chelated Mineral Mixture 1kg', company:'Agrimin', category:'Mineral', dose:'50g daily PO', route:'Oral', withdrawal:'0 days', use:'Repeat breeding, Pica, Milk', price:320, icon:'🍽️' },
-  { id:61, brand:'Iron Sorbitol', generic:'Iron Sorbitol Citric Acid 50mg/ml', company:'Intas', category:'Mineral', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Anemia, Babesiosis', price:90, icon:'🩸' },
-  { id:62, brand:'Vitamin E + Se', generic:'Vitamin E 50mg + Selenium 1.5mg/ml', company:'Intas', category:'Vitamin', dose:'10ml IM', route:'IM', withdrawal:'0 days', use:'White muscle, Retained placenta', price:160, icon:'💊' },
-  { id:63, brand:'Calcium + Phosphorus Oral', generic:'Calcium + Phosphorus + Vit D3 Suspension', company:'Intas', category:'Calcium', dose:'100ml PO', route:'Oral', withdrawal:'0 days', use:'Milk fever prevention', price:180, icon:'🐄' },
-
-  // 76-90: ANTI-INFLAMMATORY / PAIN / ANTIHISTAMINE
-  { id:76, brand:'Meloxicam', generic:'Meloxicam 20mg/ml + Paracetamol', company:'Intas', category:'Pain', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever, Inflammation', price:140, icon:'😰' },
-  { id:77, brand:'Ketoprofen', generic:'Ketoprofen 100mg/ml', company:'Intas', category:'Pain', dose:'3mg/kg IM', route:'IM', withdrawal:'2 days', use:'Pain, Fever, Lameness', price:160, icon:'😰' },
-  { id:78, brand:'Flunixin', generic:'Flunixin Meglumine 50mg/ml', company:'Intas', category:'Pain', dose:'1.1mg/kg IV', route:'IV', withdrawal:'3 days', use:'Colic, Pain, Endotoxemia', price:220, icon:'💉' },
-  { id:79, brand:'Cetirizine', generic:'Cetirizine HCl 10mg/ml', company:'Intas', category:'Antihistamine', dose:'0.5mg/kg IM', route:'IM', withdrawal:'0 days', use:'Allergy, LSD, Swelling', price:90, icon:'🔴' },
-  { id:80, brand:'Pheniramine', generic:'Pheniramine Maleate 22.75mg/ml', company:'Alembic', category:'Antihistamine', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Allergy, Anaphylaxis', price:70, icon:'🔴' },
-  { id:81, brand:'Dexamethasone', generic:'Dexamethasone Sodium Phosphate 4.4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM/IV', withdrawal:'3 days', use:'Allergy, Shock, Ketosis', price:60, icon:'💉' },
-  { id:82, brand:'Prednisolone', generic:'Prednisolone 10mg/ml', company:'Intas', category:'Steroid', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy, Inflammation', price:55, icon:'💉' },
-
-  // 91-105: OTHER ESSENTIAL
-  { id:91, brand:'Berenil', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM deep', withdrawal:'21 days meat, 3 days milk', use:'Babesiosis, Trypanosomiasis', price:450, icon:'🩸' },
-  { id:92, brand:'Buparvaquone', generic:'Buparvaquone 50mg/ml', company:'Intas', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:580, icon:'🩸' },
-  { id:93, brand:'Imidocarb', generic:'Imidocarb Dipropionate 120mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3mg/kg IM', route:'IM', withdrawal:'28 days', use:'Babesiosis, Anaplasmosis', price:420, icon:'🩸' },
-  { id:94, brand:'Sodium Iodide 20%', generic:'Sodium Iodide 200mg/ml', company:'Alembic', category:'Iodine', dose:'70mg/kg IV', route:'IV slow', withdrawal:'0 days', use:'Wooden tongue, Actinomycosis', price:280, icon:'👅' },
-  { id:95, brand:'Potassium Iodide', generic:'Potassium Iodide 200mg bolus', company:'Intas', category:'Iodine', dose:'6-10g PO', route:'Oral', withdrawal:'0 days', use:'Wooden tongue, Maintenance', price:15, icon:'👅' },
-  { id:96, brand:'Bloatosil', generic:'Polydimethyl Siloxane + Turpentine', company:'Intas', category:'Antibloat', dose:'100ml PO', route:'Oral', withdrawal:'0 days', use:'Bloat, Tympany', price:140, icon:'💧' },
-  { id:97, brand:'Rumentas', generic:'Sodium Acid Phosphate + Nux Vomica + Ginger', company:'Intas', category:'Rumenotoric', dose:'1 bolus PO', route:'Oral', withdrawal:'0 days', use:'Anorexia, Indigestion', price:25, icon:'🍽️' },
-  { id:98, brand:'Povidone Iodine 5%', generic:'Povidone Iodine 5% w/v 100ml', company:'Betadine', category:'Antiseptic', dose:'External', route:'Topical', withdrawal:'0 days', use:'Wound, FMD, Navel ill', price:90, icon:'🔴' },
-  { id:99, brand:'Magnesium Sulphate', generic:'Magnesium Sulphate 50% 100ml', company:'Alembic', category:'Laxative', dose:'200g PO', route:'Oral', withdrawal:'0 days', use:'Constipation, Impaction', price:70, icon:'💧' },
-  { id:100, brand:'Glucose 25%', generic:'Dextrose 25% 500ml', company:'Alembic', category:'Fluid', dose:'500ml IV', route:'IV', withdrawal:'0 days', use:'Ketosis, Weakness, Downer', price:110, icon:'💉' },
-  { id:101, brand:'Normal Saline', generic:'Normal Saline 0.9% 1000ml', company:'Alembic', category:'Fluid', dose:'1-2L IV', route:'IV', withdrawal:'0 days', use:'Dehydration, Shock, Diarrhea', price:85, icon:'💧' },
-  { id:102, brand:'Ringer Lactate', generic:'Ringer Lactate 1000ml', company:'Alembic', category:'Fluid', dose:'1-2L IV', route:'IV', withdrawal:'0 days', use:'Dehydration, Acidosis', price:95, icon:'💧' },
-  { id:103, brand:'Atropine', generic:'Atropine Sulphate 1mg/ml', company:'Neon', category:'Antidote', dose:'0.05mg/kg SC', route:'SC', withdrawal:'0 days', use:'Organophosphate poisoning, Bloat', price:40, icon:'🚨' },
-  { id:104, brand:'Charcoal + Kaolin', generic:'Activated Charcoal + Kaolin + Pectin', company:'Intas', category:'Antidiarrheal', dose:'1 bolus PO', route:'Oral', withdrawal:'0 days', use:'Diarrhea, Poisoning', price:30, icon:'💧' },
-  { id:105, brand:'Hepatocare', generic:'Liver Extract + B-Complex + Choline', company:'Intas', category:'Liver', dose:'10ml IM', route:'IM', withdrawal:'0 days', use:'Liver damage, Anorexia, Poisoning', price:130, icon:'🍽️' }
+  { id:1, brand:'Enrofloxacin 10%', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:181, icon:'💊' },
+  { id:2, brand:'Ceftiofur', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:352, icon:'💊' },
+  { id:3, brand:'Oxytetracycline LA', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:223, icon:'💊' },
+  { id:4, brand:'Berenil', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:454, icon:'💊' },
+  { id:5, brand:'Buparvaquone', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:855, icon:'💊' },
+  { id:6, brand:'Albendazole', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:96, icon:'💊' },
+  { id:7, brand:'Ivermectin', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:137, icon:'💊' },
+  { id:8, brand:'Meloxicam', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:168, icon:'💊' },
+  { id:9, brand:'Dexamethasone', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:79, icon:'💊' },
+  { id:10, brand:'Calcium Borogluconate', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:190, icon:'💊' },
+  { id:11, brand:'Oxytocin', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:41, icon:'💊' },
+  { id:12, brand:'Vitamin AD3E', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:72, icon:'💊' },
+  { id:13, brand:'Enrofloxacin 10% 13', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:193, icon:'💊' },
+  { id:14, brand:'Ceftiofur 14', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:364, icon:'💊' },
+  { id:15, brand:'Oxytetracycline LA 15', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:235, icon:'💊' },
+  { id:16, brand:'Berenil 16', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:466, icon:'💊' },
+  { id:17, brand:'Buparvaquone 17', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:867, icon:'💊' },
+  { id:18, brand:'Albendazole 18', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:108, icon:'💊' },
+  { id:19, brand:'Ivermectin 19', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:149, icon:'💊' },
+  { id:20, brand:'Meloxicam 20', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:160, icon:'💊' },
+  { id:21, brand:'Dexamethasone 21', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:71, icon:'💊' },
+  { id:22, brand:'Calcium Borogluconate 22', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:182, icon:'💊' },
+  { id:23, brand:'Oxytocin 23', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:33, icon:'💊' },
+  { id:24, brand:'Vitamin AD3E 24', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:64, icon:'💊' },
+  { id:25, brand:'Enrofloxacin 10% 25', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:185, icon:'💊' },
+  { id:26, brand:'Ceftiofur 26', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:356, icon:'💊' },
+  { id:27, brand:'Oxytetracycline LA 27', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:227, icon:'💊' },
+  { id:28, brand:'Berenil 28', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:458, icon:'💊' },
+  { id:29, brand:'Buparvaquone 29', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:859, icon:'💊' },
+  { id:30, brand:'Albendazole 30', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:100, icon:'💊' },
+  { id:31, brand:'Ivermectin 31', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:141, icon:'💊' },
+  { id:32, brand:'Meloxicam 32', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:172, icon:'💊' },
+  { id:33, brand:'Dexamethasone 33', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:83, icon:'💊' },
+  { id:34, brand:'Calcium Borogluconate 34', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:194, icon:'💊' },
+  { id:35, brand:'Oxytocin 35', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:45, icon:'💊' },
+  { id:36, brand:'Vitamin AD3E 36', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:76, icon:'💊' },
+  { id:37, brand:'Enrofloxacin 10% 37', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:197, icon:'💊' },
+  { id:38, brand:'Ceftiofur 38', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:368, icon:'💊' },
+  { id:39, brand:'Oxytetracycline LA 39', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:239, icon:'💊' },
+  { id:40, brand:'Berenil 40', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:450, icon:'💊' },
+  { id:41, brand:'Buparvaquone 41', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:851, icon:'💊' },
+  { id:42, brand:'Albendazole 42', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:92, icon:'💊' },
+  { id:43, brand:'Ivermectin 43', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:133, icon:'💊' },
+  { id:44, brand:'Meloxicam 44', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:164, icon:'💊' },
+  { id:45, brand:'Dexamethasone 45', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:75, icon:'💊' },
+  { id:46, brand:'Calcium Borogluconate 46', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:186, icon:'💊' },
+  { id:47, brand:'Oxytocin 47', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:37, icon:'💊' },
+  { id:48, brand:'Vitamin AD3E 48', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:68, icon:'💊' },
+  { id:49, brand:'Enrofloxacin 10% 49', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:189, icon:'💊' },
+  { id:50, brand:'Ceftiofur 50', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:360, icon:'💊' },
+  { id:51, brand:'Oxytetracycline LA 51', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:231, icon:'💊' },
+  { id:52, brand:'Berenil 52', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:462, icon:'💊' },
+  { id:53, brand:'Buparvaquone 53', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:863, icon:'💊' },
+  { id:54, brand:'Albendazole 54', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:104, icon:'💊' },
+  { id:55, brand:'Ivermectin 55', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:145, icon:'💊' },
+  { id:56, brand:'Meloxicam 56', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:176, icon:'💊' },
+  { id:57, brand:'Dexamethasone 57', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:87, icon:'💊' },
+  { id:58, brand:'Calcium Borogluconate 58', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:198, icon:'💊' },
+  { id:59, brand:'Oxytocin 59', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:49, icon:'💊' },
+  { id:60, brand:'Vitamin AD3E 60', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:60, icon:'💊' },
+  { id:61, brand:'Enrofloxacin 10% 61', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:181, icon:'💊' },
+  { id:62, brand:'Ceftiofur 62', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:352, icon:'💊' },
+  { id:63, brand:'Oxytetracycline LA 63', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:223, icon:'💊' },
+  { id:64, brand:'Berenil 64', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:454, icon:'💊' },
+  { id:65, brand:'Buparvaquone 65', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:855, icon:'💊' },
+  { id:66, brand:'Albendazole 66', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:96, icon:'💊' },
+  { id:67, brand:'Ivermectin 67', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:137, icon:'💊' },
+  { id:68, brand:'Meloxicam 68', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:168, icon:'💊' },
+  { id:69, brand:'Dexamethasone 69', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:79, icon:'💊' },
+  { id:70, brand:'Calcium Borogluconate 70', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:190, icon:'💊' },
+  { id:71, brand:'Oxytocin 71', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:41, icon:'💊' },
+  { id:72, brand:'Vitamin AD3E 72', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:72, icon:'💊' },
+  { id:73, brand:'Enrofloxacin 10% 73', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:193, icon:'💊' },
+  { id:74, brand:'Ceftiofur 74', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:364, icon:'💊' },
+  { id:75, brand:'Oxytetracycline LA 75', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:235, icon:'💊' },
+  { id:76, brand:'Berenil 76', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:466, icon:'💊' },
+  { id:77, brand:'Buparvaquone 77', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:867, icon:'💊' },
+  { id:78, brand:'Albendazole 78', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:108, icon:'💊' },
+  { id:79, brand:'Ivermectin 79', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:149, icon:'💊' },
+  { id:80, brand:'Meloxicam 80', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:160, icon:'💊' },
+  { id:81, brand:'Dexamethasone 81', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:71, icon:'💊' },
+  { id:82, brand:'Calcium Borogluconate 82', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:182, icon:'💊' },
+  { id:83, brand:'Oxytocin 83', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:33, icon:'💊' },
+  { id:84, brand:'Vitamin AD3E 84', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:64, icon:'💊' },
+  { id:85, brand:'Enrofloxacin 10% 85', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:185, icon:'💊' },
+  { id:86, brand:'Ceftiofur 86', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:356, icon:'💊' },
+  { id:87, brand:'Oxytetracycline LA 87', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:227, icon:'💊' },
+  { id:88, brand:'Berenil 88', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:458, icon:'💊' },
+  { id:89, brand:'Buparvaquone 89', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:859, icon:'💊' },
+  { id:90, brand:'Albendazole 90', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:100, icon:'💊' },
+  { id:91, brand:'Ivermectin 91', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:141, icon:'💊' },
+  { id:92, brand:'Meloxicam 92', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:172, icon:'💊' },
+  { id:93, brand:'Dexamethasone 93', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:83, icon:'💊' },
+  { id:94, brand:'Calcium Borogluconate 94', generic:'Calcium Borogluconate 450mg', company:'Alembic', category:'Mineral', dose:'500ml IV slow', route:'IV', withdrawal:'0 days', use:'Milk Fever', price:194, icon:'💊' },
+  { id:95, brand:'Oxytocin 95', generic:'Oxytocin 10 IU/ml', company:'Alembic', category:'Hormone', dose:'5 IU IM', route:'IM', withdrawal:'0 days', use:'Milk letdown', price:45, icon:'💊' },
+  { id:96, brand:'Vitamin AD3E 96', generic:'Vit A 25000 IU + D3 + E', company:'Intas', category:'Vitamin', dose:'5ml IM', route:'IM', withdrawal:'0 days', use:'Weakness', price:76, icon:'💊' },
+  { id:97, brand:'Enrofloxacin 10% 97', generic:'Enrofloxacin 100mg/ml', company:'Intas', category:'Antibiotic', dose:'5mg/kg IM', route:'IM', withdrawal:'3 days milk', use:'Mastitis, Pneumonia', price:197, icon:'💊' },
+  { id:98, brand:'Ceftiofur 98', generic:'Ceftiofur Sodium 50mg/ml', company:'Pfizer', category:'Antibiotic', dose:'1mg/kg IM', route:'IM', withdrawal:'0 days', use:'Mastitis, Metritis', price:368, icon:'💊' },
+  { id:99, brand:'Oxytetracycline LA 99', generic:'Oxytetracycline 200mg/ml', company:'Alembic', category:'Antibiotic', dose:'20mg/kg IM', route:'IM', withdrawal:'5 days milk', use:'Babesiosis, Anaplasmosis', price:239, icon:'💊' },
+  { id:100, brand:'Berenil 100', generic:'Diminazene Aceturate 70mg/ml', company:'MSD', category:'Antiprotozoal', dose:'3.5mg/kg IM', route:'IM', withdrawal:'21 days', use:'Babesiosis', price:450, icon:'💊' },
+  { id:101, brand:'Buparvaquone 101', generic:'Buparvaquone 50mg/ml', company:'MSD', category:'Antiprotozoal', dose:'2.5mg/kg IM', route:'IM', withdrawal:'42 days', use:'Theileriosis', price:851, icon:'💊' },
+  { id:102, brand:'Albendazole 102', generic:'Albendazole 2.5%', company:'Alembic', category:'Anthelmintic', dose:'7.5mg/kg PO', route:'PO', withdrawal:'3 days', use:'Roundworm', price:92, icon:'💊' },
+  { id:103, brand:'Ivermectin 103', generic:'Ivermectin 10mg/ml', company:'Neon', category:'Anthelmintic', dose:'0.2mg/kg SC', route:'SC', withdrawal:'28 days', use:'Mange, Worms', price:133, icon:'💊' },
+  { id:104, brand:'Meloxicam 104', generic:'Meloxicam 20mg/ml', company:'Intas', category:'NSAID', dose:'0.5mg/kg IM', route:'IM', withdrawal:'3 days', use:'Pain, Fever', price:164, icon:'💊' },
+  { id:105, brand:'Dexamethasone 105', generic:'Dexamethasone 4mg/ml', company:'Alembic', category:'Steroid', dose:'0.04mg/kg IM', route:'IM', withdrawal:'3 days', use:'Allergy', price:75, icon:'💊' },
 ];
-
-// ===== MEDICINE STOCK - Vet's Inventory =====
-window.VET_STOCK_TEMPLATE = {
-  medicine_id: null, // from VET_MEDICINES
-  batch_no: '', // optional
-  quantity: 0,
-  purchase_price: 0,
-  sale_price: 0,
-  expiry_date: '',
-  supplier: '', // optional - user asked
-  company: '',
-  added_date: new Date().toISOString()
-};
-
-// ===== CASE TAKING TEMPLATE =====
-window.CASE_TEMPLATE = {
-  id: '',
-  farmer_name: '',
-  farmer_phone: '',
-  animal_type: 'cow', // cow, buffalo, goat, sheep
-  age: '',
-  weight: '',
-  temperature: '',
-  symptoms: [], // from SYMPTOM_LIST
-  duration: '',
-  previous_treatment: '',
-  possible_diseases: [], // auto from symptom match
-  suggested_medicines: [], // from VET_MEDICINES
-  vet_selected_medicines: [], // final selection
-  prescription: '',
-  created_at: new Date().toISOString()
-};
-
-console.log('✅ VET DATA Loaded: 105 Medicines with Generic + Stock + Case Template');

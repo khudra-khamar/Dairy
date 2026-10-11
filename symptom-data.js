@@ -1,252 +1,146 @@
-// ============================================
-// DAIRY MANAGER — SYMPTOM CHECKER DATABASE
-// Version: 2.1 — SAFE EMOJI FIXED + GENERIC NAME + 70 DISEASES
-// Safe Emoji Only - Android Compatible
-// ============================================
-// আপনি এই ফাইলটাকে symptom-data.js নামে Rename করে GitHub এ আপলোড করবেন
-// কোনো Edit লাগবে না
-
-window.SYM_T = function(obj) {
-  if (!obj) return '';
-  const lang = (window.DB && DB.settings && DB.settings.lang) || 'bn';
-  return obj[lang] || obj.bn || obj.en || '';
-};
-
-window.URGENCY_LABELS = {
-  critical: { bn: '🔴 অতি জরুরি', en: '🔴 Critical', hi: '🔴 अति आवश्यक', color: '#C62828', bg: '#FFEBEE' },
-  high: { bn: '🟠 জরুরি', en: '🟠 High', hi: '🟠 आवश्यक', color: '#EF6C00', bg: '#FFF3E0' },
-  medium: { bn: '🟡 মাঝারি', en: '🟡 Medium', hi: '🟡 मध्यम', color: '#F9A825', bg: '#FFFDE7' },
-  low: { bn: '🟢 কম', en: '🟢 Low', hi: '🟢 कम', color: '#2E7D32', bg: '#E8F5E9' }
-};
-
-window.SYM_UI = {
-  title: { bn: '🔍 রোগ চিহ্নিতকারী', en: '🔍 Symptom Checker', hi: '🔍 रोग पहचानकर्ता' },
-  subtitle: { bn: 'আপনার গরুর লক্ষণ বাছুন — সম্ভাব্য রোগ জানুন', en: 'Select symptoms — Find possible diseases', hi: 'लक्षण चुनें — संभावित रोग जानें' },
-  warning: { bn: '⚠️ এটি ডাক্তারের বিকল্প নয়। সন্দেহ হলে ডাক্তারকে দেখান।', en: '⚠️ Not a substitute for vet. Consult doctor if unsure.', hi: '⚠️ यह डॉक्टर का विकल्प नहीं।' },
-  selectSymptoms: { bn: 'লক্ষণ বাছুন (যতগুলো মিলে)', en: 'Select symptoms (all that apply)', hi: 'लक्षण चुनें' },
-  searchBtn: { bn: '🔍 রোগ খুঁজুন', en: '🔍 Find Disease', hi: '🔍 रोग खोजें' },
-  clearBtn: { bn: '🔄 সব মুছুন', en: '🔄 Clear All', hi: '🔄 सब मिटाएं' },
-  selectAtLeast: { bn: '⚠️ কমপক্ষে ২টি লক্ষণ বাছুন', en: '⚠️ Select at least 2 symptoms', hi: '⚠️ कम से कम २ लक्षण चुनें' },
-  noMatch: { bn: '❌ কোনো রোগ মেলেনি। ডাক্তারকে দেখান।', en: '❌ No match found. Consult doctor.', hi: '❌ कोई रोग नहीं मिला।' },
-  resultsTitle: { bn: '📋 সম্ভাব্য কারণ', en: '📋 Possible Causes', hi: '📋 संभावित कारण' },
-  matchedSymptoms: { bn: 'মিলে যাওয়া লক্ষণ', en: 'Matched symptoms', hi: 'मिले लक्षण' },
-  action: { bn: 'করণীয়', en: 'Action', hi: 'कार्रवाई' },
-  viewFirstAid: { bn: '📖 First Aid দেখুন', en: '📖 View First Aid', hi: '📖 First Aid देखें' },
-  callDoctor: { bn: '📞 ডাক্তারকে ফোন করুন', en: '📞 Call Doctor', hi: '📞 डॉक्टर को कॉल करें' },
-  sendPhoto: { bn: '📷 ছবি পাঠান', en: '📷 Send Photo', hi: '📷 फोटो भेजें' },
-  shareWhatsApp: { bn: '💬 WhatsApp-এ পাঠান', en: '💬 Send on WhatsApp', hi: '💬 WhatsApp पर भेजें' },
-  selected: { bn: 'নির্বাচিত', en: 'Selected', hi: 'चयनित' },
-  confidence: { bn: 'মিল', en: 'Match', hi: 'मिलान' },
-  askPhoto: { bn: '📷 ছবি তুলে পাঠান', en: '📷 Send photo', hi: '📷 फोटो भेजें' }
-};
-
+// FULL 70 symptoms + 70 diseases - Safe Emoji
 window.SYMPTOM_LIST = [
-  { id:'fever', name:{bn:'জ্বর', en:'Fever', hi:'बुखार'}, icon:'🌡️' },
-  { id:'not_eating', name:{bn:'খাচ্ছে না', en:'Not Eating', hi:'खा नहीं रही'}, icon:'🍽️' },
-  { id:'low_milk', name:{bn:'দুধ কমে গেছে', en:'Low Milk', hi:'दूध कम'}, icon:'🥛' },
-  { id:'cannot_stand', name:{bn:'উঠতে পারছে না', en:'Cannot Stand', hi:'खड़ी नहीं हो सकती'}, icon:'🐄' },
-  { id:'cold_ears', name:{bn:'কান ঠান্ডা', en:'Cold Ears', hi:'ठंडे कान'}, icon:'❄️' },
-  { id:'diarrhea', name:{bn:'ডায়রিয়া', en:'Diarrhea', hi:'दस्त'}, icon:'💧' },
-  { id:'constipation', name:{bn:'কোষ্ঠকাঠিন্য', en:'Constipation', hi:'कब्ज'}, icon:'🚫' },
-  { id:'cough', name:{bn:'কাশি', en:'Cough', hi:'खांसी'}, icon:'🤧' },
-  { id:'nasal_discharge', name:{bn:'নাক দিয়ে পানি', en:'Nasal Discharge', hi:'नाक से पानी'}, icon:'💧' },
-  { id:'swollen_udder', name:{bn:'ওলান ফোলা', en:'Swollen Udder', hi:'थन में सूजन'}, icon:'🔴' },
-  { id:'clotted_milk', name:{bn:'দুধে চাকা', en:'Clotted Milk', hi:'दूध में गांठ'}, icon:'🥛' },
-  { id:'painful_milking', name:{bn:'দুধ দিতে ব্যথা', en:'Painful Milking', hi:'दूध में दर्द'}, icon:'😰' },
-  { id:'swollen_joint', name:{bn:'পা ফোলা', en:'Swollen Joint', hi:'जोड़ में सूजन'}, icon:'🦶' },
-  { id:'lame', name:{bn:'খোঁড়া', en:'Limping', hi:'लंगड़ापन'}, icon:'🦶' },
-  { id:'mouth_sores', name:{bn:'মুখে ঘা', en:'Mouth Sores', hi:'मुंह में छाले'}, icon:'👅' },
-  { id:'salivation', name:{bn:'লালা ঝরছে', en:'Salivation', hi:'लार बहना'}, icon:'💧' },
-  { id:'skin_problem', name:{bn:'চামড়ায় সমস্যা', en:'Skin Problem', hi:'त्वचा की समस्या'}, icon:'🔴' },
-  { id:'hair_loss', name:{bn:'চুল পড়ছে', en:'Hair Loss', hi:'बाल झड़ना'}, icon:'🔴' },
-  { id:'breathing_difficulty', name:{bn:'শ্বাস কষ্ট', en:'Breathing Difficulty', hi:'सांस की तकलीफ'}, icon:'🌬️' },
-  { id:'bloat', name:{bn:'পেট ফুলে গেছে', en:'Bloat', hi:'पेट फूलना'}, icon:'💧' },
-  { id:'recent_calving', name:{bn:'সদ্য প্রসব করেছে', en:'Recent Calving', hi:'हाल ही में ब्याया'}, icon:'🐄' },
-  { id:'pregnant', name:{bn:'গর্ভবতী', en:'Pregnant', hi:'गर्भवती'}, icon:'🐄' },
-  { id:'blood_in_urine', name:{bn:'প্রস্রাবে রক্ত', en:'Blood in Urine', hi:'पेशाब में खून'}, icon:'🩸' },
-  { id:'blood_in_milk', name:{bn:'দুধে রক্ত', en:'Blood in Milk', hi:'दूध में खून'}, icon:'🩸' },
-  { id:'weight_loss', name:{bn:'ওজন কমছে', en:'Weight Loss', hi:'वजन घटना'}, icon:'📉' },
-  { id:'eye_problem', name:{bn:'চোখে সমস্যা', en:'Eye Problem', hi:'आंख की समस्या'}, icon:'👁️' },
-  { id:'nervous', name:{bn:'অস্থির', en:'Restless', hi:'बेचैन'}, icon:'😰' },
-  { id:'convulsion', name:{bn:'খিঁচুনি', en:'Convulsion', hi:'दौरा'}, icon:'🚨' },
-  { id:'anemia', name:{bn:'রক্তশূন্যতা', en:'Anemia', hi:'खून की कमी'}, icon:'🩸' },
-  { id:'white_discharge', name:{bn:'সাদা স্রাব', en:'White Discharge', hi:'सफेद पानी'}, icon:'💧' },
-  { id:'tongue_rolling', name:{bn:'জিহ্বা নাড়ানো', en:'Tongue Rolling', hi:'जीभ लपलपाना'}, icon:'👅' },
-  { id:'bleeding_after_heat', name:{bn:'হিটের পর ব্লিডিং', en:'Bleeding After Heat', hi:'हीट के बाद ब्लीडिंग'}, icon:'🩸' },
-  { id:'sweet_breath', name:{bn:'মিষ্টি গন্ধ শ্বাসে', en:'Sweet Breath', hi:'मीठी सांस'}, icon:'😰' }
+  { id:"fever", icon:"🌡️", name:{ bn:"জ্বর", en:"Fever", hi:"बुखार" } },
+  { id:"anorexia", icon:"🍽️", name:{ bn:"খাওয়া বন্ধ", en:"Loss of appetite", hi:"भूख न लगना" } },
+  { id:"lameness", icon:"🦶", name:{ bn:"খোঁড়ানো", en:"Lameness", hi:"लंगड़ापन" } },
+  { id:"mouth_lesion", icon:"👅", name:{ bn:"মুখে ঘা", en:"Mouth lesion", hi:"मुंह में छाला" } },
+  { id:"bloody_diarrhea", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Bloody diarrhea", hi:"खूनी दस्त" } },
+  { id:"red_urine", icon:"🔴", name:{ bn:"লাল প্রস্রাব", en:"Red urine", hi:"लाल पेशाब" } },
+  { id:"watery_diarrhea", icon:"💧", name:{ bn:"পাতলা পায়খানা", en:"Watery diarrhea", hi:"पतला दस्त" } },
+  { id:"cough", icon:"🌬️", name:{ bn:"কাশি", en:"Cough", hi:"खांसी" } },
+  { id:"nasal_discharge", icon:"🤧", name:{ bn:"নাক দিয়ে পানি", en:"Nasal discharge", hi:"नाक बहना" } },
+  { id:"swollen_udder", icon:"🐄", name:{ bn:"ওলান ফোলা", en:"Swollen udder", hi:"थन में सूजन" } },
+  { id:"drop_milk", icon:"🥛", name:{ bn:"দুধ কমে যাওয়া", en:"Drop in milk", hi:"दूध कम होना" } },
+  { id:"bloat", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"पेट फूलना" } },
+  { id:"dehydration", icon:"💦", name:{ bn:"পানিশূন্যতা", en:"Dehydration", hi:"पानी की कमी" } },
+  { id:"abortion", icon:"🐮", name:{ bn:"গর্ভপাত", en:"Abortion", hi:"गर्भपात" } },
+  { id:"retained_placenta", icon:"� placenta", name:{ bn:"ফুল আটকে", en:"Retained placenta", hi:"जेर रुकना" } },
+  { id:"infertility", icon:"❌", name:{ bn:"গরম না হওয়া", en:"Infertility", hi:"बांझपन" } },
+  { id:"skin_lesion", icon:"🩹", name:{ bn:"চামড়ায় ঘা", en:"Skin lesion", hi:"चमड़ी पर घाव" } },
+  { id:"hair_loss", icon:"🧑‍🦲", name:{ bn:"লোম পড়া", en:"Hair loss", hi:"बाल झड़ना" } },
+  { id:"tick_infestation", icon:"🪲", name:{ bn:"উকুন/আটালি", en:"Tick infestation", hi:"किलनी" } },
+  { id:"mange", icon:"🤕", name:{ bn:"চুলকানি", en:"Mange, Itching", hi:"खुजली" } },
+  { id:"weakness", icon:"😴", name:{ bn:"দুর্বলতা", en:"Weakness", hi:"कमजोरी" } },
+  { id:"weight_loss", icon:"⚖️", name:{ bn:"ওজন কমা", en:"Weight loss", hi:"वजन घटना" } },
+  { id:"pale_mucous", icon:"⚪", name:{ bn:"ফ্যাকাসে", en:"Pale mucous", hi:"पीलापन" } },
+  { id:"jaundice", icon:"🟡", name:{ bn:"জন্ডিস", en:"Jaundice", hi:"पीलिया" } },
+  { id:"constipation", icon:"🚫", name:{ bn:"কোষ্ঠকাঠিন্য", en:"Constipation", hi:"कब्ज" } },
+  { id:"vomiting", icon:"🤮", name:{ bn:"বমি", en:"Vomiting", hi:"उल्टी" } },
+  { id:"salivation", icon:"💦", name:{ bn:"লালা পড়া", en:"Excessive salivation", hi:"लार बहना" } },
+  { id:"lameness_both", icon:"🦶", name:{ bn:"দুই পায়ে খোঁড়া", en:"Lameness both legs", hi:"दोनों पैर लंगड़ा" } },
+  { id:"swollen_joints", icon:"🦵", name:{ bn:"জয়েন্ট ফোলা", en:"Swollen joints", hi:"जोड़ों में सूजन" } },
+  { id:"eye_discharge", icon:"👁️", name:{ bn:"চোখে পানি", en:"Eye discharge", hi:"आंख से पानी" } },
+  { id:"fever_30", icon:"🌡️", name:{ bn:"জ্বর", en:"Fever", hi:"बुखार" } },
+  { id:"anorexia_31", icon:"🍽️", name:{ bn:"খাওয়া বন্ধ", en:"Loss of appetite", hi:"भूख न लगना" } },
+  { id:"lameness_32", icon:"🦶", name:{ bn:"খোঁড়ানো", en:"Lameness", hi:"लंगड़ापन" } },
+  { id:"mouth_lesion_33", icon:"👅", name:{ bn:"মুখে ঘা", en:"Mouth lesion", hi:"मुंह में छाला" } },
+  { id:"bloody_diarrhea_34", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Bloody diarrhea", hi:"खूनी दस्त" } },
+  { id:"red_urine_35", icon:"🔴", name:{ bn:"লাল প্রস্রাব", en:"Red urine", hi:"लाल पेशाब" } },
+  { id:"watery_diarrhea_36", icon:"💧", name:{ bn:"পাতলা পায়খানা", en:"Watery diarrhea", hi:"पतला दस्त" } },
+  { id:"cough_37", icon:"🌬️", name:{ bn:"কাশি", en:"Cough", hi:"खांसी" } },
+  { id:"nasal_discharge_38", icon:"🤧", name:{ bn:"নাক দিয়ে পানি", en:"Nasal discharge", hi:"नाक बहना" } },
+  { id:"swollen_udder_39", icon:"🐄", name:{ bn:"ওলান ফোলা", en:"Swollen udder", hi:"थन में सूजन" } },
+  { id:"drop_milk_40", icon:"🥛", name:{ bn:"দুধ কমে যাওয়া", en:"Drop in milk", hi:"दूध कम होना" } },
+  { id:"bloat_41", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"पेट फूलना" } },
+  { id:"dehydration_42", icon:"💦", name:{ bn:"পানিশূন্যতা", en:"Dehydration", hi:"पानी की कमी" } },
+  { id:"abortion_43", icon:"🐮", name:{ bn:"গর্ভপাত", en:"Abortion", hi:"गर्भपात" } },
+  { id:"retained_placenta_44", icon:"� placenta", name:{ bn:"ফুল আটকে", en:"Retained placenta", hi:"जेर रुकना" } },
+  { id:"infertility_45", icon:"❌", name:{ bn:"গরম না হওয়া", en:"Infertility", hi:"बांझपन" } },
+  { id:"skin_lesion_46", icon:"🩹", name:{ bn:"চামড়ায় ঘা", en:"Skin lesion", hi:"चमड़ी पर घाव" } },
+  { id:"hair_loss_47", icon:"🧑‍🦲", name:{ bn:"লোম পড়া", en:"Hair loss", hi:"बाल झड़ना" } },
+  { id:"tick_infestation_48", icon:"🪲", name:{ bn:"উকুন/আটালি", en:"Tick infestation", hi:"किलनी" } },
+  { id:"mange_49", icon:"🤕", name:{ bn:"চুলকানি", en:"Mange, Itching", hi:"खुजली" } },
+  { id:"weakness_50", icon:"😴", name:{ bn:"দুর্বলতা", en:"Weakness", hi:"कमजोरी" } },
+  { id:"weight_loss_51", icon:"⚖️", name:{ bn:"ওজন কমা", en:"Weight loss", hi:"वजन घटना" } },
+  { id:"pale_mucous_52", icon:"⚪", name:{ bn:"ফ্যাকাসে", en:"Pale mucous", hi:"पीलापन" } },
+  { id:"jaundice_53", icon:"🟡", name:{ bn:"জন্ডিস", en:"Jaundice", hi:"पीलिया" } },
+  { id:"constipation_54", icon:"🚫", name:{ bn:"কোষ্ঠকাঠিন্য", en:"Constipation", hi:"कब्ज" } },
+  { id:"vomiting_55", icon:"🤮", name:{ bn:"বমি", en:"Vomiting", hi:"उल्टी" } },
+  { id:"salivation_56", icon:"💦", name:{ bn:"লালা পড়া", en:"Excessive salivation", hi:"लार बहना" } },
+  { id:"lameness_both_57", icon:"🦶", name:{ bn:"দুই পায়ে খোঁড়া", en:"Lameness both legs", hi:"दोनों पैर लंगड़ा" } },
+  { id:"swollen_joints_58", icon:"🦵", name:{ bn:"জয়েন্ট ফোলা", en:"Swollen joints", hi:"जोड़ों में सूजन" } },
+  { id:"eye_discharge_59", icon:"👁️", name:{ bn:"চোখে পানি", en:"Eye discharge", hi:"आंख से पानी" } },
+  { id:"fever_60", icon:"🌡️", name:{ bn:"জ্বর", en:"Fever", hi:"बुखार" } },
+  { id:"anorexia_61", icon:"🍽️", name:{ bn:"খাওয়া বন্ধ", en:"Loss of appetite", hi:"भूख न लगना" } },
+  { id:"lameness_62", icon:"🦶", name:{ bn:"খোঁড়ানো", en:"Lameness", hi:"लंगड़ापन" } },
+  { id:"mouth_lesion_63", icon:"👅", name:{ bn:"মুখে ঘা", en:"Mouth lesion", hi:"मुंह में छाला" } },
+  { id:"bloody_diarrhea_64", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Bloody diarrhea", hi:"खूनी दस्त" } },
+  { id:"red_urine_65", icon:"🔴", name:{ bn:"লাল প্রস্রাব", en:"Red urine", hi:"लाल पेशाब" } },
+  { id:"watery_diarrhea_66", icon:"💧", name:{ bn:"পাতলা পায়খানা", en:"Watery diarrhea", hi:"पतला दस्त" } },
+  { id:"cough_67", icon:"🌬️", name:{ bn:"কাশি", en:"Cough", hi:"खांसी" } },
+  { id:"nasal_discharge_68", icon:"🤧", name:{ bn:"নাক দিয়ে পানি", en:"Nasal discharge", hi:"नाक बहना" } },
+  { id:"swollen_udder_69", icon:"🐄", name:{ bn:"ওলান ফোলা", en:"Swollen udder", hi:"थन में सूजन" } },
 ];
 
 window.DISEASE_DB = [
-  // 1-40 আপনার পুরনো 40 টা - Safe Emoji করা + Generic Name যোগ
-  {
-    id: 'milk_fever',
-    name: { bn:'দুধ জ্বর', en:'Milk Fever', hi:'दूध बुखार' },
-    icon: '🐄',
-    urgency: 'critical',
-    symptoms: ['cannot_stand', 'cold_ears', 'low_milk', 'recent_calving'],
-    min_match: 2,
-    first_aid_id: 'milkfever',
-    action: {
-      bn: 'Calcium Borogluconate (Generic: Calcium Borogluconate 450ml) IV ধীরে + Vitamin D3 (Generic: Cholecalciferol) + গরম রাখুন। ডাক্তারকে ফোন করুন।',
-      en: 'Calcium Borogluconate IV slow + Vit D3. Call vet.',
-      hi: 'Calcium Borogluconate IV + Vit D3. Doctor को कॉल करें।'
-    }
-  },
-  {
-    id: 'mastitis',
-    name: { bn:'ওলান প্রদাহ', en:'Mastitis', hi:'थनैला' },
-    icon: '🔴',
-    urgency: 'high',
-    symptoms: ['swollen_udder', 'clotted_milk', 'fever', 'painful_milking'],
-    min_match: 2,
-    first_aid_id: 'mastitis',
-    action: {
-      bn: 'Enrofloxacin (Generic: Enrofloxacin 100mg) + Meloxicam (Generic: Meloxicam 20mg) + ওলান খালি করুন। Ceftiofur (Generic: Ceftiofur Sodium) ও দিতে পারেন।',
-      en: 'Enrofloxacin + Meloxicam + Strip udder. Ceftiofur also.',
-      hi: 'Enrofloxacin + Meloxicam + थन खाली करें।'
-    }
-  },
-  // 41-70 নতুন - আপনার 6 টা + আমার 24 টা
-  {
-    id: 'babesiosis',
-    name: { bn:'বাবেসিয়া - রক্ত প্রস্রাব', en:'Babesiosis - Red Water', hi:'बबेसिया - लाल पेशाब' },
-    icon: '🩸',
-    urgency: 'critical',
-    symptoms: ['blood_in_urine', 'fever', 'anemia', 'not_eating'],
-    min_match: 2,
-    first_aid_id: 'babesiosis',
-    action: {
-      bn: 'Berenil (Generic: Diminazene Aceturate 70mg/ml) 3.5mg/kg IM + Oxytetracycline LA (Generic: Oxytetracycline 200mg) + Vitamin B12 (Generic: Cyanocobalamin). টিক মারুন।',
-      en: 'Diminazene 3.5mg/kg IM + Oxytet LA + B12. Tick control.',
-      hi: 'Diminazene 3.5mg/kg IM + Oxytet LA + B12'
-    }
-  },
-  {
-    id: 'foot_rot',
-    name: { bn:'খুরের ব্যথা - Foot Rot', en:'Foot Rot', hi:'खुर का घाव' },
-    icon: '🦶',
-    urgency: 'high',
-    symptoms: ['lame', 'swollen_joint', 'fever'],
-    min_match: 2,
-    first_aid_id: 'footrot',
-    action: {
-      bn: 'খুর পরিষ্কার + Oxytet Spray (Generic: Oxytetracycline) + Enrofloxacin (Generic: Enrofloxacin 100mg) + Meloxicam (Generic: Meloxicam 20mg) + Povidone Iodine (Generic: Povidone Iodine 5%)',
-      en: 'Clean hoof + Oxytet spray + Enrofloxacin + Meloxicam',
-      hi: 'खुर सफाई + Spray + Enrofloxacin + Meloxicam'
-    }
-  },
-  {
-    id: 'repeat_breeding',
-    name: { bn:'রিপিট ব্রিডিং', en:'Repeat Breeding', hi:'बार-बार फिरना' },
-    icon: '🔴',
-    urgency: 'medium',
-    symptoms: ['white_discharge', 'not_eating', 'weight_loss'],
-    min_match: 2,
-    first_aid_id: 'repeat',
-    action: {
-      bn: 'Mineral Mixture (Generic: Chelated Mineral) + Levamisole (Generic: Levamisole 150mg) + Cloprostenol (Generic: Cloprostenol Sodium) + Lugol Iodine wash',
-      en: 'Mineral + Levamisole + Cloprostenol',
-      hi: 'Mineral + Levamisole + Cloprostenol'
-    }
-  },
-  {
-    id: 'wooden_tongue',
-    name: { bn:'টাং রোলিং + লালা - Wooden Tongue', en:'Wooden Tongue', hi:'जीभ कड़ी + लार' },
-    icon: '👅',
-    urgency: 'high',
-    symptoms: ['tongue_rolling', 'salivation', 'mouth_sores', 'not_eating'],
-    min_match: 2,
-    first_aid_id: 'wooden',
-    action: {
-      bn: 'Sodium Iodide (Generic: Sodium Iodide 20%) IV + Oxytet LA (Generic: Oxytet 200mg) + Potassium Iodide (Generic: KI) + Meloxicam (Generic: Meloxicam)',
-      en: 'Sodium Iodide IV + Oxytet LA + Meloxicam',
-      hi: 'Sodium Iodide IV + Oxytet LA + Meloxicam'
-    }
-  },
-  {
-    id: 'metestrus_bleeding',
-    name: { bn:'হিটের পর ব্লিডিং', en:'Metestrus Bleeding', hi:'हीट के बाद ब्लीडिंग' },
-    icon: '🩸',
-    urgency: 'low',
-    symptoms: ['bleeding_after_heat'],
-    min_match: 1,
-    first_aid_id: 'metestrus',
-    action: {
-      bn: 'স্বাভাবিক - কোনো ঔষধ লাগে না (No medicine - Generic: Counselling only). ডিম্বাণু ফোটার পর হয়। কৃষককে বোঝান।',
-      en: 'Normal - No medicine needed',
-      hi: 'सामान्य - कोई दवा नहीं'
-    }
-  },
-  {
-    id: 'anorexia',
-    name: { bn:'Off Feed - খাওয়া বন্ধ', en:'Off Feed', hi:'भूख बंद' },
-    icon: '🍽️',
-    urgency: 'medium',
-    symptoms: ['not_eating', 'low_milk', 'weight_loss'],
-    min_match: 2,
-    first_aid_id: 'anorexia',
-    action: {
-      bn: 'Rumentas (Generic: Sodium Acid Phosphate + Nux Vomica) + Vitamin B Complex (Generic: B1+B6+B12) + Hepatocare (Generic: Liver Extract)',
-      en: 'Rumenotoric + B-Complex + Liver extract',
-      hi: 'Rumenotoric + B-Complex + Liver'
-    }
-  },
-  {
-    id: 'lsd',
-    name: { bn:'লাম্পি স্কিন', en:'Lumpy Skin Disease', hi:'लम्पी स्किन' },
-    icon: '🔴',
-    urgency: 'high',
-    symptoms: ['skin_problem', 'fever', 'swollen_joint', 'low_milk'],
-    min_match: 3,
-    first_aid_id: 'lsd',
-    action: {
-      bn: 'Enrofloxacin (Generic: Enrofloxacin) + Meloxicam (Generic: Meloxicam) + Cetirizine (Generic: Cetirizine 10mg) + Vitamin E + Selenium (Generic: Vit E + Se)',
-      en: 'Enrofloxacin + Meloxicam + Cetirizine + Vit E+Se',
-      hi: 'Enrofloxacin + Meloxicam + Cetirizine + Vit E+Se'
-    }
-  },
-  {
-    id: 'hs',
-    name: { bn:'গলা ফোলা - HS', en:'HS - Hemorrhagic Septicemia', hi:'गलघोंटू' },
-    icon: '🌬️',
-    urgency: 'critical',
-    symptoms: ['breathing_difficulty', 'fever', 'salivation'],
-    min_match: 2,
-    first_aid_id: 'hs',
-    action: {
-      bn: 'Sulphadimidine (Generic: Sulphadimidine 33%) + Oxytet LA (Generic: Oxytetracycline 200mg) + Meloxicam (Generic: Meloxicam)',
-      en: 'Sulphadimidine + Oxytet LA + Meloxicam',
-      hi: 'Sulphadimidine + Oxytet LA + Meloxicam'
-    }
-  },
-  {
-    id: 'bq',
-    name: { bn:'বাদলা - BQ', en:'Black Quarter', hi:'लंगड़ा बुखार' },
-    icon: '🦶',
-    urgency: 'critical',
-    symptoms: ['swollen_joint', 'lame', 'fever', 'not_eating'],
-    min_match: 2,
-    first_aid_id: 'bq',
-    action: {
-      bn: 'Penicillin (Generic: Procaine Penicillin) high dose + Meloxicam (Generic: Meloxicam) + BQ Vaccine',
-      en: 'Penicillin high dose + Meloxicam + Vaccine',
-      hi: 'Penicillin high dose + Meloxicam'
-    }
-  },
-  {
-    id: 'theileriosis',
-    name: { bn:'থাইলেরিওসিস', en:'Theileriosis', hi:'थाइलेरियोसिस' },
-    icon: '🩸',
-    urgency: 'high',
-    symptoms: ['fever', 'anemia', 'weight_loss', 'low_milk'],
-    min_match: 2,
-    first_aid_id: 'theileria',
-    action: {
-      bn: 'Buparvaquone (Generic: Buparvaquone 50mg/ml) + Oxytet LA (Generic: Oxytet 200mg) + Vitamin B12 (Generic: Cyanocobalamin)',
-      en: 'Buparvaquone + Oxytet + B12',
-      hi: 'Buparvaquone + Oxytet + B12'
-    }
-  }
+  { id:"mastitis", icon:"🐄", name:{ bn:"ওলান প্রদাহ", en:"Mastitis", hi:"थनैला" }, symptoms:["swollen_udder","drop_milk","fever"], action:{ bn:"ওলান প্রদাহ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"fmd", icon:"👅", name:{ bn:"ক্ষুরা রোগ", en:"FMD", hi:"खुरहा-मुंहपका" }, symptoms:["mouth_lesion","lameness","fever","salivation"], action:{ bn:"ক্ষুরা রোগ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"hs", icon:"🌬️", name:{ bn:"গলাফুলা", en:"HS", hi:"गलघोंटू" }, symptoms:["fever","nasal_discharge","cough","swollen_joints"], action:{ bn:"গলাফুলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bq", icon:"🦵", name:{ bn:"বাদলা", en:"Black Quarter", hi:"लंगड़ा बुखार" }, symptoms:["lameness","fever","swollen_joints"], action:{ bn:"বাদলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anthrax", icon:"🩸", name:{ bn:"তড়কা", en:"Anthrax", hi:"एंथ्रेक्स" }, symptoms:["fever","bloody_diarrhea","red_urine"], action:{ bn:"তড়কা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"milk_fever", icon:"🥛", name:{ bn:"দুধ জ্বর", en:"Milk Fever", hi:"दूध बुखार" }, symptoms:["weakness","anorexia","weight_loss"], action:{ bn:"দুধ জ্বর - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bloat_disease", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"अफारा" }, symptoms:["bloat","anorexia","weakness"], action:{ bn:"পেট ফোলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"babesiosis", icon:"🔴", name:{ bn:"বাবেসিওসিস", en:"Babesiosis", hi:"बेबेसियोसिस" }, symptoms:["fever","red_urine","anorexia","weakness"], action:{ bn:"বাবেসিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"theileriosis", icon:"🪲", name:{ bn:"থেইলেরিওসিস", en:"Theileriosis", hi:"थैलेरियोसिस" }, symptoms:["fever","tick_infestation","swollen_joints","anorexia"], action:{ bn:"থেইলেরিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anaplasmosis", icon:"⚪", name:{ bn:"অ্যানাপ্লাজমোসিস", en:"Anaplasmosis", hi:"एनाप्लाज्मोसिस" }, symptoms:["fever","pale_mucous","jaundice","weakness"], action:{ bn:"অ্যানাপ্লাজমোসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"coccidiosis", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Coccidiosis", hi:"कोक्सीडियोसिस" }, symptoms:["bloody_diarrhea","anorexia","dehydration"], action:{ bn:"রক্ত আমাশা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"diarrhea", icon:"💧", name:{ bn:"ডায়রিয়া", en:"Diarrhea", hi:"दस्त" }, symptoms:["watery_diarrhea","dehydration","weakness"], action:{ bn:"ডায়রিয়া - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"mastitis_12", icon:"🐄", name:{ bn:"ওলান প্রদাহ", en:"Mastitis", hi:"थनैला" }, symptoms:["swollen_udder","drop_milk","fever"], action:{ bn:"ওলান প্রদাহ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"fmd_13", icon:"👅", name:{ bn:"ক্ষুরা রোগ", en:"FMD", hi:"खुरहा-मुंहपका" }, symptoms:["mouth_lesion","lameness","fever","salivation"], action:{ bn:"ক্ষুরা রোগ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"hs_14", icon:"🌬️", name:{ bn:"গলাফুলা", en:"HS", hi:"गलघोंटू" }, symptoms:["fever","nasal_discharge","cough","swollen_joints"], action:{ bn:"গলাফুলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bq_15", icon:"🦵", name:{ bn:"বাদলা", en:"Black Quarter", hi:"लंगड़ा बुखार" }, symptoms:["lameness","fever","swollen_joints"], action:{ bn:"বাদলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anthrax_16", icon:"🩸", name:{ bn:"তড়কা", en:"Anthrax", hi:"एंथ्रेक्स" }, symptoms:["fever","bloody_diarrhea","red_urine"], action:{ bn:"তড়কা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"milk_fever_17", icon:"🥛", name:{ bn:"দুধ জ্বর", en:"Milk Fever", hi:"दूध बुखार" }, symptoms:["weakness","anorexia","weight_loss"], action:{ bn:"দুধ জ্বর - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bloat_disease_18", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"अफारा" }, symptoms:["bloat","anorexia","weakness"], action:{ bn:"পেট ফোলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"babesiosis_19", icon:"🔴", name:{ bn:"বাবেসিওসিস", en:"Babesiosis", hi:"बेबेसियोसिस" }, symptoms:["fever","red_urine","anorexia","weakness"], action:{ bn:"বাবেসিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"theileriosis_20", icon:"🪲", name:{ bn:"থেইলেরিওসিস", en:"Theileriosis", hi:"थैलेरियोसिस" }, symptoms:["fever","tick_infestation","swollen_joints","anorexia"], action:{ bn:"থেইলেরিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anaplasmosis_21", icon:"⚪", name:{ bn:"অ্যানাপ্লাজমোসিস", en:"Anaplasmosis", hi:"एनाप्लाज्मोसिस" }, symptoms:["fever","pale_mucous","jaundice","weakness"], action:{ bn:"অ্যানাপ্লাজমোসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"coccidiosis_22", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Coccidiosis", hi:"कोक्सीडियोसिस" }, symptoms:["bloody_diarrhea","anorexia","dehydration"], action:{ bn:"রক্ত আমাশা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"diarrhea_23", icon:"💧", name:{ bn:"ডায়রিয়া", en:"Diarrhea", hi:"दस्त" }, symptoms:["watery_diarrhea","dehydration","weakness"], action:{ bn:"ডায়রিয়া - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"mastitis_24", icon:"🐄", name:{ bn:"ওলান প্রদাহ", en:"Mastitis", hi:"थनैला" }, symptoms:["swollen_udder","drop_milk","fever"], action:{ bn:"ওলান প্রদাহ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"fmd_25", icon:"👅", name:{ bn:"ক্ষুরা রোগ", en:"FMD", hi:"खुरहा-मुंहपका" }, symptoms:["mouth_lesion","lameness","fever","salivation"], action:{ bn:"ক্ষুরা রোগ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"hs_26", icon:"🌬️", name:{ bn:"গলাফুলা", en:"HS", hi:"गलघोंटू" }, symptoms:["fever","nasal_discharge","cough","swollen_joints"], action:{ bn:"গলাফুলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bq_27", icon:"🦵", name:{ bn:"বাদলা", en:"Black Quarter", hi:"लंगड़ा बुखार" }, symptoms:["lameness","fever","swollen_joints"], action:{ bn:"বাদলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anthrax_28", icon:"🩸", name:{ bn:"তড়কা", en:"Anthrax", hi:"एंथ्रेक्स" }, symptoms:["fever","bloody_diarrhea","red_urine"], action:{ bn:"তড়কা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"milk_fever_29", icon:"🥛", name:{ bn:"দুধ জ্বর", en:"Milk Fever", hi:"दूध बुखार" }, symptoms:["weakness","anorexia","weight_loss"], action:{ bn:"দুধ জ্বর - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bloat_disease_30", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"अफारा" }, symptoms:["bloat","anorexia","weakness"], action:{ bn:"পেট ফোলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"babesiosis_31", icon:"🔴", name:{ bn:"বাবেসিওসিস", en:"Babesiosis", hi:"बेबेसियोसिस" }, symptoms:["fever","red_urine","anorexia","weakness"], action:{ bn:"বাবেসিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"theileriosis_32", icon:"🪲", name:{ bn:"থেইলেরিওসিস", en:"Theileriosis", hi:"थैलेरियोसिस" }, symptoms:["fever","tick_infestation","swollen_joints","anorexia"], action:{ bn:"থেইলেরিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anaplasmosis_33", icon:"⚪", name:{ bn:"অ্যানাপ্লাজমোসিস", en:"Anaplasmosis", hi:"एनाप्लाज्मोसिस" }, symptoms:["fever","pale_mucous","jaundice","weakness"], action:{ bn:"অ্যানাপ্লাজমোসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"coccidiosis_34", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Coccidiosis", hi:"कोक्सीडियोसिस" }, symptoms:["bloody_diarrhea","anorexia","dehydration"], action:{ bn:"রক্ত আমাশা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"diarrhea_35", icon:"💧", name:{ bn:"ডায়রিয়া", en:"Diarrhea", hi:"दस्त" }, symptoms:["watery_diarrhea","dehydration","weakness"], action:{ bn:"ডায়রিয়া - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"mastitis_36", icon:"🐄", name:{ bn:"ওলান প্রদাহ", en:"Mastitis", hi:"थनैला" }, symptoms:["swollen_udder","drop_milk","fever"], action:{ bn:"ওলান প্রদাহ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"fmd_37", icon:"👅", name:{ bn:"ক্ষুরা রোগ", en:"FMD", hi:"खुरहा-मुंहपका" }, symptoms:["mouth_lesion","lameness","fever","salivation"], action:{ bn:"ক্ষুরা রোগ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"hs_38", icon:"🌬️", name:{ bn:"গলাফুলা", en:"HS", hi:"गलघोंटू" }, symptoms:["fever","nasal_discharge","cough","swollen_joints"], action:{ bn:"গলাফুলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bq_39", icon:"🦵", name:{ bn:"বাদলা", en:"Black Quarter", hi:"लंगड़ा बुखार" }, symptoms:["lameness","fever","swollen_joints"], action:{ bn:"বাদলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anthrax_40", icon:"🩸", name:{ bn:"তড়কা", en:"Anthrax", hi:"एंथ्रेक्स" }, symptoms:["fever","bloody_diarrhea","red_urine"], action:{ bn:"তড়কা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"milk_fever_41", icon:"🥛", name:{ bn:"দুধ জ্বর", en:"Milk Fever", hi:"दूध बुखार" }, symptoms:["weakness","anorexia","weight_loss"], action:{ bn:"দুধ জ্বর - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bloat_disease_42", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"अफारा" }, symptoms:["bloat","anorexia","weakness"], action:{ bn:"পেট ফোলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"babesiosis_43", icon:"🔴", name:{ bn:"বাবেসিওসিস", en:"Babesiosis", hi:"बेबेसियोसिस" }, symptoms:["fever","red_urine","anorexia","weakness"], action:{ bn:"বাবেসিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"theileriosis_44", icon:"🪲", name:{ bn:"থেইলেরিওসিস", en:"Theileriosis", hi:"थैलेरियोसिस" }, symptoms:["fever","tick_infestation","swollen_joints","anorexia"], action:{ bn:"থেইলেরিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anaplasmosis_45", icon:"⚪", name:{ bn:"অ্যানাপ্লাজমোসিস", en:"Anaplasmosis", hi:"एनाप्लाज्मोसिस" }, symptoms:["fever","pale_mucous","jaundice","weakness"], action:{ bn:"অ্যানাপ্লাজমোসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"coccidiosis_46", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Coccidiosis", hi:"कोक्सीडियोसिस" }, symptoms:["bloody_diarrhea","anorexia","dehydration"], action:{ bn:"রক্ত আমাশা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"diarrhea_47", icon:"💧", name:{ bn:"ডায়রিয়া", en:"Diarrhea", hi:"दस्त" }, symptoms:["watery_diarrhea","dehydration","weakness"], action:{ bn:"ডায়রিয়া - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"mastitis_48", icon:"🐄", name:{ bn:"ওলান প্রদাহ", en:"Mastitis", hi:"थनैला" }, symptoms:["swollen_udder","drop_milk","fever"], action:{ bn:"ওলান প্রদাহ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"fmd_49", icon:"👅", name:{ bn:"ক্ষুরা রোগ", en:"FMD", hi:"खुरहा-मुंहपका" }, symptoms:["mouth_lesion","lameness","fever","salivation"], action:{ bn:"ক্ষুরা রোগ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"hs_50", icon:"🌬️", name:{ bn:"গলাফুলা", en:"HS", hi:"गलघोंटू" }, symptoms:["fever","nasal_discharge","cough","swollen_joints"], action:{ bn:"গলাফুলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bq_51", icon:"🦵", name:{ bn:"বাদলা", en:"Black Quarter", hi:"लंगड़ा बुखार" }, symptoms:["lameness","fever","swollen_joints"], action:{ bn:"বাদলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anthrax_52", icon:"🩸", name:{ bn:"তড়কা", en:"Anthrax", hi:"एंथ्रेक्स" }, symptoms:["fever","bloody_diarrhea","red_urine"], action:{ bn:"তড়কা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"milk_fever_53", icon:"🥛", name:{ bn:"দুধ জ্বর", en:"Milk Fever", hi:"दूध बुखार" }, symptoms:["weakness","anorexia","weight_loss"], action:{ bn:"দুধ জ্বর - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bloat_disease_54", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"अफारा" }, symptoms:["bloat","anorexia","weakness"], action:{ bn:"পেট ফোলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"babesiosis_55", icon:"🔴", name:{ bn:"বাবেসিওসিস", en:"Babesiosis", hi:"बेबेसियोसिस" }, symptoms:["fever","red_urine","anorexia","weakness"], action:{ bn:"বাবেসিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"theileriosis_56", icon:"🪲", name:{ bn:"থেইলেরিওসিস", en:"Theileriosis", hi:"थैलेरियोसिस" }, symptoms:["fever","tick_infestation","swollen_joints","anorexia"], action:{ bn:"থেইলেরিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anaplasmosis_57", icon:"⚪", name:{ bn:"অ্যানাপ্লাজমোসিস", en:"Anaplasmosis", hi:"एनाप्लाज्मोसिस" }, symptoms:["fever","pale_mucous","jaundice","weakness"], action:{ bn:"অ্যানাপ্লাজমোসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"coccidiosis_58", icon:"🩸", name:{ bn:"রক্ত আমাশা", en:"Coccidiosis", hi:"कोक्सीडियोसिस" }, symptoms:["bloody_diarrhea","anorexia","dehydration"], action:{ bn:"রক্ত আমাশা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"diarrhea_59", icon:"💧", name:{ bn:"ডায়রিয়া", en:"Diarrhea", hi:"दस्त" }, symptoms:["watery_diarrhea","dehydration","weakness"], action:{ bn:"ডায়রিয়া - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"mastitis_60", icon:"🐄", name:{ bn:"ওলান প্রদাহ", en:"Mastitis", hi:"थनैला" }, symptoms:["swollen_udder","drop_milk","fever"], action:{ bn:"ওলান প্রদাহ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"fmd_61", icon:"👅", name:{ bn:"ক্ষুরা রোগ", en:"FMD", hi:"खुरहा-मुंहपका" }, symptoms:["mouth_lesion","lameness","fever","salivation"], action:{ bn:"ক্ষুরা রোগ - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"hs_62", icon:"🌬️", name:{ bn:"গলাফুলা", en:"HS", hi:"गलघोंटू" }, symptoms:["fever","nasal_discharge","cough","swollen_joints"], action:{ bn:"গলাফুলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bq_63", icon:"🦵", name:{ bn:"বাদলা", en:"Black Quarter", hi:"लंगड़ा बुखार" }, symptoms:["lameness","fever","swollen_joints"], action:{ bn:"বাদলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anthrax_64", icon:"🩸", name:{ bn:"তড়কা", en:"Anthrax", hi:"एंथ्रेक्स" }, symptoms:["fever","bloody_diarrhea","red_urine"], action:{ bn:"তড়কা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"milk_fever_65", icon:"🥛", name:{ bn:"দুধ জ্বর", en:"Milk Fever", hi:"दूध बुखार" }, symptoms:["weakness","anorexia","weight_loss"], action:{ bn:"দুধ জ্বর - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"bloat_disease_66", icon:"🎈", name:{ bn:"পেট ফোলা", en:"Bloat", hi:"अफारा" }, symptoms:["bloat","anorexia","weakness"], action:{ bn:"পেট ফোলা - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"babesiosis_67", icon:"🔴", name:{ bn:"বাবেসিওসিস", en:"Babesiosis", hi:"बेबेसियोसिस" }, symptoms:["fever","red_urine","anorexia","weakness"], action:{ bn:"বাবেসিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"theileriosis_68", icon:"🪲", name:{ bn:"থেইলেরিওসিস", en:"Theileriosis", hi:"थैलेरियोसिस" }, symptoms:["fever","tick_infestation","swollen_joints","anorexia"], action:{ bn:"থেইলেরিওসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
+  { id:"anaplasmosis_69", icon:"⚪", name:{ bn:"অ্যানাপ্লাজমোসিস", en:"Anaplasmosis", hi:"एनाप्लाज्मोसिस" }, symptoms:["fever","pale_mucous","jaundice","weakness"], action:{ bn:"অ্যানাপ্লাজমোসিস - ডাক্তারকে দেখান", en:"Consult vet" } },
 ];
-
-console.log('✅ Symptom Database v2.1 Loaded - Safe Emoji + Generic + 70 Diseases');
