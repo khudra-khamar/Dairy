@@ -257,19 +257,55 @@ function findDisease(){
   if(sel.length===0){ alert('Select 1 symptom'); return; }
   var diseases=window.DISEASE_DB||[];
   var scored=[];
-  for(var i=0;i<diseases.length;i++){ var d=diseases[i]; var m=0; for(var j=0;j<(d.symptoms||[]).length;j++){ if(sel.indexOf(d.symptoms[j])!==-1) m++; } if(m>0){ var pct=Math.round((m/((d.symptoms||[]).length||1))*100); scored.push({d:d,pct:pct}); } }
-  scored.sort(function(a,b){ return b.pct-a.pct; }); scored=scored.slice(0,3);
+  for(var i=0;i<diseases.length;i++){
+    var d=diseases[i];
+    var m=0;
+    for(var j=0;j<(d.symptoms||[]).length;j++){ if(sel.indexOf(d.symptoms[j])!==-1) m++; }
+    if(m>0){
+      var pct=Math.round((m/((d.symptoms||[]).length||1))*100);
+      scored.push({d:d,pct:pct});
+    }
+  }
+  scored.sort(function(a,b){ return b.pct-a.pct; });
+  scored=scored.slice(0,3);
   var resBox=document.getElementById('resultBox');
   var dDiv=document.getElementById('diseaseResult');
   var mDiv=document.getElementById('medicineResult');
-  if(scored.length===0){ dDiv.innerHTML='<div style="color:#C62828;">No disease matched</div>'; }
-  else{ var h=''; for(var i=0;i<scored.length;i++){ var sc=scored[i]; h+='<div style="background:var(--card);border-left:4px solid var(--green);padding:10px;border-radius:8px;margin-bottom:8px;"><div style="font-weight:700;">'+(sc.d.icon||'🔬')+' '+(sc.d.name && sc.d.name.bn || sc.d.id)+' - '+sc.pct+'%</div><div style="font-size:12px;color:var(--text2);margin-top:4px;">'+(sc.d.action && sc.d.action.bn || '')+'</div></div>'; } dDiv.innerHTML=h; }
-  var meds=window.VET_MEDICINES||[]; var sugg=meds.slice(0,4);
-  var html='<h4 style="font-size:13px;margin-bottom:6px;">💊 Possible Medicine (Generic - Vet Only)</h4>';
-  for(var i=0;i<sugg.length;i++){ var mm=sugg[i]; html+='<label style="display:flex;gap:8px;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" value="'+mm.id+'" class="medChk"><div><div style="font-weight:700;font-size:12px;">'+mm.icon+' '+mm.brand+'</div><div style="font-size:11px;color:var(--text2);">Generic: '+mm.generic+'</div><div style="font-size:10px;color:var(--text2);">'+mm.dose+' | '+mm.withdrawal+' | ₹'+mm.price+'</div></div></label>'; }
+  if(scored.length===0){
+    dDiv.innerHTML='<div style="color:#C62828;">No disease matched</div>';
+    mDiv.innerHTML='';
+  }else{
+    var h='';
+    for(var i=0;i<scored.length;i++){
+      var sc=scored[i];
+      var d=sc.d;
+      var treatHtml='<div style="margin-top:8px;">';
+      treatHtml+='<div style="font-weight:700;font-size:13px;color:var(--green);">📋 Treatment:</div>';
+      if(d.treatment && d.treatment.length>0){
+        for(var k=0;k<d.treatment.length;k++){
+          treatHtml+='<div style="font-size:12px;padding:3px 0;">• '+d.treatment[k]+'</div>';
+        }
+      }
+      if(d.homeo && d.homeo.remedy){
+        var homeoDisplay = d.homeo.bn || (d.homeo.remedy+' - '+d.homeo.dose);
+        treatHtml+='<div style="font-size:12px;color:var(--green);margin-top:8px;background:var(--green-light);padding:8px 10px;border-radius:8px;border-left:3px solid var(--green);">(Homeo: '+homeoDisplay+')</div>';
+      }
+      treatHtml+='</div>';
+      h+='<div style="background:var(--card);border-left:4px solid var(--green);padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:var(--shadow);"><div style="font-weight:800;font-size:14px;">'+(d.icon||'🦠')+' '+(d.name && d.name.bn || d.id)+' - '+sc.pct+'% match</div><div style="font-size:11px;color:var(--text2);margin-top:4px;">Symptoms: '+(d.symptoms||[]).join(', ')+'</div>'+treatHtml+'</div>';
+    }
+    dDiv.innerHTML=h;
+  }
+  var meds=window.VET_MEDICINES||[];
+  var sugg=meds.slice(0,6);
+  var html='<h4 style="font-size:13px;margin-bottom:8px;">💊 Possible Medicine (Generic - Vet Only + Homeo)</h4>';
+  for(var i=0;i<sugg.length;i++){
+    var mm=sugg[i];
+    html+='<label style="display:flex;gap:8px;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" value="'+mm.id+'" class="medChk"><div><div style="font-weight:700;font-size:12px;">'+mm.icon+' '+mm.brand+'</div><div style="font-size:11px;color:var(--text2);">Generic: '+mm.generic+'</div><div style="font-size:10px;color:var(--text2);">'+mm.dose+' | '+mm.withdrawal+' | ₹'+mm.price+'</div></div></label>';
+  }
   mDiv.innerHTML=html;
   resBox.style.display='block';
 }
+
 function saveCase(){
   var meds=document.querySelectorAll('.medChk:checked');
   if(meds.length===0){ alert('Select 1 medicine'); return; }
