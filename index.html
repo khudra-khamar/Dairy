@@ -241,11 +241,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 .manual-section li { margin-bottom:4px; }
 </style>
 
-
-<!-- Eruda - Android Console - Debug Only - Remove after fix -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
-
 </head>
 <body>
 <!-- ========== SPLASH SCREEN (Green + Gold) ========== -->
@@ -3026,15 +3021,19 @@ async function saveFCMToken(token) {
     }
     
     // Prepare data without serverTimestamp first (to avoid permission error)
+    var userEmailForFcm = '';
+    try { userEmailForFcm = (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || ''; } catch(e) {}
     var baseData = {
       token: token,
       deviceId: DB.deviceId,
+      email: userEmailForFcm,
       farmName: DB.settings.farmName || 'Khudra khamar',
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
       lang: DB.settings.lang || 'en',
       active: true,
-      appVersion: '3.0'
+      appVersion: '3.0',
+      updatedAt: Date.now()
     };
     
     // Try save to fcmTokens with merge
@@ -8252,12 +8251,7 @@ function buildPdfHtml() {
       td { padding: 5px 4px; border-bottom: 1px solid #eee; }
       tr:nth-child(even) { background: #FAFAFA; }
       .footer { margin-top: 20px; padding-top: 12px; border-top: 2px solid #E0E0E0; font-size: 10px; color: #888; text-align: center; }
-    </style>
-<!-- Eruda - Android Console - Debug Only - Remove after fix -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
-
-</head><body>
+    </style></head><body>
     <div class="header">
       ${logoHtml}
       <div>
@@ -9094,12 +9088,7 @@ function generateRetailPDF(customerId, month) {
     '.summary .row { display: flex; justify-content: space-between; padding: 3px 0; }' +
     '.summary .total { border-top: 2px solid #E65100; margin-top: 6px; padding-top: 6px; font-size: 14px; font-weight: bold; color: #E65100; }' +
     '.footer { margin-top: 20px; text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 10px; }' +
-    '</style>
-<!-- Eruda - Android Console - Debug Only - Remove after fix -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
-
-</head><body>' +
+    '</style></head><body>' +
     '<div class="header">' + logoHtml +
     '<div><h1>' + farm + '</h1><p>' + (owner ? owner + ' • ' : '') + phone + '</p></div></div>' +
     '<div class="title">🥛 Monthly Statement / মাসিক বিল</div>' +
@@ -9655,12 +9644,7 @@ function buildSaleBillHtml(c) {
     .sig { text-align: center; font-size: 12px; }
     .sig-line { border-top: 1px solid #333; padding-top: 5px; width: 150px; }
     .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
-  </style>
-<!-- Eruda - Android Console - Debug Only - Remove after fix -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
-
-</head><body>
+  </style></head><body>
   <div class="header">
     ${logoHtml}
     <div>
@@ -10188,32 +10172,28 @@ return;
 
 async function saveGuestTrialUser() {
   try {
-    if (!window._db) { toast('❌ DB ready না'); return; }
-    if (!DB.deviceId) { toast('❌ Device ID নেই'); return; }
-    toast('🔄 Guest save শুরু...');
-    
+    if (!window._db) return;
+    if (!DB.deviceId) return;
     const deviceId = DB.deviceId;
     const now = Date.now();
     const ref = window._db.collection('trialUsers').doc(deviceId);
-    const snap = await ref.get();
-    
-    if (!snap.exists) {
-      // প্রথমবার — নতুন guest doc
-      await ref.set({
-        type: 'guest',
-        deviceId: deviceId,
-        farmerName: DB.settings.farmName || '',
-        ownerName: DB.settings.ownerName || '',
-        phone: DB.settings.phone || '',
-        email: '',
-        firstSeen: now,
-        lastSeen: now,
-        appVersion: '2026.09',
-        converted: false
-      });
-      console.log('✅ Guest trial user created:', deviceId);
-      setTimeout(function() {
-  if (typeof toast === 'function') toast(t('guest_trial_saved'));
+    const guestData = {
+      type: 'guest',
+      deviceId: deviceId,
+      farmerName: DB.settings.farmName || '',
+      ownerName: DB.settings.ownerName || '',
+      phone: DB.settings.phone || '',
+      email: '',
+      firstSeen: now,
+      lastSeen: now,
+      appVersion: '3.0',
+      converted: false
+    };
+    await ref.set(guestData, { merge: true });
+    console.log('✅ Guest saved no-get:', deviceId);
+  } catch(e) {
+    console.warn('Guest save failed:', e.message);
+  }
 }, 2800);
     } else {
       // Already আছে — lastSeen update
@@ -11738,7 +11718,7 @@ function smartConfirm(message, callback) {
   } else if (msg.indexOf('notification') !== -1 || msg.indexOf('নোটিফিকেশন') !== -1 || msg.indexOf('বন্ধ') !== -1) {
     icon = '🔕';
     color = '#EF6C00';
-    confirmText = t('cfm_no') || '✅ Yes';
+    confirmText = '🔕 Yes, Disable';
   } else if (msg.indexOf('call') !== -1 || msg.indexOf('কল') !== -1 || msg.indexOf('ফোন') !== -1) {
     icon = '📞';
     color = '#1976D2';
@@ -12014,6 +11994,16 @@ initApp();
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
+    // Skip SW if not https - file:// content:// null origin fails - don't block loading
+    if (location.protocol === 'file:' || location.protocol === 'content:' || location.origin === 'null' || location.hostname === '') {
+      console.warn('⚠️ SW skipped - file:// or null origin - use GitHub Pages https:// for SW');
+      // Still remove splash and init app
+      try {
+        const splash = document.getElementById('dmSplash');
+        if (splash) { splash.style.transition = 'opacity 0.3s'; splash.style.opacity = '0'; setTimeout(function(){ if(splash && splash.parentNode) splash.remove(); }, 350); }
+      } catch(e) {}
+      return;
+    }
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ SW registered:', reg.scope);
       
