@@ -2929,8 +2929,7 @@ async function enableNotifications() {
         try {
           await window._db.collection('alertSchedule').doc(DB.deviceId).set({
             deviceId: DB.deviceId,
-            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || '',
-            fcmToken: token,d,
+            email: userEmail,
             fcmToken: token,
             farmName: DB.settings.farmName || 'Khudra khamar',
             email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || '',
@@ -3028,9 +3027,11 @@ async function saveFCMToken(token) {
     }
     
     // Prepare data without serverTimestamp first (to avoid permission error)
+    var userEmail = (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || '';
     var baseData = {
       token: token,
       deviceId: DB.deviceId,
+      email: userEmail,
       farmName: DB.settings.farmName || 'Khudra khamar',
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
