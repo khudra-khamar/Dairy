@@ -3005,7 +3005,6 @@ async function saveFCMToken(token) {
         if (window._db && DB.deviceId) {
           window._db.collection('fcmTokens').doc(DB.deviceId).set({
             token: token, deviceId: DB.deviceId, active: true,
-            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || '',
             farmName: DB.settings.farmName || 'Khudra khamar',
             lang: DB.settings.lang || 'en',
             updatedAt: Date.now()
@@ -3023,7 +3022,7 @@ async function saveFCMToken(token) {
     
     // Prepare data without serverTimestamp first (to avoid permission error)
     var userEmailForFcm = '';
-    try { userEmailForFcm = (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || localStorage.getItem('googleEmail') || ''; } catch(e) {}
+    try { userEmailForFcm = (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || ''; } catch(e) {}
     var baseData = {
       token: token,
       deviceId: DB.deviceId,
@@ -10179,10 +10178,17 @@ async function saveGuestTrialUser() {
     const deviceId = DB.deviceId;
     const now = Date.now();
     const ref = window._db.collection('trialUsers').doc(deviceId);
-    const snap = await ref.get();
+    let isNew = true;
+    try {
+      const snap = await ref.get({ source: 'server' }).catch(async () => await ref.get({ source: 'cache' }).catch(() => null));
+      if (snap && snap.exists) isNew = false;
+    } catch(e) {
+      console.log('ℹ️ Guest check offline, assuming new doc');
+      isNew = true;
+    }
     
-    if (!snap.exists) {
-      // প্রথমবার — নতুন guest doc
+    if (isNew) {
+      // প্রথমবার — নতুন guest doc — set with merge, no get required
       await ref.set({
         type: 'guest',
         deviceId: deviceId,
@@ -10200,13 +10206,25 @@ async function saveGuestTrialUser() {
   if (typeof toast === 'function') toast(t('guest_trial_saved'));
 }, 2800);
     } else {
-      // Already আছে — lastSeen update
-      await ref.update({
+      // Already আছে — lastSeen update — only allowed fields per Rules
+      try {
+        await ref.update({
   lastSeen: now,
   farmerName: DB.settings.farmName || '',
   ownerName: DB.settings.ownerName || '',
   phone: DB.settings.phone || ''
 });
+      } catch(upErr) {
+        // If update fails due to offline or rules, try set merge with only allowed fields
+        await ref.set({
+          deviceId: deviceId,
+          lastSeen: now,
+          farmerName: DB.settings.farmName || '',
+          ownerName: DB.settings.ownerName || '',
+          phone: DB.settings.phone || '',
+          appVersion: '3.0'
+        }, { merge: true });
+      }
 
       console.log('✅ Guest trial user updated:', deviceId);
       setTimeout(function() {
@@ -11989,15 +12007,9 @@ if (splashErr) splashErr.remove();
     scheduleAutoFCM();
     // Also try auto register immediately if deviceId exists
     setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
-    // Guest Trial Save - new phone / data clear - Trial user also saves
-    setTimeout(function(){ 
-      try { 
-        if(DB.deviceId && !DB.userEmail) { 
-          console.log('🔄 Auto Guest Trial Save for DEV:', DB.deviceId);
-          saveGuestTrialUser(); 
-        } 
-      } catch(e) {} 
-    }, 3000);
+    // Guest Trial Save - offline resilient
+    setTimeout(function(){ try { if(DB.deviceId) saveGuestTrialUser(); } catch(e) {} }, 3500);
+    setTimeout(function(){ try { if(DB.deviceId) autoRegisterFCM(); } catch(e) {} }, 5000);
   }
 }
 
