@@ -2881,6 +2881,111 @@ async function saveFCMToken(token) {
   }
 }
 
+// ===== AUTO FCM REGISTRATION - FIX FOR UNREGISTERED DEVICE (Script Google unchanged) =====
+async function autoRegisterFCM(showToast=false){
+  try{
+    if (!('Notification' in window)) return false;
+    if (Notification.permission !== 'granted'){
+      // If permission default, request once after delay
+      if (Notification.permission === 'default' && !localStorage.getItem('fcmAutoPromptDone')){
+        localStorage.setItem('fcmAutoPromptDone','1');
+        console.log('🔔 Auto requesting notification permission...');
+        var perm = await Notification.requestPermission();
+        if (perm !== 'granted') return false;
+      } else {
+        return false;
+      }
+    }
+    if (!window._messaging){
+      console.log('⏳ _messaging not ready, waiting...');
+      await new Promise(r=>setTimeout(r,2000));
+      if (!window._messaging) return false;
+    }
+    if (!window._fcmSWReg){
+      await new Promise(r=>setTimeout(r,1500));
+    }
+    if (!DB.deviceId){
+      console.log('❌ No deviceId for FCM');
+      return false;
+    }
+    var tokenOptions = { vapidKey: VAPID_KEY };
+    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+    var token = await window._messaging.getToken(tokenOptions);
+    if (!token){
+      console.log('❌ No token from getToken');
+      return false;
+    }
+    console.log('✅ Auto FCM Token:', token.substring(0,30)+'...');
+    // Check if token changed
+    if (DB.fcmToken !== token){
+      var ok = await saveFCMToken(token);
+      if (ok){
+        DB.fcmToken = token;
+        DB.notifEnabled = true;
+        try{ saveDB(); }catch(e){}
+        if (typeof updateNotificationUI === 'function') updateNotificationUI();
+        if (showToast && typeof toast === 'function') toast('✅ Alert চালু হয়েছে!');
+        console.log('✅ Token auto-saved to fcmTokens/'+DB.deviceId);
+        return true;
+      }
+    } else {
+      // Even if same, ensure Firestore has it (in case doc deleted)
+      await saveFCMToken(token);
+      return true;
+    }
+  }catch(e){
+    console.log('autoRegisterFCM error:', e.message);
+  }
+  return false;
+}
+
+// Token refresh listener
+function setupFCMRefreshListener(){
+  try{
+    if (window._messaging && window._messaging.onTokenRefresh){
+      window._messaging.onTokenRefresh(async function(){
+        console.log('🔄 FCM Token refresh event');
+        try{
+          var tokenOptions = { vapidKey: VAPID_KEY };
+          if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+          var newToken = await window._messaging.getToken(tokenOptions);
+          if (newToken){
+            await saveFCMToken(newToken);
+            DB.fcmToken = newToken;
+            try{ saveDB(); }catch(e){}
+            console.log('✅ Refreshed token saved');
+          }
+        }catch(e){ console.log('Refresh error', e); }
+      });
+    }
+    // Also listen to onMessage for foreground
+    if (window._messaging && window._messaging.onMessage){
+      window._messaging.onMessage(function(payload){
+        console.log('📩 Foreground FCM:', payload);
+        var title = payload.notification?.title || payload.data?.title || '🐄 Dairy Manager';
+        var body = payload.notification?.body || payload.data?.body || 'নতুন Alert আছে';
+        if (Notification.permission === 'granted'){
+          try{
+            var n = new Notification(title, { body: body, icon: './icon-192.png', tag: 'dairy-fg' });
+            n.onclick = function(){ window.focus(); };
+          }catch(e){}
+        }
+        if (typeof toast === 'function') toast('🔔 '+body);
+      });
+    }
+  }catch(e){ console.log('setupFCMRefreshListener error', e); }
+}
+
+// Call auto register on app start (after Firebase ready) - does not block loading
+function scheduleAutoFCM(){
+  setTimeout(function(){ autoRegisterFCM(false); }, 3500);
+  setTimeout(function(){ autoRegisterFCM(false); }, 8000);
+  setTimeout(function(){ autoRegisterFCM(true); }, 15000);
+  setupFCMRefreshListener();
+}
+
+
+
 async function disableNotifications() {
 smartConfirm(t('notif_disable_confirm') || 'Disable Notifications?', function() {
     _doDisableNotifications();
@@ -11573,6 +11678,9 @@ async function initApp() {
     // Step 5: Device ID
     if (!DB.deviceId) {
       DB.deviceId = generateDeviceId();
+    try{ localStorage.setItem('deviceId', DB.deviceId); }catch(e){}
+    // New device created - auto register FCM after 2 sec
+    setTimeout(function(){ autoRegisterFCM(true); }, 2500);
       await saveDBAsync();
     }
     
@@ -11651,6 +11759,9 @@ if (!DB.settings.setupDone) {
   
   // Firebase Auth ready হওয়ার অপেক্ষা করি
   waitForAuthThenCheckLicense();
+    scheduleAutoFCM();
+    // Also try auto register immediately if deviceId exists
+    setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
 }
     
     idbLog('App initialized successfully - splash already removed');
@@ -11664,6 +11775,9 @@ if (splashErr) splashErr.remove();
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
     waitForAuthThenCheckLicense();
+    scheduleAutoFCM();
+    // Also try auto register immediately if deviceId exists
+    setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
   }
 }
 
