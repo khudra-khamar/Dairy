@@ -241,6 +241,11 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 .manual-section li { margin-bottom:4px; }
 </style>
 
+
+<!-- Eruda - Android Console - Debug Only - Remove after fix -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
+
 </head>
 <body>
 <!-- ========== SPLASH SCREEN (Green + Gold) ========== -->
@@ -3005,7 +3010,6 @@ async function saveFCMToken(token) {
         if (window._db && DB.deviceId) {
           window._db.collection('fcmTokens').doc(DB.deviceId).set({
             token: token, deviceId: DB.deviceId, active: true,
-            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || '',
             farmName: DB.settings.farmName || 'Khudra khamar',
             lang: DB.settings.lang || 'en',
             updatedAt: Date.now()
@@ -3022,12 +3026,9 @@ async function saveFCMToken(token) {
     }
     
     // Prepare data without serverTimestamp first (to avoid permission error)
-    var userEmailForFcm = '';
-    try { userEmailForFcm = (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || ''; } catch(e) {}
     var baseData = {
       token: token,
       deviceId: DB.deviceId,
-      email: userEmailForFcm,
       farmName: DB.settings.farmName || 'Khudra khamar',
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
@@ -8251,7 +8252,12 @@ function buildPdfHtml() {
       td { padding: 5px 4px; border-bottom: 1px solid #eee; }
       tr:nth-child(even) { background: #FAFAFA; }
       .footer { margin-top: 20px; padding-top: 12px; border-top: 2px solid #E0E0E0; font-size: 10px; color: #888; text-align: center; }
-    </style></head><body>
+    </style>
+<!-- Eruda - Android Console - Debug Only - Remove after fix -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
+
+</head><body>
     <div class="header">
       ${logoHtml}
       <div>
@@ -9088,7 +9094,12 @@ function generateRetailPDF(customerId, month) {
     '.summary .row { display: flex; justify-content: space-between; padding: 3px 0; }' +
     '.summary .total { border-top: 2px solid #E65100; margin-top: 6px; padding-top: 6px; font-size: 14px; font-weight: bold; color: #E65100; }' +
     '.footer { margin-top: 20px; text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 10px; }' +
-    '</style></head><body>' +
+    '</style>
+<!-- Eruda - Android Console - Debug Only - Remove after fix -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
+
+</head><body>' +
     '<div class="header">' + logoHtml +
     '<div><h1>' + farm + '</h1><p>' + (owner ? owner + ' • ' : '') + phone + '</p></div></div>' +
     '<div class="title">🥛 Monthly Statement / মাসিক বিল</div>' +
@@ -9644,7 +9655,12 @@ function buildSaleBillHtml(c) {
     .sig { text-align: center; font-size: 12px; }
     .sig-line { border-top: 1px solid #333; padding-top: 5px; width: 150px; }
     .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
-  </style></head><body>
+  </style>
+<!-- Eruda - Android Console - Debug Only - Remove after fix -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init(); console.log('✅ Eruda Console Ready - Android Debug');</script>
+
+</head><body>
   <div class="header">
     ${logoHtml}
     <div>
@@ -10179,17 +10195,9 @@ async function saveGuestTrialUser() {
     const deviceId = DB.deviceId;
     const now = Date.now();
     const ref = window._db.collection('trialUsers').doc(deviceId);
-    let snap = null;
-    let isNew = true;
-    try {
-      snap = await ref.get();
-      if (snap && snap.exists) isNew = false;
-    } catch(ge) {
-      console.log('ℹ️ Guest get offline/failed, will create with merge', ge.message);
-      isNew = true;
-    }
+    const snap = await ref.get();
     
-    if (isNew || !snap || !snap.exists) {
+    if (!snap.exists) {
       // প্রথমবার — নতুন guest doc
       await ref.set({
         type: 'guest',
@@ -10208,24 +10216,13 @@ async function saveGuestTrialUser() {
   if (typeof toast === 'function') toast(t('guest_trial_saved'));
 }, 2800);
     } else {
-      // Already আছে — lastSeen update — only allowed fields
-      try {
-        await ref.update({
+      // Already আছে — lastSeen update
+      await ref.update({
   lastSeen: now,
   farmerName: DB.settings.farmName || '',
   ownerName: DB.settings.ownerName || '',
   phone: DB.settings.phone || ''
 });
-      } catch(upErr) {
-        await ref.set({
-          deviceId: deviceId,
-          lastSeen: now,
-          farmerName: DB.settings.farmName || '',
-          ownerName: DB.settings.ownerName || '',
-          phone: DB.settings.phone || '',
-          appVersion: '3.0'
-        }, { merge: true });
-      }
 
       console.log('✅ Guest trial user updated:', deviceId);
       setTimeout(function() {
@@ -11741,7 +11738,7 @@ function smartConfirm(message, callback) {
   } else if (msg.indexOf('notification') !== -1 || msg.indexOf('নোটিফিকেশন') !== -1 || msg.indexOf('বন্ধ') !== -1) {
     icon = '🔕';
     color = '#EF6C00';
-    confirmText = '🔕 Yes, Disable';
+    confirmText = t('cfm_no') || '✅ Yes';
   } else if (msg.indexOf('call') !== -1 || msg.indexOf('কল') !== -1 || msg.indexOf('ফোন') !== -1) {
     icon = '📞';
     color = '#1976D2';
@@ -12006,9 +12003,8 @@ if (splashErr) splashErr.remove();
     if (dShow) dShow.textContent = DB.deviceId;
     waitForAuthThenCheckLicense();
     scheduleAutoFCM();
+    // Also try auto register immediately if deviceId exists
     setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
-    setTimeout(function(){ try { if(DB.deviceId) saveGuestTrialUser(); } catch(e) {} }, 3500);
-    setTimeout(function(){ try { if(DB.deviceId) autoRegisterFCM(); } catch(e) {} }, 6000);
   }
 }
 
