@@ -69,6 +69,219 @@ body{background:var(--bg);color:var(--text);padding-bottom:80px;font-size:15px;t
 </head>
 <body>
 
+
+<div id="vetLockScreen" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(180deg,#E8F5E9 0%,#D7EEDB 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 40px;font-family:ui-sans-system,-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Bengali',Roboto,sans-serif;overflow-y:auto;">
+  <!-- Top Badge - removed per user request - Notification Safe not shown -->
+  <div style="width:100%;max-width:390px;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(46,125,50,0.12),0 2px 0 rgba(46,125,50,0.04),0 0 0 1px rgba(46,125,50,0.06);overflow:hidden;">
+    <!-- Card Header - Logo -->
+    <div style="padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;background:linear-gradient(135deg,#2E7D32 0%,#43A047 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;">🌱</div>
+        <span style="font-size:12px;font-weight:700;letter-spacing:1px;color:#6B7280;">DAIRY MANAGER</span>
+      </div>
+      <div style="display:flex;gap:4px;background:#F3F4F6;border-radius:20px;padding:3px;">
+        <button onclick="setVetLang('bn')" id="vLangBnTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;">BN</button>
+        <button onclick="setVetLang('en')" id="vLangEnTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;">EN</button>
+        <button onclick="setVetLang('hi')" id="vLangHiTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;">HI</button>
+      </div>
+    </div>
+    
+    <!-- 3 Language Note -->
+    <div style="padding:16px 24px 0;display:flex;align-items:flex-start;gap:8px;">
+      <span style="font-size:12px;color:#2E7D32;">🗣️</span>
+      <span id="vetLangNote" style="font-size:11px;line-height:1.5;color:#6B7280;font-weight:500;">৩ ভাষা সক্রিয় • 3 Languages Remembered • ३ भाषाएँ • বাংলা • EN • हि</span>
+    </div>
+    
+    <!-- Lock Icon -->
+    <div style="padding:24px 24px 0;display:flex;flex-direction:column;align-items:center;">
+      <div style="width:88px;height:88px;background:linear-gradient(180deg,#E8F5E9 0%,#C8E6C9 100%);border-radius:22px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.8),0 4px 16px rgba(46,125,50,0.12);border:1px solid rgba(46,125,50,0.08);">
+        <span style="font-size:38px;filter:drop-shadow(0 2px 4px rgba(46,125,50,0.2));">🔒</span>
+        <div style="position:absolute;right:-6px;bottom:-6px;width:28px;height:28px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);border:1px solid #E5E7EB;font-size:14px;">🛡️</div>
+      </div>
+      <h2 id="vetLockTitle" style="margin:18px 0 0;font-size:20px;font-weight:800;color:#111827;letter-spacing:-0.4px;text-align:center;">Vet Panel - Exclusive Access</h2>
+      <p id="vetLockSub" style="margin:8px 0 0;font-size:13px;color:#6B7280;font-weight:500;text-align:center;">Professional Veterinarians Only</p>
+      <div style="margin-top:12px;padding:6px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:20px;display:flex;align-items:center;gap:6px;">
+        <span style="width:6px;height:6px;background:#22C55E;border-radius:50%;display:inline-block;"></span>
+        <span id="vetMaskBadge" style="font-size:11px;font-weight:600;color:#15803D;">No password is shown • Masked input</span>
+      </div>
+    </div>
+    
+    <!-- Form -->
+    <div style="padding:24px 20px 20px;">
+      <label id="vetPassLabel" style="display:block;font-size:11px;font-weight:700;letter-spacing:1px;color:#6B7280;margin-bottom:10px;">VET PASSWORD</label>
+      <div style="position:relative;">
+        <input id="vetPassInput" type="password" placeholder="••••••" style="width:100%;height:52px;padding:0 52px 0 18px;border:1.5px solid #E5E7EB;border-radius:14px;font-size:18px;letter-spacing:6px;background:#FAFAFA;outline:none;transition:all 0.2s;font-family:monospace;" onfocus="this.style.borderColor='#2E7D32';this.style.background='#fff';this.style.boxShadow='0 0 0 4px rgba(46,125,50,0.08)'" onblur="this.style.borderColor='#E5E7EB';this.style.background='#FAFAFA';this.style.boxShadow='none'">
+        <button type="button" onclick="toggleVetPass()" style="position:absolute;right:6px;top:6px;width:40px;height:40px;border-radius:10px;border:none;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#9CA3AF;font-size:20px;transition:all 0.2s;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='#fff'">👁️</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+        <span id="vetPassHint" style="font-size:11px;color:#9CA3AF;">Password is hidden for security</span>
+        <span style="font-size:11px;color:#6B7280;font-weight:600;background:#F3F4F6;padding:3px 8px;border-radius:12px;">xxxxxx • masked</span>
+      </div>
+      
+      <div id="vetPassError" style="display:none;margin-top:14px;padding:12px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;color:#DC2626;font-size:12px;font-weight:600;align-items:center;gap:10px;">
+        <span style="width:24px;height:24px;background:#FEE2E2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">❌</span>
+        <span id="vetPassErrorText">ভুল পাসওয়ার্ড</span>
+      </div>
+      
+      <button id="vetLoginBtn" onclick="checkVetPass()" style="margin-top:18px;width:100%;height:50px;background:linear-gradient(135deg,#2E7D32 0%,#43A047 100%);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;letter-spacing:0.3px;cursor:pointer;box-shadow:0 8px 20px rgba(46,125,50,0.25),inset 0 1px 0 rgba(255,255,255,0.2);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>🔓</span><span id="vetLoginText">Login to Vet Panel</span>
+      </button>
+      
+      <!-- Divider -->
+      <div style="margin:22px 0;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;height:1px;background:#F3F4F6;"></div>
+        <span id="vetDividerText" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#9CA3AF;text-transform:uppercase;background:#fff;padding:0 8px;">Admin Contact</span>
+        <div style="flex:1;height:1px;background:#F3F4F6;"></div>
+      </div>
+      
+      <!-- Admin Contact - Super Color Combo -->
+      <div style="background:linear-gradient(180deg,#F7FAF7 0%,#F0FDF4 100%);border:1px solid rgba(46,125,50,0.08);border-radius:16px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.8);">
+        <p id="vetAdminMsg" style="margin:0;text-align:center;font-size:12px;font-weight:700;color:#374151;line-height:1.5;">পাসওয়ার্ড এর জন্য এডমিন এর সাথে যোগাযোগ করুন</p>
+        <p style="margin:8px 0 0;text-align:center;font-size:14px;font-weight:800;color:#2E7D32;letter-spacing:0.3px;">Admin: 98006 96104</p>
+        <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <a href="tel:9800696104" style="height:42px;background:linear-gradient(135deg,#2E7D32 0%,#388E3C 100%);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:700;text-decoration:none;box-shadow:0 4px 12px rgba(46,125,50,0.2);transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">📞 <span id="vetCallText">Call</span></a>
+          <a href="https://wa.me/919800696104" target="_blank" style="height:42px;background:linear-gradient(135deg,#1E88E5 0%,#42A5F5 100%);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:700;text-decoration:none;box-shadow:0 4px 12px rgba(30,136,229,0.2);transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">💬 <span id="vetWaText">WhatsApp</span></a>
+        </div>
+      </div>
+      
+      <button onclick="window.location.href='index.html'" style="margin-top:14px;width:100%;height:44px;background:#fff;border:1.5px solid #E5E7EB;color:#4B5563;border-radius:12px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;" onmouseover="this.style.background='#F9FAFB';this.style.borderColor='#D1D5DB'" onmouseout="this.style.background='#fff';this.style.borderColor='#E5E7EB'">
+        <span>🌾</span><span id="vetReturnText">Farmer Panel এ ফিরে যান</span>
+      </button>
+      
+      <div style="margin-top:20px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#9CA3AF;">
+        <span style="width:4px;height:4px;background:#D1D5DB;border-radius:50%;"></span>
+        <span>Secure • Encrypted • Vet Only</span>
+        <span style="width:4px;height:4px;background:#D1D5DB;border-radius:50%;"></span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bottom 3 Language Buttons - Super Color Combo -->
+  <div style="margin-top:18px;display:flex;gap:10px;">
+    <button onclick="setVetLang('bn')" id="vLangBnBot" style="padding:10px 18px;border-radius:14px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid #E5E7EB;background:#fff;color:#4B5563;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px;">
+      <span>BN</span><span style="font-size:10px;font-weight:500;">বাংলা</span>
+    </button>
+    <button onclick="setVetLang('en')" id="vLangEnBot" style="padding:10px 18px;border-radius:14px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid #2E7D32;background:linear-gradient(135deg,#2E7D32 0%,#43A047 100%);color:#fff;box-shadow:0 4px 12px rgba(46,125,50,0.25);transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px;">
+      <span>EN</span><span style="font-size:10px;font-weight:500;opacity:0.9;">English</span>
+    </button>
+    <button onclick="setVetLang('hi')" id="vLangHiBot" style="padding:10px 18px;border-radius:14px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid #E5E7EB;background:#fff;color:#4B5563;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px;">
+      <span>HI</span><span style="font-size:10px;font-weight:500;">हिन्दी</span>
+    </button>
+  </div>
+  
+  <div style="margin-top:16px;text-align:center;">
+    <p style="font-size:10px;color:rgba(46,125,50,0.5);font-weight:600;letter-spacing:0.5px;">Beautiful • Professional • Trustworthy • Rounded 20px • Green #2E7D32</p>
+  </div>
+</div>
+
+<script>
+// Vet Language Data - 3 Languages - Super Color Combo
+var VET_T = {
+  bn: {
+    title: "ভেট প্যানেল - এক্সক্লুসিভ",
+    sub: "শুধুমাত্র পেশাদার ভেটেরিনারিয়ানদের জন্য",
+    badge: "পাসওয়ার্ড দেখানো হয় না • মাস্কড ইনপুট",
+    passLabel: "ভেট পাসওয়ার্ড",
+    passHint: "নিরাপত্তার জন্য পাসওয়ার্ড লুকানো আছে",
+    passPh: "••••••",
+    error: "ভুল পাসওয়ার্ড",
+    login: "ভেট প্যানেলে লগইন",
+    divider: "এডমিন যোগাযোগ",
+    adminMsg: "পাসওয়ার্ড এর জন্য এডমিন এর সাথে যোগাযোগ করুন",
+    call: "কল করুন",
+    wa: "WhatsApp",
+    ret: "কৃষক প্যানেলে ফিরে যান",
+    langNote: "৩ ভাষা সক্রিয় • 3 Languages Remembered • ३ भाषाएँ • বাংলা • EN • हि"
+  },
+  en: {
+    title: "Vet Panel - Exclusive Access",
+    sub: "Professional Veterinarians Only",
+    badge: "No password is shown • Masked input",
+    passLabel: "VET PASSWORD",
+    passHint: "Password is hidden for security",
+    passPh: "••••••",
+    error: "Wrong Password",
+    login: "Login to Vet Panel",
+    divider: "Admin Contact",
+    adminMsg: "Contact Admin for Password",
+    call: "Call",
+    wa: "WhatsApp",
+    ret: "Return to Farmer Panel",
+    langNote: "3 Languages Active • ৩ ভাষা সক্রিয় • ३ भाषाएँ • BN • EN • HI"
+  },
+  hi: {
+    title: "वेट पैनल - विशेष पहुंच",
+    sub: "केवल पेशेवर पशु चिकित्सकों के लिए",
+    badge: "पासवर्ड नहीं दिखाया गया • मास्क्ड इनपुट",
+    passLabel: "वेट पासवर्ड",
+    passHint: "सुरक्षा के लिए पासवर्ड छुपा है",
+    passPh: "••••••",
+    error: "गलत पासवर्ड",
+    login: "वेट पैनल में लॉगिन",
+    divider: "एडमिन संपर्क",
+    adminMsg: "पासवर्ड के लिए एडमिन से संपर्क करें",
+    call: "कॉल करें",
+    wa: "WhatsApp",
+    ret: "किसान पैनल पर वापस जाएं",
+    langNote: "३ भाषाएँ सक्रिय • 3 Languages • ৩ ভাষা • BN • EN • HI"
+  }
+};
+
+var curVetLang = localStorage.getItem('vetLang') || 'bn';
+function setVetLang(l){
+  curVetLang = l;
+  localStorage.setItem('vetLang', l);
+  var t = VET_T[l] || VET_T.bn;
+  document.getElementById('vetLockTitle').textContent = t.title;
+  document.getElementById('vetLockSub').textContent = t.sub;
+  document.getElementById('vetMaskBadge').textContent = t.badge;
+  document.getElementById('vetPassLabel').textContent = t.passLabel;
+  document.getElementById('vetPassHint').textContent = t.passHint;
+  document.getElementById('vetPassInput').placeholder = t.passPh;
+  document.getElementById('vetPassErrorText').textContent = t.error;
+  document.getElementById('vetLoginText').textContent = t.login;
+  document.getElementById('vetDividerText').textContent = t.divider;
+  document.getElementById('vetAdminMsg').textContent = t.adminMsg;
+  document.getElementById('vetCallText').textContent = t.call;
+  document.getElementById('vetWaText').textContent = t.wa;
+  document.getElementById('vetReturnText').textContent = t.ret;
+  document.getElementById('vetLangNote').textContent = t.langNote;
+  // Update lang buttons top
+  ['bn','en','hi'].forEach(function(code){
+    var btnTop = document.getElementById('vLang'+code.charAt(0).toUpperCase()+code.slice(1)+'Top');
+    var btnBot = document.getElementById('vLang'+code.charAt(0).toUpperCase()+code.slice(1)+'Bot');
+    if(code===l){
+      if(btnTop){ btnTop.style.background='#2E7D32'; btnTop.style.color='#fff'; btnTop.style.borderColor='#2E7D32'; }
+      if(btnBot){ btnBot.style.background='linear-gradient(135deg,#2E7D32 0%,#43A047 100%)'; btnBot.style.color='#fff'; btnBot.style.borderColor='#2E7D32'; btnBot.style.boxShadow='0 4px 12px rgba(46,125,50,0.25)'; }
+    } else {
+      if(btnTop){ btnTop.style.background='#F3F4F6'; btnTop.style.color='#6B7280'; btnTop.style.borderColor='transparent'; }
+      if(btnBot){ btnBot.style.background='#fff'; btnBot.style.color='#4B5563'; btnBot.style.borderColor='#E5E7EB'; btnBot.style.boxShadow='none'; }
+    }
+  });
+}
+function toggleVetPass(){
+  var inp = document.getElementById('vetPassInput');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+}
+function checkVetPass(){
+  var inp = document.getElementById('vetPassInput');
+  var val = inp.value.trim();
+  var err = document.getElementById('vetPassError');
+  var _p = ['V','e','t','@','1','2','3'].join('');
+  if(val === _p){
+    localStorage.setItem('vetAuth','1');
+    document.getElementById('vetLockScreen').style.display='none';
+    if(typeof toast==='function') toast('✅ Vet Panel Unlocked');
+  } else {
+    err.style.display='flex';
+    inp.style.borderColor='#FCA5A5';
+    setTimeout(function(){ err.style.display='none'; inp.style.borderColor='#E5E7EB'; }, 2500);
+    inp.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:300});
+  }
+}
+setTimeout(function(){ setVetLang(curVetLang); }, 100);
+try{ if(localStorage.getItem('vetAuth')==='1'){ document.getElementById('vetLockScreen').style.display='none'; } }catch(e){}
+</script>
 <!-- Password Protection -->
 <div id="passOverlay">
   <div class="pass-box">
@@ -77,7 +290,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:80px;font-size:15px;t
     <p data-t="pass_sub">Exclusive - কৃষক পাবে না। পাসওয়ার্ড দিন</p>
     <input type="password" id="passInput" placeholder="Password" onkeypress="if(event.key==='Enter') checkPass()">
     <button class="btn" onclick="checkPass()" data-t="pass_btn">🔓 Unlock</button>
-    <div class="hint">Default: Vet@123<br><span data-t="pass_hint">ভুলে গেলে Admin কে জিজ্ঞাসা করুন</span></div>
+    <div class="hint">Default: ••••••<br><span data-t="pass_hint">ভুলে গেলে Admin কে জিজ্ঞাসা করুন</span></div>
     <button style="margin-top:12px;background:transparent;border:none;color:#2E7D32;font-size:12px;text-decoration:underline;cursor:pointer;" onclick="location.href='./index.html'">🌾 কৃষকের App এ ফিরে যান</button>
   </div>
 </div>
@@ -170,7 +383,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:80px;font-size:15px;t
 <script src="./vet-data.js"></script>
 <script>
 // ===== PASSWORD PROTECTION =====
-const VET_DEFAULT_PASS = "Vet@123";
+const VET_DEFAULT_PASS = "••••••";
 function getStoredPass(){ return localStorage.getItem('vet_password') || VET_DEFAULT_PASS; }
 function checkPass(){
   var input = document.getElementById('passInput').value;
@@ -180,7 +393,7 @@ function checkPass(){
     document.getElementById('passOverlay').style.display='none';
     toast('✅ Unlock success');
   }else{
-    alert('❌ Wrong password! Default: Vet@123');
+    alert('❌ Wrong password! Default: ••••••');
     document.getElementById('passInput').value='';
   }
 }
