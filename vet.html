@@ -2,24 +2,78 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Vet Panel - Exclusive</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2E7D32">
+<title>Vet Panel - Dairy Manager</title>
 <style>
-*{box-sizing:border-box;font-family:ui-sans-system,-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Bengali',Roboto,sans-serif}
-body{margin:0;background:#F5F7F5}
-.vet-header{background:linear-gradient(135deg,#2E7D32 0%,#388E3C 100%);color:#fff;padding:16px 16px 12px;position:sticky;top:0;z-index:10}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
-.card{border-radius:16px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-.card h3{margin:8px 0 4px;color:#2E7D32;font-size:15px}
-.card p{margin:0;font-size:12px;color:#6B7280}
+:root{
+  --bg:#F5F5F5;
+  --card:#ffffff;
+  --text:#333;
+  --text2:#666;
+  --border:#E0E0E0;
+  --green:#2E7D32;
+  --green-dark:#1B5E20;
+  --green-light:#E8F5E9;
+  --shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+[data-theme="dark"]{
+  --bg:#121212;
+  --card:#1E1E1E;
+  --text:#E0E0E0;
+  --text2:#AAAAAA;
+  --border:#333;
+  --green:#43A047;
+  --green-dark:#2E7D32;
+  --green-light:#1B2E1B;
+  --shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Roboto,'Noto Sans Bengali',sans-serif;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);padding-bottom:80px;font-size:15px;transition:background 0.3s, color 0.3s;}
+.header{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.container{padding:14px;max-width:600px;margin:0 auto;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.card{background:var(--card);border-radius:14px;padding:16px 10px;text-align:center;box-shadow:var(--shadow);cursor:pointer;color:var(--text);}
+.card .icon{font-size:30px;margin-bottom:5px;}
+.card .label{font-size:13px;font-weight:600;color:var(--green);}
+.card .count{font-size:11px;color:var(--text2);margin-top:3px;}
+.summary-box{background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);margin-bottom:14px;}
+.summary-box h3{color:var(--green);margin-bottom:10px;font-size:15px;border-bottom:2px solid var(--green-light);padding-bottom:8px;}
+.summary-row{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;border-bottom:1px dashed var(--border);}
+.btn-primary{background:var(--green);color:#fff;border:none;padding:14px;border-radius:10px;width:100%;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;}
+.btn-outline{background:var(--card);color:var(--green);border:2px solid var(--green);padding:12px;border-radius:10px;width:100%;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;}
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;}
+.form-group input,.form-group select{width:100%;padding:12px;border:2px solid var(--border);border-radius:10px;font-size:15px;background:var(--card);color:var(--text);}
+.page{display:none;}
+.page.active{display:block;}
+.page-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:var(--card);box-shadow:0 2px 4px rgba(0,0,0,0.1);position:sticky;top:0;z-index:50;}
+.page-header .back-icon{background:var(--green);color:#fff;border:none;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;box-shadow:0 -2px 10px rgba(0,0,0,0.1);z-index:200;}
+.nav-item{flex:1;padding:9px 4px;text-align:center;cursor:pointer;color:#999;font-size:10px;border:none;background:var(--card);}
+.nav-item.active{color:var(--green);}
+.nav-item .nav-icon{font-size:20px;display:block;margin-bottom:2px;}
+.lang-toggle{position:fixed;top:60px;right:10px;background:var(--card);border-radius:20px;padding:4px;display:flex;gap:3px;box-shadow:0 2px 10px rgba(0,0,0,0.15);z-index:99;}
+.lang-btn{border:none;padding:6px 10px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;background:var(--bg);color:var(--text2);}
+.lang-btn.active{background:var(--green);color:#fff;}
+.theme-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+/* Password Overlay */
+#passOverlay{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#2E7D32,#1B5E20);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.pass-box{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:360px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+.pass-box h2{color:#2E7D32;margin-bottom:8px;}
+.pass-box p{font-size:13px;color:#666;margin-bottom:16px;}
+.pass-box input{width:100%;padding:14px;border:2px solid #E0E0E0;border-radius:10px;font-size:16px;text-align:center;margin-bottom:12px;}
+.pass-box .btn{width:100%;padding:14px;background:#2E7D32;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
+.pass-box .hint{font-size:11px;color:#999;margin-top:10px;}
 </style>
 </head>
 <body>
-<div id="vetLockScreen" style="position:fixed;inset:0;z-index:9999999;background:linear-gradient(180deg,#E8F5E9 0%,#D7EEDB 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 40px;overflow-y:auto;">
-  <div style="width:100%;max-width:390px;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(46,125,50,0.14);overflow:hidden;">
+
+<div id="vetLockScreen" style="position:fixed;inset:0;z-index:9999999;background:linear-gradient(180deg,#E8F5E9 0%,#D7EEDB 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 40px;font-family:ui-sans-system,-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Bengali',Roboto,sans-serif;overflow-y:auto;">
+  <div style="width:100%;max-width:390px;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(46,125,50,0.14),0 0 0 1px rgba(46,125,50,0.07);overflow:hidden;">
     <div style="padding:22px 22px 0;display:flex;align-items:center;justify-content:space-between;">
       <div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;background:linear-gradient(135deg,#2E7D32 0%,#43A047 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;">🌱</div><span style="font-size:12px;font-weight:700;letter-spacing:1px;color:#6B7280;">DAIRY MANAGER</span></div>
-      <div style="display:flex;gap:4px;background:#F3F4F6;border-radius:20px;padding:3px;"><button onclick="setVetLang('bn')" id="vLangBnTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:#2E7D32;color:#fff;">BN</button><button onclick="setVetLang('en')" id="vLangEnTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;border:none;cursor:pointer;">EN</button><button onclick="setVetLang('hi')" id="vLangHiTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;border:none;cursor:pointer;">HI</button></div>
+      <div style="display:flex;gap:4px;background:#F3F4F6;border-radius:20px;padding:3px;"><button onclick="setVetLang('bn')" id="vLangBnTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;border:none;cursor:pointer;">BN</button><button onclick="setVetLang('en')" id="vLangEnTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;border:none;cursor:pointer;">EN</button><button onclick="setVetLang('hi')" id="vLangHiTop" style="padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;border:none;cursor:pointer;">HI</button></div>
     </div>
     <div style="padding:14px 22px 0;display:flex;gap:8px;align-items:center;"><span style="color:#2E7D32;">🗣️</span><span id="vetLangNote" style="font-size:11px;color:#6B7280;">৩ ভাষা সক্রিয় • 3 Languages • ३ भाषाएँ</span></div>
     <div style="padding:22px 22px 0;display:flex;flex-direction:column;align-items:center;">
@@ -42,55 +96,6 @@ body{margin:0;background:#F5F7F5}
   </div>
   <div style="margin-top:16px;display:flex;gap:8px;"><button onclick="setVetLang('bn')" id="vLangBnBot" style="padding:10px 16px;border-radius:14px;border:1.5px solid #2E7D32;background:linear-gradient(135deg,#2E7D32 0%,#43A047 100%);color:#fff;font-weight:700;">BN<br><span style="font-size:10px;">বাংলা</span></button><button onclick="setVetLang('en')" id="vLangEnBot" style="padding:10px 16px;border-radius:14px;border:1.5px solid #E5E7EB;background:#fff;font-weight:700;">EN<br><span style="font-size:10px;">English</span></button><button onclick="setVetLang('hi')" id="vLangHiBot" style="padding:10px 16px;border-radius:14px;border:1.5px solid #E5E7EB;background:#fff;font-weight:700;">HI<br><span style="font-size:10px;">हिन्दी</span></button></div>
 </div>
-
-<!-- Vet Panel Content - Same as your screenshot -->
-<div class="vet-header">
-  <div style="display:flex;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:28px;">🩺</span><div><div style="font-size:22px;font-weight:800;">Vet Panel</div><div style="font-size:11px;opacity:0.9;">Exclusive - কৃষক পাবে না</div></div></div>
-    <div style="display:flex;gap:8px;align-items:center;"><div style="width:36px;height:36px;background:rgba(0,0,0,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">🌙</div><div style="padding:6px 12px;background:rgba(0,0,0,0.2);border-radius:12px;font-size:12px;">🔒</div><div style="padding:6px 12px;background:rgba(255,255,255,0.2);border-radius:12px;font-size:12px;">🌾 Farmer</div></div>
-  </div>
-</div>
-
-<div style="padding:0 16px;margin-top:-10px;position:relative;z-index:1;">
-  <div style="display:flex;gap:6px;justify-content:flex-end;background:#fff;border-radius:0 0 16px 16px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-    <button style="padding:6px 14px;border-radius:20px;background:#2E7D32;color:#fff;border:none;font-size:12px;font-weight:700;">বাংলা</button>
-    <button style="padding:6px 14px;border-radius:20px;background:#F3F4F6;border:none;font-size:12px;">EN</button>
-    <button style="padding:6px 14px;border-radius:20px;background:#F3F4F6;border:none;font-size:12px;">हिंदी</button>
-  </div>
-</div>
-
-<div style="margin:12px 16px;background:#E8F5E9;border-radius:14px;padding:12px 16px;">
-  <div style="font-weight:700;color:#2E7D32;font-size:14px;">🔒 Vet Only - 6 Special Features</div>
-  <div style="font-size:11px;color:#6B7280;margin-top:4px;">Case + 105 Medicine + Stock + Prescription + Income</div>
-</div>
-
-<div class="grid">
-  <div class="card" style="background:#E3F2FD;"><div style="font-size:36px;">📋</div><h3>Case Taking</h3><p>নতুন কেস</p></div>
-  <div class="card" style="background:#FFF3E0;"><div style="font-size:36px;">💊</div><h3>Medicine Stock</h3><p>লাভ হিসাব</p></div>
-  <div class="card" style="background:#E8F5E9;"><div style="font-size:36px;">🔬</div><h3>105 Medicine</h3><p>Generic সহ</p></div>
-  <div class="card" style="background:#F3E5F5;"><div style="font-size:36px;">👨‍🌾</div><h3>Farmer List</h3><p>Follow-up</p></div>
-  <div class="card" style="background:#FCE4EC;"><div style="font-size:36px;">🦠</div><h3>70 Disease</h3><p>Guide</p></div>
-  <div class="card" style="background:#FFF9C4;"><div style="font-size:36px;">💰</div><h3>Referral</h3><p>Income</p></div>
-</div>
-
-<div style="margin:0 16px 16px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-  <div style="font-weight:700;color:#2E7D32;">📊 আজকের হিসাব</div>
-  <div style="margin-top:12px;border-top:1px solid #F0F0F0;padding-top:12px;display:flex;justify-content:space-between;"><span>আজকের কেস</span><span>0</span></div>
-  <div style="border-top:1px dashed #E5E7EB;padding:10px 0;display:flex;justify-content:space-between;"><span>Stock Value</span><span>₹0</span></div>
-  <div style="border-top:1px dashed #E5E7EB;padding:10px 0;display:flex;justify-content:space-between;"><span>মোট লাভ</span><span>₹0</span></div>
-</div>
-
-<div style="margin:0 16px 80px;"><button onclick="window.location.href='index.html'" style="width:100%;height:52px;background:#2E7D32;color:#fff;border:none;border-radius:14px;font-weight:700;font-size:14px;">🏠 কৃষকের App এ ফিরে যান</button></div>
-
-<div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E7EB;display:flex;justify-content:space-around;padding:8px 0;">
-  <div style="text-align:center;"><div>🏠</div><div style="font-size:11px;color:#2E7D32;">Home</div></div>
-  <div style="text-align:center;"><div>📋</div><div style="font-size:11px;color:#9CA3AF;">Case</div></div>
-  <div style="text-align:center;"><div>🔬</div><div style="font-size:11px;color:#9CA3AF;">Medicine</div></div>
-  <div style="text-align:center;"><div>💊</div><div style="font-size:11px;color:#9CA3AF;">Stock</div></div>
-  <div style="text-align:center;"><div>👨‍🌾</div><div style="font-size:11px;color:#9CA3AF;">Farmers</div></div>
-  <div style="text-align:center;"><div>🌾</div><div style="font-size:11px;color:#9CA3AF;">Farmer</div></div>
-</div>
-
 <script>
 var VET_T={bn:{title:"ভেট প্যানেল - এক্সক্লুসিভ",sub:"শুধুমাত্র পেশাদার ভেটেরিনারিয়ানদের জন্য",badge:"পাসওয়ার্ড দেখানো হয় না • মাস্কড ইনপুট",label:"ভেট পাসওয়ার্ড",hint:"নিরাপত্তার জন্য পাসওয়ার্ড লুকানো আছে",ph:"••••••",err:"ভুল পাসওয়ার্ড",login:"ভেট প্যানেলে লগইন",div:"এডমিন যোগাযোগ",admin:"পাসওয়ার্ড এর জন্য এডমিন এর সাথে যোগাযোগ করুন",call:"কল করুন",wa:"WhatsApp",ret:"কৃষক প্যানেলে ফিরে যান",note:"৩ ভাষা সক্রিয় • 3 Languages • ३ भाषाएँ"},en:{title:"Vet Panel - Exclusive Access",sub:"Professional Veterinarians Only",badge:"No password is shown • Masked input",label:"VET PASSWORD",hint:"Password is hidden for security",ph:"••••••",err:"Wrong Password",login:"Login to Vet Panel",div:"Admin Contact",admin:"Contact Admin for Password",call:"Call",wa:"WhatsApp",ret:"Return to Farmer Panel",note:"3 Languages Active • ৩ ভাষা • ३ भाषाएँ"},hi:{title:"वेट पैनल - विशेष पहुंच",sub:"केवल पेशेवर पशु चिकित्सकों के लिए",badge:"पासवर्ड नहीं दिखाया गया • मास्क्ड इनपुट",label:"वेट पासवर्ड",hint:"सुरक्षा के लिए पासवर्ड छुपा है",ph:"••••••",err:"गलत पासवर्ड",login:"वेट पैनल में लॉगिन",div:"एडमिन संपर्क",admin:"पासवर्ड के लिए एडमिन से संपर्क करें",call:"कॉल करें",wa:"WhatsApp",ret:"किसान पैनल पर वापस जाएं",note:"३ भाषाएँ सक्रिय • 3 Languages • ३ भाषा"}};
 var curVetLang=localStorage.getItem('vetLang')||'bn';
@@ -99,6 +104,403 @@ function toggleVetPass(){var i=document.getElementById('vetPassInput');i.type=i.
 function checkVetPass(){var v=document.getElementById('vetPassInput').value.trim();var e=document.getElementById('vetPassError');var p=['V','e','t','@','1','2','3'].join('');if(v===p){localStorage.setItem('vetAuth','1');document.getElementById('vetLockScreen').style.display='none';}else{e.style.display='flex';setTimeout(function(){e.style.display='none';},2500);}}
 setTimeout(function(){setVetLang(curVetLang);},50);
 try{if(localStorage.getItem('vetAuth')==='1'){document.getElementById('vetLockScreen').style.display='none';}}catch(e){}
+</script>
+
+
+<!-- Password Protection -->
+
+
+<div class="header">
+  <div>
+    <h1 data-t="vet_title">🩺 Vet Panel</h1>
+    <p style="font-size:11px;opacity:0.9;" data-t="vet_sub">Exclusive - কৃষক পাবে না</p>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button onclick="logoutVet()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;font-size:11px;">🔒</button>
+    <button onclick="location.href='./index.html'" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;" data-t="farmer_app_btn">🌾 Farmer</button>
+  </div>
+</div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-bn" onclick="setLang('bn')">বাংলা</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-hi" onclick="setLang('hi')">हिंदी</button>
+</div>
+
+<div class="page active" id="page-vet-home">
+<div class="container" style="padding-top:50px;">
+  <div style="background:linear-gradient(135deg,var(--green-light),#C8E6C9);padding:12px;border-radius:12px;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:700;color:var(--green-dark);" data-t="vet_only">🔒 Vet Only - 6 Special Features</div>
+    <div style="font-size:11px;color:var(--text2);margin-top:4px;" data-t="vet_only_sub">Case + 105 Medicine + Stock + Prescription + Income</div>
+  </div>
+  <div class="cards">
+    <div class="card" onclick="showVetPage('case')" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);"><div class="icon">📋</div><div class="label" data-t="card_case">Case Taking</div><div class="count" data-t="card_case_sub">নতুন কেস</div></div>
+    <div class="card" onclick="showVetPage('stock')" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);"><div class="icon">💊</div><div class="label" data-t="card_stock">Medicine Stock</div><div class="count" data-t="card_stock_sub">লাভ হিসাব</div></div>
+    <div class="card" onclick="showVetPage('medicines')" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);"><div class="icon">🔬</div><div class="label" data-t="card_med">105 Medicine</div><div class="count" data-t="card_med_sub">Generic সহ</div></div>
+    <div class="card" onclick="showVetPage('farmers')" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);"><div class="icon">👨‍🌾</div><div class="label" data-t="card_farmer">Farmer List</div><div class="count" data-t="card_farmer_sub">Follow-up</div></div>
+    <div class="card" onclick="showVetPage('disease')" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);"><div class="icon">🦠</div><div class="label" data-t="card_disease">70 Disease</div><div class="count" data-t="card_disease_sub">Guide</div></div>
+    <div class="card" onclick="showVetPage('referral')" style="background:linear-gradient(135deg,#FFF9C4,#FFF176);"><div class="icon">💰</div><div class="label" data-t="card_ref">Referral</div><div class="count" data-t="card_ref_sub">Income</div></div>
+  </div>
+  <div class="summary-box"><h3 data-t="today_calc">📊 আজকের হিসাব</h3><div class="summary-row"><span data-t="today_cases">আজকের কেস</span><span id="todayCases">0</span></div><div class="summary-row"><span data-t="stock_val">Stock Value</span><span id="stockValue">₹0</span></div><div class="summary-row"><span data-t="total_profit">মোট লাভ</span><span id="totalProfit">₹0</span></div></div>
+  <button class="btn-primary" onclick="location.href='./index.html'" data-t="back_farmer">🏠 কৃষকের App এ ফিরে যান</button>
+</div>
+</div>
+
+<div class="page" id="page-vet-case">
+  <div class="page-header"><button class="back-icon" onclick="showVetPage('home')">←</button><h2 data-t="case_page_title">📋 Case Taking</h2></div>
+  <div class="container">
+    <div class="summary-box"><h3 data-t="farmer_animal">🐄 কৃষক + পশু</h3>
+      <div class="form-group"><label data-t="farmer_name">কৃষকের নাম</label><input id="fName" placeholder="রহিম"></div>
+      <div class="form-group"><label data-t="phone">ফোন</label><input id="fPhone" placeholder="98XXXXXXXX"></div>
+      <div class="form-group"><label data-t="animal_info">পশু / ওজন / Temp</label><input id="fAnimal" placeholder="গাভী, 400kg, 103°F"></div>
+    </div>
+    <div class="summary-box"><h3 data-t="select_sym">🔍 লক্ষণ বাছুন (Safe Emoji)</h3><div id="symChecklist" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div><button class="btn-primary" onclick="findDisease()" data-t="find_disease">🔍 রোগ + ঔষধ খুঁজুন</button></div>
+    <div class="summary-box" id="resultBox" style="display:none;"><h3 data-t="result_title">📋 রোগ + ঔষধ</h3><div id="diseaseResult"></div><div id="medicineResult" style="margin-top:12px;"></div><button class="btn-primary" onclick="saveCase()" data-t="save_case">💾 Save Case</button></div>
+  </div>
+</div>
+
+<div class="page" id="page-vet-medicines">
+  <div class="page-header"><button class="back-icon" onclick="showVetPage('home')">←</button><h2 data-t="med_page">🔬 105 Medicine</h2></div>
+  <div class="container"><div class="form-group"><input id="medSearch" placeholder="🔍 Search: Berenil, Enrofloxacin..." oninput="filterMeds()"></div><div id="medList"></div></div>
+</div>
+
+<div class="page" id="page-vet-stock">
+  <div class="page-header"><button class="back-icon" onclick="showVetPage('home')">←</button><h2 data-t="stock_page">💊 Stock</h2></div>
+  <div class="container">
+    <div class="summary-box"><h3 data-t="stock_add">➕ Stock Add (Supplier Optional)</h3>
+      <div class="form-group"><label data-t="medicine">Medicine</label><select id="stockMed"></select></div>
+      <div class="form-group"><label data-t="qty">Qty</label><input id="stockQty" type="number" placeholder="10"></div>
+      <div class="form-group"><label data-t="batch">Batch No (Optional)</label><input id="stockBatch" placeholder="B123"></div>
+      <div class="form-group"><label data-t="supplier">Supplier (Optional)</label><input id="stockSup" placeholder="Distributor"></div>
+      <div class="form-group"><label data-t="buy_sale">Buy / Sale Price</label><div style="display:flex;gap:8px;"><input id="stockBuy" type="number" placeholder="Buy ₹"><input id="stockSale" type="number" placeholder="Sale ₹"></div></div>
+      <div class="form-group"><label data-t="expiry">Expiry Date</label><input id="stockExp" type="date"></div>
+      <button class="btn-primary" onclick="addStock()" data-t="save_stock">💾 Stock Save</button>
+    </div>
+    <div id="stockList"></div>
+  </div>
+</div>
+
+<div class="page" id="page-vet-farmers"><div class="page-header"><button class="back-icon" onclick="showVetPage('home')">←</button><h2 data-t="farmer_list">👨‍🌾 Farmer List</h2></div><div class="container"><div id="farmerList"></div></div></div>
+<div class="page" id="page-vet-disease"><div class="page-header"><button class="back-icon" onclick="showVetPage('home')">←</button><h2 data-t="disease_guide">🦠 70 Disease</h2></div><div class="container"><div id="diseaseList"></div></div></div>
+<div class="page" id="page-vet-referral"><div class="page-header"><button class="back-icon" onclick="showVetPage('home')">←</button><h2 data-t="ref_page">💰 Referral</h2></div><div class="container"><div class="summary-box"><h3 data-t="ref_code_title">🔗 Referral Code</h3><div style="font-size:28px;font-weight:800;color:var(--green);text-align:center;" id="refCode">VET-XXXX</div><button class="btn-primary" onclick="shareRef()" data-t="share">💬 WhatsApp Share</button><button class="btn-outline" onclick="location.href='./index.html'" data-t="back_farmer">🌾 কৃষকের App এ ফিরে যান</button></div></div></div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="showVetPage('home')"><span class="nav-icon">🏠</span><span data-t="nav_home">Home</span></button>
+  <button class="nav-item" onclick="showVetPage('case')"><span class="nav-icon">📋</span><span data-t="nav_case">Case</span></button>
+  <button class="nav-item" onclick="showVetPage('medicines')"><span class="nav-icon">🔬</span><span data-t="nav_med">Medicine</span></button>
+  <button class="nav-item" onclick="showVetPage('stock')"><span class="nav-icon">💊</span><span data-t="nav_stock">Stock</span></button>
+  <button class="nav-item" onclick="showVetPage('farmers')"><span class="nav-icon">👨‍🌾</span><span data-t="nav_farmer">Farmers</span></button>
+  <button class="nav-item" onclick="location.href='./index.html'" style="color:var(--green);"><span class="nav-icon">🌾</span><span data-t="nav_farmer_app">Farmer</span></button>
+</div>
+
+<script src="./symptom-data.js"></script>
+<script src="./vet-data.js"></script>
+<script>
+// ===== PASSWORD PROTECTION =====
+const VET_DEFAULT_PASS = "Vet@123";
+function getStoredPass(){ return localStorage.getItem('vet_password') || VET_DEFAULT_PASS; }
+function logoutVet(){
+  localStorage.removeItem('vet_auth');
+  document.getElementById('passOverlay').style.display='flex';
+}
+function checkAuthOnLoad(){
+  var auth = localStorage.getItem('vet_auth');
+  if(auth==='true'){
+    document.getElementById('passOverlay').style.display='none';
+  }else{
+    document.getElementById('passOverlay').style.display='flex';
+  }
+}
+
+// ===== 3 LANGUAGE + DARK/LIGHT =====
+const T = {
+bn: {
+vet_title:'🩺 Vet Panel', vet_sub:'Exclusive - কৃষক পাবে না', farmer_app_btn:'🌾 Farmer',
+pass_title:'Vet Panel Locked', pass_sub:'Exclusive - কৃষক পাবে না। পাসওয়ার্ড দিন', pass_btn:'🔓 Unlock', pass_hint:'ভুলে গেলে Admin কে জিজ্ঞাসা করুন',
+vet_only:'🔒 Vet Only - 6 Special Features', vet_only_sub:'Case + 105 Medicine + Stock + Prescription + Income',
+card_case:'Case Taking', card_case_sub:'নতুন কেস', card_stock:'Medicine Stock', card_stock_sub:'লাভ হিসাব',
+card_med:'105 Medicine', card_med_sub:'Generic সহ', card_farmer:'Farmer List', card_farmer_sub:'Follow-up',
+card_disease:'70 Disease', card_disease_sub:'Guide', card_ref:'Referral', card_ref_sub:'Income',
+today_calc:'📊 আজকের হিসাব', today_cases:'আজকের কেস', stock_val:'Stock Value', total_profit:'মোট লাভ',
+back_farmer:'🏠 কৃষকের App এ ফিরে যান',
+case_page_title:'📋 Case Taking', farmer_animal:'🐄 কৃষক + পশু', farmer_name:'কৃষকের নাম', phone:'ফোন', animal_info:'পশু / ওজন / Temp',
+select_sym:'🔍 লক্ষণ বাছুন (Safe Emoji)', find_disease:'🔍 রোগ + ঔষধ খুঁজুন', result_title:'📋 রোগ + ঔষধ', save_case:'💾 Save Case',
+med_page:'🔬 105 Medicine', stock_page:'💊 Stock', stock_add:'➕ Stock Add (Supplier Optional)', medicine:'Medicine', qty:'Qty', batch:'Batch No (Optional)', supplier:'Supplier (Optional)', buy_sale:'Buy / Sale Price', expiry:'Expiry Date', save_stock:'💾 Stock Save',
+farmer_list:'👨‍🌾 Farmer List', disease_guide:'🦠 70 Disease', ref_page:'💰 Referral', ref_code_title:'🔗 Referral Code', share:'💬 WhatsApp Share',
+nav_home:'Home', nav_case:'Case', nav_med:'Medicine', nav_stock:'Stock', nav_farmer:'Farmers', nav_farmer_app:'Farmer'
+},
+en: {
+vet_title:'🩺 Vet Panel', vet_sub:'Exclusive - Farmer cannot see', farmer_app_btn:'🌾 Farmer',
+pass_title:'Vet Panel Locked', pass_sub:'Exclusive - Enter Password', pass_btn:'🔓 Unlock', pass_hint:'Ask Admin if forgot',
+vet_only:'🔒 Vet Only - 6 Special Features', vet_only_sub:'Case + 105 Medicine + Stock + Prescription + Income',
+card_case:'Case Taking', card_case_sub:'New Case', card_stock:'Medicine Stock', card_stock_sub:'Profit Calc', 
+card_med:'105 Medicine', card_med_sub:'With Generic', card_farmer:'Farmer List', card_farmer_sub:'Follow-up',
+card_disease:'70 Disease', card_disease_sub:'Guide', card_ref:'Referral', card_ref_sub:'Income',
+today_calc:'📊 Today Calculation', today_cases:'Today Cases', stock_val:'Stock Value', total_profit:'Total Profit',
+back_farmer:'🏠 Back to Farmer App',
+case_page_title:'📋 Case Taking', farmer_animal:'🐄 Farmer + Animal', farmer_name:'Farmer Name', phone:'Phone', animal_info:'Animal / Weight / Temp',
+select_sym:'🔍 Select Symptoms (Safe Emoji)', find_disease:'🔍 Find Disease + Medicine', result_title:'📋 Disease + Medicine', save_case:'💾 Save Case',
+med_page:'🔬 105 Medicine', stock_page:'💊 Stock', stock_add:'➕ Stock Add (Supplier Optional)', medicine:'Medicine', qty:'Qty', batch:'Batch No (Optional)', supplier:'Supplier (Optional)', buy_sale:'Buy / Sale Price', expiry:'Expiry Date', save_stock:'💾 Stock Save',
+farmer_list:'👨‍🌾 Farmer List', disease_guide:'🦠 70 Disease', ref_page:'💰 Referral', ref_code_title:'🔗 Referral Code', share:'💬 WhatsApp Share',
+nav_home:'Home', nav_case:'Case', nav_med:'Medicine', nav_stock:'Stock', nav_farmer:'Farmers', nav_farmer_app:'Farmer'
+},
+hi: {
+vet_title:'🩺 Vet Panel', vet_sub:'Exclusive - किसान नहीं देखेगा', farmer_app_btn:'🌾 Farmer',
+pass_title:'Vet Panel Locked', pass_sub:'Exclusive - पासवर्ड डालें', pass_btn:'🔓 Unlock', pass_hint:'भूल गए तो Admin से पूछें',
+vet_only:'🔒 Vet Only - 6 Special Features', vet_only_sub:'Case + 105 Medicine + Stock + Prescription + Income',
+card_case:'Case Taking', card_case_sub:'नया केस', card_stock:'Medicine Stock', card_stock_sub:'लाभ हिसाब',
+card_med:'105 Medicine', card_med_sub:'Generic के साथ', card_farmer:'Farmer List', card_farmer_sub:'Follow-up',
+card_disease:'70 Disease', card_disease_sub:'Guide', card_ref:'Referral', card_ref_sub:'Income',
+today_calc:'📊 आज का हिसाब', today_cases:'आज के केस', stock_val:'Stock Value', total_profit:'कुल लाभ',
+back_farmer:'🏠 किसान App पर वापस जाएं',
+case_page_title:'📋 Case Taking', farmer_animal:'🐄 किसान + पशु', farmer_name:'किसान का नाम', phone:'फोन', animal_info:'पशु / वजन / Temp',
+select_sym:'🔍 लक्षण चुनें (Safe Emoji)', find_disease:'🔍 बीमारी + दवा खोजें', result_title:'📋 बीमारी + दवा', save_case:'💾 Save Case',
+med_page:'🔬 105 Medicine', stock_page:'💊 Stock', stock_add:'➕ Stock Add (Supplier Optional)', medicine:'Medicine', qty:'Qty', batch:'Batch No (Optional)', supplier:'Supplier (Optional)', buy_sale:'Buy / Sale Price', expiry:'Expiry Date', save_stock:'💾 Stock Save',
+farmer_list:'👨‍🌾 Farmer List', disease_guide:'🦠 70 Disease', ref_page:'💰 Referral', ref_code_title:'🔗 Referral Code', share:'💬 WhatsApp Share',
+nav_home:'Home', nav_case:'Case', nav_med:'Medicine', nav_stock:'Stock', nav_farmer:'Farmers', nav_farmer_app:'Farmer'
+}
+};
+
+let currentLang = localStorage.getItem('vet_lang') || 'bn';
+let currentTheme = localStorage.getItem('vet_theme') || 'light';
+
+function applyLang(){
+  const t = T[currentLang] || T.bn;
+  document.querySelectorAll('[data-t]').forEach(function(el){
+    const key = el.getAttribute('data-t');
+    if(t[key]) el.textContent = t[key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.remove('active'); });
+  var activeBtn = document.getElementById('btn-'+currentLang);
+  if(activeBtn) activeBtn.classList.add('active');
+  // Re-render disease list if visible to fix language
+  if(document.getElementById('page-vet-disease').classList.contains('active')){
+    loadDiseases();
+  }
+}
+function setLang(l){
+  currentLang = l;
+  localStorage.setItem('vet_lang', l);
+  applyLang();
+}
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  var btn = document.getElementById('themeBtn');
+  if(btn) btn.textContent = currentTheme==='dark' ? '☀️' : '🌙';
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', currentTheme==='dark' ? '#121212' : '#2E7D32');
+}
+function toggleTheme(){
+  currentTheme = currentTheme==='dark' ? 'light' : 'dark';
+  localStorage.setItem('vet_theme', currentTheme);
+  applyTheme();
+}
+
+function toast(msg){
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 22px;border-radius:25px;font-size:13px;z-index:9999;';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); },2500);
+}
+
+// VET LOGIC
+function showVetPage(p){
+  document.querySelectorAll('.page').forEach(function(x){ x.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(x){ x.classList.remove('active'); });
+  var el=document.getElementById('page-vet-'+p);
+  if(el) el.classList.add('active');
+  if(p==='home') updateDash();
+  if(p==='case') loadSymptoms();
+  if(p==='medicines') loadMeds();
+  if(p==='stock'){ loadMeds(); loadStock(); }
+  if(p==='farmers') loadFarmers();
+  if(p==='disease') loadDiseases();
+  window.scrollTo(0,0);
+}
+
+function getNameInLang(obj){
+  if(!obj) return '';
+  if(typeof obj === 'string') return obj;
+  return obj[currentLang] || obj.bn || obj.en || '';
+}
+
+function loadSymptoms(){
+  var box=document.getElementById('symChecklist');
+  var list=(window.SYMPTOM_LIST||[]).slice(0,70);
+  if(list.length===0){ box.innerHTML='symptom-data.js not found'; return; }
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var s=list[i];
+    var name=getNameInLang(s.name);
+    html+='<label style="display:flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--border);border-radius:10px;padding:8px;font-size:12px;cursor:pointer;"><input type="checkbox" value="'+s.id+'" class="symChk"> <span>'+(s.icon||'💧')+' '+name+'</span></label>';
+  }
+  box.innerHTML=html;
+}
+
+function findDisease(){
+  var chks=document.querySelectorAll('.symChk:checked');
+  var sel=[]; for(var i=0;i<chks.length;i++) sel.push(chks[i].value);
+  if(sel.length===0){ alert('Select 1 symptom'); return; }
+  var diseases=window.DISEASE_DB||[];
+  var scored=[];
+  for(var i=0;i<diseases.length;i++){
+    var d=diseases[i];
+    var m=0;
+    for(var j=0;j<(d.symptoms||[]).length;j++){ if(sel.indexOf(d.symptoms[j])!==-1) m++; }
+    if(m>0){
+      var pct=Math.round((m/((d.symptoms||[]).length||1))*100);
+      scored.push({d:d,pct:pct});
+    }
+  }
+  scored.sort(function(a,b){ return b.pct-a.pct; });
+  scored=scored.slice(0,3);
+  var resBox=document.getElementById('resultBox');
+  var dDiv=document.getElementById('diseaseResult');
+  var mDiv=document.getElementById('medicineResult');
+  if(scored.length===0){
+    dDiv.innerHTML='<div style="color:#C62828;">No disease matched</div>';
+    mDiv.innerHTML='';
+  }else{
+    var h='';
+    for(var i=0;i<scored.length;i++){
+      var sc=scored[i];
+      var d=sc.d;
+      var dName=getNameInLang(d.name);
+      var treatHtml='<div style="margin-top:8px;">';
+      treatHtml+='<div style="font-weight:700;font-size:13px;color:var(--green);">📋 Treatment:</div>';
+      if(d.treatment && d.treatment.length>0){
+        for(var k=0;k<d.treatment.length;k++){
+          treatHtml+='<div style="font-size:12px;padding:3px 0;">• '+d.treatment[k]+'</div>';
+        }
+      }
+      if(d.homeo && d.homeo.remedy){
+        var homeoDisplay = '';
+        if(currentLang==='bn' && d.homeo.bn) homeoDisplay = d.homeo.bn;
+        else if(currentLang==='hi' && d.homeo.hi) homeoDisplay = d.homeo.hi;
+        else homeoDisplay = d.homeo.remedy+' - '+d.homeo.dose;
+        // Use bn field as it contains dose info
+        if(currentLang==='bn') homeoDisplay = d.homeo.bn || homeoDisplay;
+        else homeoDisplay = d.homeo.remedy+' - '+d.homeo.dose;
+        treatHtml+='<div style="font-size:12px;color:var(--green);margin-top:8px;background:var(--green-light);padding:8px 10px;border-radius:8px;border-left:3px solid var(--green);">(Homeo: '+homeoDisplay+')</div>';
+      }
+      treatHtml+='</div>';
+      var actionText=getNameInLang(d.action);
+      h+='<div style="background:var(--card);border-left:4px solid var(--green);padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:var(--shadow);"><div style="font-weight:800;font-size:14px;">'+(d.icon||'🦠')+' '+dName+' - '+sc.pct+'% match</div><div style="font-size:11px;color:var(--text2);margin-top:4px;">Symptoms: '+(d.symptoms||[]).join(', ')+'</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">'+actionText+'</div>'+treatHtml+'</div>';
+    }
+    dDiv.innerHTML=h;
+  }
+  var meds=window.VET_MEDICINES||[];
+  var sugg=meds.slice(0,6);
+  var html='<h4 style="font-size:13px;margin-bottom:8px;">💊 Possible Medicine (Generic - Vet Only + Homeo)</h4>';
+  for(var i=0;i<sugg.length;i++){
+    var mm=sugg[i];
+    html+='<label style="display:flex;gap:8px;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" value="'+mm.id+'" class="medChk"><div><div style="font-weight:700;font-size:12px;">'+mm.icon+' '+mm.brand+'</div><div style="font-size:11px;color:var(--text2);">Generic: '+mm.generic+'</div><div style="font-size:10px;color:var(--text2);">'+mm.dose+' | '+mm.withdrawal+' | ₹'+mm.price+'</div></div></label>';
+  }
+  mDiv.innerHTML=html;
+  resBox.style.display='block';
+}
+
+function saveCase(){
+  var meds=document.querySelectorAll('.medChk:checked');
+  if(meds.length===0){ alert('Select 1 medicine'); return; }
+  var syms=document.querySelectorAll('.symChk:checked');
+  var symArr=[]; for(var i=0;i<syms.length;i++) symArr.push(syms[i].value);
+  var medArr=[]; for(var i=0;i<meds.length;i++) medArr.push(meds[i].value);
+  var c={farmer:document.getElementById('fName').value, phone:document.getElementById('fPhone').value, animal:document.getElementById('fAnimal').value, symptoms:symArr, medicines:medArr, date:new Date().toISOString()};
+  var cases=JSON.parse(localStorage.getItem('vet_cases')||'[]'); cases.push(c); localStorage.setItem('vet_cases', JSON.stringify(cases));
+  alert('✅ Case Saved'); showVetPage('home');
+}
+function loadMeds(){
+  var box=document.getElementById('medList');
+  var meds=window.VET_MEDICINES||[];
+  if(meds.length===0){ box.innerHTML='vet-data.js not found'; return; }
+  var html='';
+  for(var i=0;i<meds.length;i++){ var m=meds[i]; html+='<div style="background:var(--card);padding:10px;border-radius:10px;margin-bottom:8px;box-shadow:var(--shadow);"><div style="font-weight:700;font-size:13px;">'+m.icon+' '+m.brand+'</div><div style="font-size:11px;color:var(--green);font-weight:600;">Generic: '+m.generic+'</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">'+m.company+' | '+m.category+' | '+m.dose+' | '+m.route+'</div><div style="font-size:10px;color:var(--text2);margin-top:2px;">Use: '+m.use+' | Withdrawal: '+m.withdrawal+' | ₹'+m.price+'</div></div>'; }
+  box.innerHTML=html;
+  var sel=document.getElementById('stockMed');
+  if(sel){ var o=''; for(var i=0;i<meds.length;i++){ o+='<option value="'+meds[i].id+'">'+meds[i].brand+' - '+meds[i].generic+' (₹'+meds[i].price+')</option>'; } sel.innerHTML=o; }
+}
+function filterMeds(){
+  var q=document.getElementById('medSearch').value.toLowerCase();
+  var meds=(window.VET_MEDICINES||[]).filter(function(m){ return (m.brand+m.generic+m.company+m.use).toLowerCase().indexOf(q)!==-1; });
+  var box=document.getElementById('medList');
+  var html='';
+  for(var i=0;i<meds.length;i++){ var m=meds[i]; html+='<div style="background:var(--card);padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;font-size:13px;">'+m.icon+' '+m.brand+'</div><div style="font-size:11px;color:var(--green);">Generic: '+m.generic+'</div><div style="font-size:10px;color:var(--text2);">'+m.dose+' | ₹'+m.price+'</div></div>'; }
+  box.innerHTML=html;
+}
+function addStock(){
+  var medId=document.getElementById('stockMed').value;
+  var qty=document.getElementById('stockQty').value;
+  if(!medId||!qty){ alert('Medicine + Qty'); return; }
+  var stocks=JSON.parse(localStorage.getItem('vet_stocks')||'[]');
+  stocks.push({medId:medId, qty:parseInt(qty), batch:document.getElementById('stockBatch').value, supplier:document.getElementById('stockSup').value, buy:document.getElementById('stockBuy').value, sale:document.getElementById('stockSale').value, exp:document.getElementById('stockExp').value, date:new Date().toISOString()});
+  localStorage.setItem('vet_stocks', JSON.stringify(stocks));
+  alert('✅ Stock Saved'); loadStock(); updateDash();
+}
+function loadStock(){
+  var box=document.getElementById('stockList');
+  var stocks=JSON.parse(localStorage.getItem('vet_stocks')||'[]');
+  var meds=window.VET_MEDICINES||[];
+  if(stocks.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);">No stock yet</div>'; return; }
+  var html='';
+  for(var i=0;i<stocks.length;i++){ var s=stocks[i]; var med=null; for(var j=0;j<meds.length;j++){ if(meds[j].id==s.medId){ med=meds[j]; break; } } html+='<div style="background:var(--card);padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;"><div><div style="font-weight:700;font-size:12px;">'+(med?med.brand:'Med')+' - Qty:'+s.qty+'</div><div style="font-size:10px;color:var(--text2);">Batch:'+(s.batch||'N/A')+' | Supplier:'+(s.supplier||'N/A')+' | Exp:'+(s.exp||'N/A')+'</div><div style="font-size:10px;color:var(--green);">Buy ₹'+(s.buy||0)+' | Sale ₹'+(s.sale||0)+' | Profit ₹'+((s.sale-s.buy)*s.qty||0)+'</div></div><button onclick="delStock('+i+')" style="background:#C62828;color:#fff;border:none;padding:6px 10px;border-radius:8px;font-size:11px;">🗑️</button></div>'; }
+  box.innerHTML=html;
+}
+function delStock(i){ if(!confirm('Delete?')) return; var stocks=JSON.parse(localStorage.getItem('vet_stocks')||'[]'); stocks.splice(i,1); localStorage.setItem('vet_stocks', JSON.stringify(stocks)); loadStock(); updateDash(); }
+function loadFarmers(){
+  var box=document.getElementById('farmerList');
+  var cases=JSON.parse(localStorage.getItem('vet_cases')||'[]');
+  if(cases.length===0){ box.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);">No cases yet</div>'; return; }
+  var html='';
+  for(var i=0;i<cases.length;i++){ var c=cases[i]; html+='<div style="background:var(--card);padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;">👨‍🌾 '+(c.farmer||'Unknown')+' - '+(c.phone||'')+'</div><div style="font-size:11px;color:var(--text2);">'+(c.animal||'')+' | '+new Date(c.date).toLocaleDateString()+'</div></div>'; }
+  box.innerHTML=html;
+}
+function loadDiseases(){
+  var box=document.getElementById('diseaseList');
+  var diseases=window.DISEASE_DB||[];
+  if(diseases.length===0){ box.innerHTML='symptom-data.js not found'; return; }
+  var html='';
+  for(var i=0;i<diseases.length;i++){
+    var d=diseases[i];
+    var dName=getNameInLang(d.name);
+    var actionText=getNameInLang(d.action);
+    var treatHtml='';
+    if(d.treatment && d.treatment.length>0){
+      treatHtml+='<div style="margin-top:6px;">';
+      for(var k=0;k<d.treatment.length;k++){
+        treatHtml+='<div style="font-size:11px;">• '+d.treatment[k]+'</div>';
+      }
+      if(d.homeo && d.homeo.remedy){
+        var homeoDisplay = (currentLang==='bn' && d.homeo.bn) ? d.homeo.bn : d.homeo.remedy+' - '+d.homeo.dose;
+        treatHtml+='<div style="font-size:11px;color:var(--green);background:var(--green-light);padding:4px 6px;border-radius:6px;margin-top:4px;">(Homeo: '+homeoDisplay+')</div>';
+      }
+      treatHtml+='</div>';
+    }
+    html+='<div style="background:var(--card);padding:10px;border-radius:10px;margin-bottom:8px;box-shadow:var(--shadow);"><div style="font-weight:700;font-size:13px;">'+(d.icon||'🦠')+' '+dName+'</div><div style="font-size:12px;color:var(--text2);margin-top:4px;">'+actionText+'</div><div style="font-size:10px;color:var(--text2);margin-top:4px;">Symptoms: '+(d.symptoms||[]).join(', ')+'</div>'+treatHtml+'</div>';
+  }
+  box.innerHTML=html;
+}
+function updateDash(){
+  var cases=JSON.parse(localStorage.getItem('vet_cases')||'[]');
+  var stocks=JSON.parse(localStorage.getItem('vet_stocks')||'[]');
+  var today=new Date().toDateString();
+  var tc=0; for(var i=0;i<cases.length;i++){ if(new Date(cases[i].date).toDateString()===today) tc++; }
+  var val=0; var profit=0;
+  for(var i=0;i<stocks.length;i++){ val+=(parseInt(stocks[i].qty)||0)*(parseInt(stocks[i].buy)||0); profit+=((parseInt(stocks[i].sale)||0)-(parseInt(stocks[i].buy)||0))*(parseInt(stocks[i].qty)||0); }
+  var el=document.getElementById('todayCases'); if(el) el.textContent=tc;
+  var el2=document.getElementById('stockValue'); if(el2) el2.textContent='₹'+val;
+  var el3=document.getElementById('totalProfit'); if(el3) el3.textContent='₹'+profit;
+  var rc=document.getElementById('refCode'); if(rc){ var code=localStorage.getItem('vet_referral_code'); if(!code){ code='VET-'+Math.random().toString(36).substr(2,6).toUpperCase(); localStorage.setItem('vet_referral_code',code); } rc.textContent=code; }
+}
+function shareRef(){ var code=localStorage.getItem('vet_referral_code')||'VET-XXXX'; var t='🐄 Dairy Manager - Vet Referral: '+code+' - Download: '+location.origin; if(navigator.share){ navigator.share({text:t}); } else { prompt('Copy:', t); } }
+
+document.addEventListener('DOMContentLoaded', function(){
+  checkAuthOnLoad();
+  applyTheme();
+  applyLang();
+  updateDash();
+});
 </script>
 </body>
 </html>
