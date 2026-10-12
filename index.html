@@ -7802,54 +7802,45 @@ if (f.alertsDry && c.insemDate && c.inseminated === 'yes' && !c.dryDone) {
 // ========== ALERT SYNC TO FIRESTORE ==========
 async function syncAlertsToFirestore() {
   try {
-    if (!window._db) return;
-    
-    const alerts = getAlerts();
-    const today = new Date().toISOString().split('T')[0];
-    
-// FCM token খুঁজি (latest + deviceId fallback)
-let fcmToken = '';
-try {
-  const tokSnap = await window._db.collection('fcmTokens').get();
-  let latestTime = 0;
-  let latestToken = '';
-  tokSnap.forEach(function(doc) {
-    const d = doc.data();
-    if (!d.token) return;
-    // deviceId match হলে সেটাই best
-    if (d.deviceId === DB.deviceId) {
-      fcmToken = d.token;
-      latestTime = 9999999999;
+    if (!window._db) {
+      console.log('syncAlerts: _db not ready');
       return;
     }
-    // otherwise latest token track করি
-    const t = d.updatedAt && d.updatedAt.seconds ? d.updatedAt.seconds : 0;
-    if (t > latestTime) {
-      latestTime = t;
-      latestToken = d.token;
+    if (!DB.deviceId) {
+      try { DB.deviceId = localStorage.getItem('deviceId') || DB.deviceId; } catch(e) {}
+      if (!DB.deviceId) return;
     }
-  });
-  // deviceId match না পেলে latest token
-  if (!fcmToken && latestToken) fcmToken = latestToken;
-} catch(e) {
-  console.warn('Token lookup failed:', e);
-}
-console.log('FCM Token:', fcmToken ? 'Found (' + fcmToken.length + ' chars)' : 'Not found');
+    
+    var alerts = [];
+    try { alerts = getAlerts(); } catch(e) { alerts = []; }
+    var today = new Date().toISOString().split('T')[0];
+    
+    // FCM Token - Use local DB.fcmToken directly (don't query whole fcmTokens collection - slow + permission error)
+    var fcmToken = '';
+    try {
+      if (DB.fcmToken && DB.fcmToken.length > 20) {
+        fcmToken = DB.fcmToken;
+      } else {
+        var lt = localStorage.getItem('fcmToken');
+        if (lt && lt.length > 20) fcmToken = lt;
+      }
+    } catch(e) {}
+    
+    console.log('syncAlerts: device='+DB.deviceId+', alerts='+alerts.length+', token='+(fcmToken ? 'YES '+fcmToken.substring(0,20)+'...' : 'NO'));
     
     // User info
-    const user = window._auth && window._auth.currentUser;
-    const uid = user ? user.uid : '';
+    var uid = '';
+    try { var user = window._auth && window._auth.currentUser; uid = user ? user.uid : ''; } catch(e) {}
     
-    // Firestore-এ save
-    await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+    var docData = {
       deviceId: DB.deviceId,
       uid: uid,
       fcmToken: fcmToken,
-      farmName: DB.settings.farmName || '',
+      farmName: DB.settings.farmName || 'Khudra khamar',
       phone: DB.settings.phone || '',
-      lang: DB.settings.lang || 'bn',
-      alerts: alerts.map(a => ({
-        id: a.id,
+      lang: DB.settings.lang || 'en',
+      alerts: alerts.map(function(a){ return {
+        id: a.id || '',
         cowId: a.cowId || '',
         type: a.type || '',
         title: a.title || '',
@@ -7857,30 +7848,40 @@ console.log('FCM Token:', fcmToken ? 'Found (' + fcmToken.length + ' chars)' : '
         action: a.action || '',
         icon: a.icon || '',
         color: a.color || ''
-      })),
+      }; }),
       alertCount: alerts.length,
       lastSync: Date.now(),
       lastSyncDate: today,
-      appVersion: '3.0'
-    }, { merge: true });
+      appVersion: '3.0',
+      active: true
+    };
     
-    console.log('✅ Alerts synced:', alerts.length);
+    // Save with merge true - never overwrite token if empty
+    if (!fcmToken) {
+      // Don't overwrite existing fcmToken in Firestore if we don't have token now
+      delete docData.fcmToken;
+    }
+    
+    await window._db.collection('alertSchedule').doc(DB.deviceId).set(docData, { merge: true });
+    console.log('✅ Alerts synced to alertSchedule/'+DB.deviceId+' count='+alerts.length+' token='+(fcmToken?'YES':'NO'));
   } catch(e) {
-    console.warn('Alert sync failed:', e);
+    console.warn('Alert sync failed:', e.message);
   }
 }
 
 function renderAlertCenter() {
-  const badge = document.getElementById('alertBadge');
+  var badge = document.getElementById('alertBadge');
   if (!badge) return;
-  const alerts = getAlerts();
+  var alerts = [];
+  try { alerts = getAlerts(); } catch(e) {}
   if (alerts.length > 0) {
     badge.textContent = alerts.length;
     badge.style.display = 'flex';
   } else {
     badge.style.display = 'none';
   }
-syncAlertsToFirestore();
+  // Sync to Firestore with small delay to ensure DB ready
+  setTimeout(function(){ try { syncAlertsToFirestore(); } catch(e) {} }, 1000);
 }
   
 function renderAlertsFull() {
