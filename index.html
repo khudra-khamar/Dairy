@@ -1927,6 +1927,8 @@ guest_trial_saved: '✅ Guest Trial saved',
 guest_trial_updated: '✅ Guest Trial updated',
 cfm_merge: '🔀 Merge',
 notif_disable_confirm: 'Disable notifications?',
+cfm_yes_disable: '🔕 Yes, Disable',
+
     export_done:'📤 Downloaded', import_ok:'✅ Import successful',
 import_bad:'❌ Invalid file', error:'❌ Error',
 import_title:'📥 Backup Restore',
@@ -2927,8 +2929,11 @@ async function enableNotifications() {
         try {
           await window._db.collection('alertSchedule').doc(DB.deviceId).set({
             deviceId: DB.deviceId,
+            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || '',
+            fcmToken: token,d,
             fcmToken: token,
             farmName: DB.settings.farmName || 'Khudra khamar',
+            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || '',
             lang: DB.settings.lang || 'en',
             appVersion: '3.0',
             lastSync: Date.now(),
@@ -3006,12 +3011,14 @@ async function saveFCMToken(token) {
           window._db.collection('fcmTokens').doc(DB.deviceId).set({
             token: token, deviceId: DB.deviceId, active: true,
             farmName: DB.settings.farmName || 'Khudra khamar',
+            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || '',
             lang: DB.settings.lang || 'en',
             updatedAt: Date.now()
           }, { merge: true }).then(function(){ console.log('✅ Late sync to fcmTokens'); }).catch(function(e){});
           window._db.collection('alertSchedule').doc(DB.deviceId).set({
             deviceId: DB.deviceId, fcmToken: token, active: true,
             farmName: DB.settings.farmName || 'Khudra khamar',
+            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || '',
             lang: DB.settings.lang || 'en',
             lastSync: Date.now()
           }, { merge: true }).then(function(){ console.log('✅ Late sync to alertSchedule'); }).catch(function(e){});
@@ -3094,6 +3101,7 @@ async function autoRegisterFCM(showToast=false){
     if (!window._fcmSWReg){
       await new Promise(r=>setTimeout(r,1500));
     }
+    if (!DB.deviceId){ DB.deviceId = localStorage.getItem('deviceId_backup') || localStorage.getItem('deviceId') || ''; }
     if (!DB.deviceId){
       console.log('❌ No deviceId for FCM');
       return false;
@@ -3112,7 +3120,7 @@ async function autoRegisterFCM(showToast=false){
       if (ok){
         DB.fcmToken = token;
         DB.notifEnabled = true;
-        try { localStorage.setItem('fcmToken', token); localStorage.setItem('notifEnabled','true'); } catch(e) {}
+        try { localStorage.setItem('fcmToken', token); localStorage.setItem('fcmToken_backup', token); localStorage.setItem('notifEnabled','true'); localStorage.setItem('deviceId_backup', DB.deviceId); } catch(e) {}
         try{ saveDB(); }catch(e){}
         if (typeof updateNotificationUI === 'function') updateNotificationUI();
         if (showToast && typeof toast === 'function') toast('✅ Alert চালু হয়েছে!');
@@ -11718,7 +11726,7 @@ function smartConfirm(message, callback) {
   } else if (msg.indexOf('notification') !== -1 || msg.indexOf('নোটিফিকেশন') !== -1 || msg.indexOf('বন্ধ') !== -1) {
     icon = '🔕';
     color = '#EF6C00';
-    confirmText = t('cfm_no') || '✅ Yes';
+    confirmText = t('cfm_yes_disable') || '🔕 Yes, Disable';
   } else if (msg.indexOf('call') !== -1 || msg.indexOf('কল') !== -1 || msg.indexOf('ফোন') !== -1) {
     icon = '📞';
     color = '#1976D2';
