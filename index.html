@@ -2396,6 +2396,7 @@ let DB = {
   medStock: [], feedStock: [], contacts: [],
   customers: [], retailEntries: [],
   snoozed: {}, deviceId: '',
+  fcmToken: '', notifEnabled: false,
   security: { pin: '', skipped: false },
   license: { code: '', expiry: '', trial: false },
   settings: {
@@ -2487,7 +2488,18 @@ async function loadDBAsync() {
     if (licenseArr.length > 0) DB.license = licenseArr[0];
     
     const deviceArr = await idbGetAll('device');
-    if (deviceArr.length > 0 && deviceArr[0].deviceId) DB.deviceId = deviceArr[0].deviceId;
+    if (deviceArr.length > 0) {
+      if (deviceArr[0].deviceId) DB.deviceId = deviceArr[0].deviceId;
+      if (deviceArr[0].fcmToken) DB.fcmToken = deviceArr[0].fcmToken;
+      if (deviceArr[0].notifEnabled) DB.notifEnabled = true;
+    }
+    // Also restore from dedicated localStorage (fallback)
+    try {
+      var lt = localStorage.getItem('fcmToken');
+      var le = localStorage.getItem('notifEnabled');
+      if (lt && !DB.fcmToken) DB.fcmToken = lt;
+      if (le === 'true') DB.notifEnabled = true;
+    } catch(e) {}
     
     const snoozedArr = await idbGetAll('snoozed');
     if (snoozedArr.length > 0) DB.snoozed = snoozedArr[0].data || {};
@@ -2612,7 +2624,7 @@ async function saveDBAsync() {
     await idbPut('license', Object.assign({ id: 'main' }, DB.license));
     
     await idbClear('device');
-    await idbPut('device', { id: 'main', deviceId: DB.deviceId });
+    await idbPut('device', { id: 'main', deviceId: DB.deviceId, fcmToken: DB.fcmToken || '', notifEnabled: DB.notifEnabled || false });
     
     await idbClear('snoozed');
     await idbPut('snoozed', { id: 'main', data: DB.snoozed });
@@ -2633,6 +2645,18 @@ function loadDB() {
       DB = Object.assign(DB, parsed);
     }
   } catch(e) { console.log('Load error', e); }
+  if (!DB.fcmToken) DB.fcmToken = '';
+  if (DB.notifEnabled === undefined) DB.notifEnabled = false;
+  // Restore from dedicated localStorage keys (persistent across cache clear)
+  try {
+    var savedToken = localStorage.getItem('fcmToken');
+    var savedEnabled = localStorage.getItem('notifEnabled');
+    if (savedToken && !DB.fcmToken) DB.fcmToken = savedToken;
+    if (savedEnabled === 'true') DB.notifEnabled = true;
+    // Also check if token exists in old DB dump
+    if (parsed && parsed.fcmToken && !DB.fcmToken) DB.fcmToken = parsed.fcmToken;
+    if (parsed && parsed.notifEnabled) DB.notifEnabled = true;
+  } catch(e) {}
   if (!DB.cows) DB.cows = [];
   if (!DB.milk) DB.milk = [];
   if (!DB.finance) DB.finance = [];
@@ -2664,6 +2688,12 @@ function loadDB() {
 }
 
 function saveDB() {
+  // Persistent FCM keys — survive even if dairyDBv3 is truncated
+  try {
+    if (DB.fcmToken) localStorage.setItem('fcmToken', DB.fcmToken);
+    localStorage.setItem('notifEnabled', DB.notifEnabled ? 'true' : 'false');
+    if (DB.deviceId) localStorage.setItem('deviceId', DB.deviceId);
+  } catch(e) {}
   // Keep localStorage as quick fallback — WITHOUT photos
   try {
     const dbCopy = JSON.parse(JSON.stringify(DB));
@@ -2922,6 +2952,7 @@ async function autoRegisterFCM(showToast=false){
       if (ok){
         DB.fcmToken = token;
         DB.notifEnabled = true;
+        try { localStorage.setItem('fcmToken', token); localStorage.setItem('notifEnabled','true'); } catch(e) {}
         try{ saveDB(); }catch(e){}
         if (typeof updateNotificationUI === 'function') updateNotificationUI();
         if (showToast && typeof toast === 'function') toast('✅ Alert চালু হয়েছে!');
@@ -3025,7 +3056,10 @@ function updateNotificationUI() {
   if (!statusEl) return;
   
   const granted = ('Notification' in window) && Notification.permission === 'granted';
-  const enabled = DB.notifEnabled && granted;
+  var tokenExists = !!(DB.fcmToken && DB.fcmToken.length > 20);
+  // Fallback check localStorage
+  try { if (!tokenExists) { var lt = localStorage.getItem('fcmToken'); if (lt && lt.length > 20) tokenExists = true; } } catch(e) {}
+  const enabled = (DB.notifEnabled || tokenExists) && granted;
   
   if (enabled) {
     statusEl.textContent = '✅ ON';
@@ -11645,7 +11679,19 @@ async function initApp() {
     }
     
     // Step 4: Normalize DB structure
-    if (!DB.cows) DB.cows = [];
+    if (!DB.fcmToken) DB.fcmToken = '';
+  if (DB.notifEnabled === undefined) DB.notifEnabled = false;
+  // Restore from dedicated localStorage keys (persistent across cache clear)
+  try {
+    var savedToken = localStorage.getItem('fcmToken');
+    var savedEnabled = localStorage.getItem('notifEnabled');
+    if (savedToken && !DB.fcmToken) DB.fcmToken = savedToken;
+    if (savedEnabled === 'true') DB.notifEnabled = true;
+    // Also check if token exists in old DB dump
+    if (parsed && parsed.fcmToken && !DB.fcmToken) DB.fcmToken = parsed.fcmToken;
+    if (parsed && parsed.notifEnabled) DB.notifEnabled = true;
+  } catch(e) {}
+  if (!DB.cows) DB.cows = [];
     if (!DB.milk) DB.milk = [];
     if (!DB.finance) DB.finance = [];
     if (!DB.medicine) DB.medicine = [];
