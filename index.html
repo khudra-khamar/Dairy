@@ -1675,13 +1675,14 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 <!-- ========== BOTTOM NAVIGATION ========== -->
 <div class="bottom-nav" id="bottomNav">
-  <div class="nav-item active" data-nav="home" onclick="showPage('home')"><span class="nav-icon">🏠</span><span>Home</span></div>
-  <div class="nav-item" data-nav="cows" onclick="showPage('cows')"><span class="nav-icon">🐮</span><span>Animals</span></div>
-  <div class="nav-item" data-nav="milk" onclick="showPage('milk')"><span class="nav-icon">🥛</span><span>Milk</span></div>
-  <div class="nav-item" data-nav="finance" onclick="showPage('finance')"><span class="nav-icon">💰</span><span>Finance</span></div>
-  <div class="nav-item" data-nav="feed-stock" onclick="showPage('feed-stock')"><span class="nav-icon">🌾</span><span>Feed</span></div>
-  <div class="nav-item" data-nav="vet" onclick="location.href='./vet.html'"><span class="nav-icon">🩺</span><span>Vet</span></div>
-  <div class="nav-item" data-nav="settings" onclick="showPage('settings')"><span class="nav-icon">⚙️</span><span>Settings</span></div>
+  <div class="nav-item active" data-nav="home" onclick="showPage('home')"><span class="nav-icon">🏠</span><span data-t="nav_home">Home</span></div>
+  <div class="nav-item" data-nav="cows" onclick="showPage('cows')"><span class="nav-icon">🐮</span><span data-t="nav_cows">Animals</span></div>
+  <div class="nav-item" data-nav="milk" onclick="showPage('milk')"><span class="nav-icon">🥛</span><span data-t="nav_milk">Milk</span></div>
+  <div class="nav-item" data-nav="finance" onclick="showPage('finance')"><span class="nav-icon">💰</span><span data-t="nav_fin">Finance</span></div>
+
+  <div class="nav-item" data-nav="feed-stock" onclick="showPage('feed-stock')"><span class="nav-icon">🌾</span><span data-t="nav_feed">Feed</span></div>
+  <div class="nav-item" data-nav="notes" onclick="showPage('notes')"><span class="nav-icon">📝</span><span data-t="nav_note">Notes</span></div>
+  <div class="nav-item" data-nav="settings" onclick="showPage('settings')"><span class="nav-icon">⚙️</span><span data-t="nav_set">Settings</span></div>
 </div>
 
 <!-- ========== TOAST ========== -->
@@ -2396,7 +2397,6 @@ let DB = {
   medStock: [], feedStock: [], contacts: [],
   customers: [], retailEntries: [],
   snoozed: {}, deviceId: '',
-  fcmToken: '', notifEnabled: false,
   security: { pin: '', skipped: false },
   license: { code: '', expiry: '', trial: false },
   settings: {
@@ -2488,18 +2488,7 @@ async function loadDBAsync() {
     if (licenseArr.length > 0) DB.license = licenseArr[0];
     
     const deviceArr = await idbGetAll('device');
-    if (deviceArr.length > 0) {
-      if (deviceArr[0].deviceId) DB.deviceId = deviceArr[0].deviceId;
-      if (deviceArr[0].fcmToken) DB.fcmToken = deviceArr[0].fcmToken;
-      if (deviceArr[0].notifEnabled) DB.notifEnabled = true;
-    }
-    // Also restore from dedicated localStorage (fallback)
-    try {
-      var lt = localStorage.getItem('fcmToken');
-      var le = localStorage.getItem('notifEnabled');
-      if (lt && !DB.fcmToken) DB.fcmToken = lt;
-      if (le === 'true') DB.notifEnabled = true;
-    } catch(e) {}
+    if (deviceArr.length > 0 && deviceArr[0].deviceId) DB.deviceId = deviceArr[0].deviceId;
     
     const snoozedArr = await idbGetAll('snoozed');
     if (snoozedArr.length > 0) DB.snoozed = snoozedArr[0].data || {};
@@ -2624,7 +2613,7 @@ async function saveDBAsync() {
     await idbPut('license', Object.assign({ id: 'main' }, DB.license));
     
     await idbClear('device');
-    await idbPut('device', { id: 'main', deviceId: DB.deviceId, fcmToken: DB.fcmToken || '', notifEnabled: DB.notifEnabled || false });
+    await idbPut('device', { id: 'main', deviceId: DB.deviceId });
     
     await idbClear('snoozed');
     await idbPut('snoozed', { id: 'main', data: DB.snoozed });
@@ -2645,18 +2634,6 @@ function loadDB() {
       DB = Object.assign(DB, parsed);
     }
   } catch(e) { console.log('Load error', e); }
-  if (!DB.fcmToken) DB.fcmToken = '';
-  if (DB.notifEnabled === undefined) DB.notifEnabled = false;
-  // Restore from dedicated localStorage keys (persistent across cache clear)
-  try {
-    var savedToken = localStorage.getItem('fcmToken');
-    var savedEnabled = localStorage.getItem('notifEnabled');
-    if (savedToken && !DB.fcmToken) DB.fcmToken = savedToken;
-    if (savedEnabled === 'true') DB.notifEnabled = true;
-    // Also check if token exists in old DB dump
-    if (parsed && parsed.fcmToken && !DB.fcmToken) DB.fcmToken = parsed.fcmToken;
-    if (parsed && parsed.notifEnabled) DB.notifEnabled = true;
-  } catch(e) {}
   if (!DB.cows) DB.cows = [];
   if (!DB.milk) DB.milk = [];
   if (!DB.finance) DB.finance = [];
@@ -2668,13 +2645,7 @@ function loadDB() {
   if (!DB.customers) DB.customers = [];
   if (!DB.retailEntries) DB.retailEntries = [];
   if (!DB.snoozed) DB.snoozed = {};
-  if (!DB.deviceId) {
-    try {
-      var savedDevId = localStorage.getItem('deviceId');
-      if (savedDevId && savedDevId.startsWith('DEV-')) DB.deviceId = savedDevId;
-      else DB.deviceId = '';
-    } catch(e) { DB.deviceId = ''; }
-  }
+  if (!DB.deviceId) DB.deviceId = '';
   if (!DB.security) DB.security = { pin:'', skipped:false };
   if (!DB.security.skipped) DB.security.skipped = false;
   if (!DB.license) DB.license = { code:'', expiry:'', trial:false };
@@ -2694,12 +2665,6 @@ function loadDB() {
 }
 
 function saveDB() {
-  // Persistent FCM keys — survive even if dairyDBv3 is truncated
-  try {
-    if (DB.fcmToken) localStorage.setItem('fcmToken', DB.fcmToken);
-    localStorage.setItem('notifEnabled', DB.notifEnabled ? 'true' : 'false');
-    if (DB.deviceId) localStorage.setItem('deviceId', DB.deviceId);
-  } catch(e) {}
   // Keep localStorage as quick fallback — WITHOUT photos
   try {
     const dbCopy = JSON.parse(JSON.stringify(DB));
@@ -2826,6 +2791,12 @@ async function enableNotifications() {
   const btn = document.getElementById('notifBtn');
   const statusEl = document.getElementById('notifStatus');
   
+if (!window._messaging) {
+  const dbg = 'PROTO: ' + location.protocol + '\nHOST: ' + location.hostname + '\nFB: ' + typeof firebase + '\nMSG_FN: ' + (typeof firebase !== 'undefined' ? typeof firebase.messaging : 'no-firebase') + '\nMSG_OBJ: ' + typeof window._messaging + '\nSW_REG: ' + typeof window._fcmSWReg + '\nFB_READY: ' + window._fbReady;
+  alert(dbg);
+  return;
+}
+  
   // Check support
   if (!('Notification' in window)) {
     showAlert('❌ Not Supported', 'আপনার browser Notification support করে না।');
@@ -2833,18 +2804,12 @@ async function enableNotifications() {
   }
   
   if (!window._messaging) {
-    var dbg = 'PROTO: ' + location.protocol + '\nHOST: ' + location.hostname + '\nFB: ' + typeof firebase + '\nMSG: ' + typeof window._messaging + '\nSW_REG: ' + typeof window._fcmSWReg + '\nFB_READY: ' + window._fbReady;
-    console.log(dbg);
-    showAlert('❌ Not Ready', 'Firebase Messaging এখনো ready হয়নি। ২ সেকেন্ড পর আবার try করুন।');
-    // Retry after 2 sec
-    setTimeout(function(){ if(window._messaging) enableNotifications(); }, 2000);
+    showAlert('❌ Not Ready', 'Firebase Messaging এখনো ready হয়নি। একটু পরে try করুন।');
     return;
   }
   
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Requesting...';
-  }
+  btn.disabled = true;
+  btn.textContent = '⏳ Requesting...';
   
   try {
     // Step 1: Request permission
@@ -2852,334 +2817,70 @@ async function enableNotifications() {
     
     if (permission !== 'granted') {
       showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।\n\nBrowser settings থেকে আবার enable করতে পারবেন।');
-      if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
+      btn.disabled = false;
+      btn.textContent = '🔔 Enable Notifications';
       return;
     }
     
     // Step 2: Get FCM Token
-    if (btn) btn.textContent = '⏳ Getting token...';
+    btn.textContent = '⏳ Getting token...';
     
-    if (!window._fcmSWReg) {
-      await new Promise(function(r){ setTimeout(r, 1500); });
-    }
+// Wait for SW registration if not ready
+if (!window._fcmSWReg) {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+}
 
-    var tokenOptions = { vapidKey: VAPID_KEY };
-    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+const tokenOptions = { vapidKey: VAPID_KEY };
+if (window._fcmSWReg) {
+  tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+}
 
-    var token = await window._messaging.getToken(tokenOptions);
-    console.log('✅ FCM Token got:', token ? token.substring(0,30)+'...' : 'EMPTY');
+const token = await window._messaging.getToken(tokenOptions);
+
+console.log('✅ FCM Token:', token);
     
-    if (!token) {
-      throw new Error('Empty token from FCM');
-    }
+    // Step 3: Save to Firestore
+    btn.textContent = '⏳ Saving...';
+    await saveFCMToken(token);
     
-    // Step 3: Save locally FIRST - UI will be enabled immediately
+    // Step 4: Save locally
     DB.fcmToken = token;
     DB.notifEnabled = true;
-    try {
-      localStorage.setItem('fcmToken', token);
-      localStorage.setItem('notifEnabled', 'true');
-      localStorage.setItem('deviceId', DB.deviceId);
-      localStorage.setItem('fcmTokenTime', String(Date.now()));
-    } catch(e) {}
     saveDB();
+    
+    toast('✅ Notifications চালু হয়েছে!');
     updateNotificationUI();
-    toast('✅ Token পাওয়া গেছে, Firebase এ Save হচ্ছে...');
-    
-    // Step 4: Save to Firestore in background (non-blocking, with retry)
-    if (btn) btn.textContent = '⏳ Saving to Firebase...';
-    
-    // Save to both collections in parallel, don't wait more than 6 sec
-    var saveToFirestore = async function() {
-      try {
-        if (!window._db) {
-          console.log('⚠️ _db not ready for Firestore save');
-          return false;
-        }
-        if (!DB.deviceId) {
-          console.log('❌ No deviceId');
-          return false;
-        }
-        var docData = {
-          token: token,
-          deviceId: DB.deviceId,
-          farmName: DB.settings.farmName || 'Khudra khamar',
-          ownerName: DB.settings.ownerName || '',
-          phone: DB.settings.phone || '',
-          lang: DB.settings.lang || 'en',
-          active: true,
-          appVersion: '3.0',
-          lastToken: token.substring(0,20),
-          updatedAt: Date.now()
-        };
-        // Try with serverTimestamp, fallback to Date.now if fails
-        try {
-          docData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-        } catch(e) {
-          docData.updatedAt = Date.now();
-        }
-        
-        // Save to fcmTokens
-        await window._db.collection('fcmTokens').doc(DB.deviceId).set(docData, { merge: true });
-        console.log('✅ Saved to fcmTokens/'+DB.deviceId);
-        
-        // Also save to alertSchedule with merge
-        try {
-          await window._db.collection('alertSchedule').doc(DB.deviceId).set({
-            deviceId: DB.deviceId,
-            fcmToken: token,
-            farmName: DB.settings.farmName || 'Khudra khamar',
-            lang: DB.settings.lang || 'en',
-            appVersion: '3.0',
-            lastSync: Date.now(),
-            active: true
-          }, { merge: true });
-          console.log('✅ Saved to alertSchedule/'+DB.deviceId);
-        } catch(e2) {
-          console.log('alertSchedule save failed (may not exist yet):', e2.message);
-        }
-        
-        return true;
-      } catch(e) {
-        console.error('Firestore save error:', e.message);
-        return false;
-      }
-    };
-    
-    var result = await saveToFirestore();
-    
-    if (result) {
-      if (btn) btn.textContent = '✅ Saved to Firebase';
-      toast('✅ Firebase এ Token Save হয়েছে!');
-      // Force sync alerts too
-      try { if (typeof syncAlertsToFirestore === 'function') syncAlertsToFirestore(); } catch(e) {}
-    } else {
-      if (btn) btn.textContent = '✅ Saved Locally (Firebase retrying)';
-      toast('⚠️ Local Save হয়েছে, Firebase Background এ চেষ্টা করছে');
-      // Retry in background after 3 sec
-      setTimeout(function() {
-        saveToFirestore().then(function(r){
-          if (r) {
-            console.log('✅ Retry save success');
-            toast('✅ Firebase এ এখন Save হয়েছে!');
-            updateNotificationUI();
-          }
-        });
-      }, 3000);
-    }
-    
-    // Final UI update after 1 sec
-    setTimeout(function(){
-      DB.fcmToken = token;
-      DB.notifEnabled = true;
-      saveDB();
-      updateNotificationUI();
-    }, 1000);
     
   } catch(e) {
     console.error('❌ enableNotifications error:', e);
-    showAlert('❌ Error', e.message || 'Token পাওয়া যায়নি। Network check করুন, আবার try করুন।');
-    if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
+    showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
+    btn.disabled = false;
+    btn.textContent = '🔔 Enable Notifications';
   }
 }
 
 async function saveFCMToken(token) {
   try {
-    if (!token) return false;
-    if (!DB.deviceId) {
-      console.log('❌ No deviceId for saveFCMToken');
-      try { DB.deviceId = localStorage.getItem('deviceId') || ''; } catch(e) {}
-      if (!DB.deviceId) return false;
-    }
-    // Save locally first - always
-    try {
-      localStorage.setItem('fcmToken', token);
-      localStorage.setItem('notifEnabled', 'true');
-      localStorage.setItem('deviceId', DB.deviceId);
-      localStorage.setItem('fcmTokenTime', String(Date.now()));
-    } catch(e) {}
+    if (!window._db || !DB.deviceId) return false;
     
-    if (!window._db) {
-      console.log('⚠️ Firestore _db not ready, saved locally - will sync later');
-      setTimeout(function() {
-        if (window._db && DB.deviceId) {
-          window._db.collection('fcmTokens').doc(DB.deviceId).set({
-            token: token, deviceId: DB.deviceId, active: true,
-            farmName: DB.settings.farmName || 'Khudra khamar',
-            lang: DB.settings.lang || 'en',
-            updatedAt: Date.now()
-          }, { merge: true }).then(function(){ console.log('✅ Late sync to fcmTokens'); }).catch(function(e){});
-          window._db.collection('alertSchedule').doc(DB.deviceId).set({
-            deviceId: DB.deviceId, fcmToken: token, active: true,
-            farmName: DB.settings.farmName || 'Khudra khamar',
-            lang: DB.settings.lang || 'en',
-            lastSync: Date.now()
-          }, { merge: true }).then(function(){ console.log('✅ Late sync to alertSchedule'); }).catch(function(e){});
-        }
-      }, 2000);
-      return true;
-    }
-    
-    // Prepare data without serverTimestamp first (to avoid permission error)
-    var userEmailForFcm = '';
-    try { userEmailForFcm = (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || ''; } catch(e) {}
-    var baseData = {
+    await window._db.collection('fcmTokens').doc(DB.deviceId).set({
       token: token,
       deviceId: DB.deviceId,
-      email: userEmailForFcm,
-      farmName: DB.settings.farmName || 'Khudra khamar',
+      farmName: DB.settings.farmName || '',
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
-      lang: DB.settings.lang || 'en',
-      active: true,
-      appVersion: '3.0',
-      updatedAt: Date.now()
-    };
+      lang: DB.settings.lang || 'bn',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      active: true
+    });
     
-    // Try save to fcmTokens with merge
-    try {
-      await window._db.collection('fcmTokens').doc(DB.deviceId).set(Object.assign({}, baseData, { updatedAt: Date.now() }), { merge: true });
-      console.log('✅ Saved to fcmTokens/'+DB.deviceId);
-      // Now try with serverTimestamp for updatedAt
-      try {
-        await window._db.collection('fcmTokens').doc(DB.deviceId).set({ updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-      } catch(e) {}
-    } catch(e) {
-      console.error('fcmTokens save failed:', e.message, e.code);
-      // If permission denied, still return true because local save done
-      if (e.code === 'permission-denied') {
-        console.log('⚠️ Firestore permission denied - check Rules, but local save ok');
-      }
-    }
-    
-    // Also save to alertSchedule
-    try {
-      await window._db.collection('alertSchedule').doc(DB.deviceId).set({
-        deviceId: DB.deviceId,
-        fcmToken: token,
-        farmName: DB.settings.farmName || 'Khudra khamar',
-        lang: DB.settings.lang || 'en',
-        appVersion: '3.0',
-        lastSync: Date.now(),
-        active: true
-      }, { merge: true });
-      console.log('✅ Saved to alertSchedule/'+DB.deviceId);
-    } catch(e) {
-      console.error('alertSchedule save failed:', e.message);
-    }
-    
+    console.log('✅ FCM Token saved to Firestore');
     return true;
   } catch(e) {
-    console.error('❌ saveFCMToken error:', e.message);
-    return true; // Return true anyway - local save done
+    console.error('❌ Save token error:', e);
+    return false;
   }
 }
-
-// ===== AUTO FCM REGISTRATION - FIX FOR UNREGISTERED DEVICE (Script Google unchanged) =====
-async function autoRegisterFCM(showToast=false){
-  try{
-    if (!('Notification' in window)) return false;
-    if (Notification.permission !== 'granted'){
-      // If permission default, request once after delay
-      if (Notification.permission === 'default' && !localStorage.getItem('fcmAutoPromptDone')){
-        localStorage.setItem('fcmAutoPromptDone','1');
-        console.log('🔔 Auto requesting notification permission...');
-        var perm = await Notification.requestPermission();
-        if (perm !== 'granted') return false;
-      } else {
-        return false;
-      }
-    }
-    if (!window._messaging){
-      console.log('⏳ _messaging not ready, waiting...');
-      await new Promise(r=>setTimeout(r,2000));
-      if (!window._messaging) return false;
-    }
-    if (!window._fcmSWReg){
-      await new Promise(r=>setTimeout(r,1500));
-    }
-    if (!DB.deviceId){
-      console.log('❌ No deviceId for FCM');
-      return false;
-    }
-    var tokenOptions = { vapidKey: VAPID_KEY };
-    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-    var token = await window._messaging.getToken(tokenOptions);
-    if (!token){
-      console.log('❌ No token from getToken');
-      return false;
-    }
-    console.log('✅ Auto FCM Token:', token.substring(0,30)+'...');
-    // Check if token changed
-    if (DB.fcmToken !== token){
-      var ok = await saveFCMToken(token);
-      if (ok){
-        DB.fcmToken = token;
-        DB.notifEnabled = true;
-        try { localStorage.setItem('fcmToken', token); localStorage.setItem('notifEnabled','true'); } catch(e) {}
-        try{ saveDB(); }catch(e){}
-        if (typeof updateNotificationUI === 'function') updateNotificationUI();
-        if (showToast && typeof toast === 'function') toast('✅ Alert চালু হয়েছে!');
-        console.log('✅ Token auto-saved to fcmTokens/'+DB.deviceId);
-        return true;
-      }
-    } else {
-      // Even if same, ensure Firestore has it (in case doc deleted)
-      await saveFCMToken(token);
-      return true;
-    }
-  }catch(e){
-    console.log('autoRegisterFCM error:', e.message);
-  }
-  return false;
-}
-
-// Token refresh listener
-function setupFCMRefreshListener(){
-  try{
-    if (window._messaging && window._messaging.onTokenRefresh){
-      window._messaging.onTokenRefresh(async function(){
-        console.log('🔄 FCM Token refresh event');
-        try{
-          var tokenOptions = { vapidKey: VAPID_KEY };
-          if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-          var newToken = await window._messaging.getToken(tokenOptions);
-          if (newToken){
-            await saveFCMToken(newToken);
-            DB.fcmToken = newToken;
-            try{ saveDB(); }catch(e){}
-            console.log('✅ Refreshed token saved');
-          }
-        }catch(e){ console.log('Refresh error', e); }
-      });
-    }
-    // Also listen to onMessage for foreground
-    if (window._messaging && window._messaging.onMessage){
-      window._messaging.onMessage(function(payload){
-        console.log('📩 Foreground FCM:', payload);
-        var title = payload.notification?.title || payload.data?.title || '🐄 Dairy Manager';
-        var body = payload.notification?.body || payload.data?.body || 'নতুন Alert আছে';
-        if (Notification.permission === 'granted'){
-          try{
-            var n = new Notification(title, { body: body, icon: './icon-192.png', tag: 'dairy-fg' });
-            n.onclick = function(){ window.focus(); };
-          }catch(e){}
-        }
-        if (typeof toast === 'function') toast('🔔 '+body);
-      });
-    }
-  }catch(e){ console.log('setupFCMRefreshListener error', e); }
-}
-
-// Call auto register on app start (after Firebase ready) - does not block loading
-function scheduleAutoFCM(){
-  setTimeout(function(){ autoRegisterFCM(false); }, 3500);
-  setTimeout(function(){ autoRegisterFCM(false); }, 8000);
-  setTimeout(function(){ autoRegisterFCM(true); }, 15000);
-  setupFCMRefreshListener();
-}
-
-
 
 async function disableNotifications() {
 smartConfirm(t('notif_disable_confirm') || 'Disable Notifications?', function() {
@@ -3220,10 +2921,7 @@ function updateNotificationUI() {
   if (!statusEl) return;
   
   const granted = ('Notification' in window) && Notification.permission === 'granted';
-  var tokenExists = !!(DB.fcmToken && DB.fcmToken.length > 20);
-  // Fallback check localStorage
-  try { if (!tokenExists) { var lt = localStorage.getItem('fcmToken'); if (lt && lt.length > 20) tokenExists = true; } } catch(e) {}
-  const enabled = (DB.notifEnabled || tokenExists) && granted;
+  const enabled = DB.notifEnabled && granted;
   
   if (enabled) {
     statusEl.textContent = '✅ ON';
@@ -5225,7 +4923,7 @@ function showPage(p) {
   const el = document.getElementById('page-' + p);
   if (el) el.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-  const navMap = { home:0, cows:1, milk:2, finance:3, 'feed-stock':4, vet:5, settings:6 };
+  const navMap = { home:0, cows:1, milk:2, finance:3, 'feed-stock':4, notes:5, settings:6 };
   const idx = navMap[p];
   if (idx !== undefined) {
     const items = document.querySelectorAll('.nav-item');
@@ -7806,45 +7504,54 @@ if (f.alertsDry && c.insemDate && c.inseminated === 'yes' && !c.dryDone) {
 // ========== ALERT SYNC TO FIRESTORE ==========
 async function syncAlertsToFirestore() {
   try {
-    if (!window._db) {
-      console.log('syncAlerts: _db not ready');
+    if (!window._db) return;
+    
+    const alerts = getAlerts();
+    const today = new Date().toISOString().split('T')[0];
+    
+// FCM token খুঁজি (latest + deviceId fallback)
+let fcmToken = '';
+try {
+  const tokSnap = await window._db.collection('fcmTokens').get();
+  let latestTime = 0;
+  let latestToken = '';
+  tokSnap.forEach(function(doc) {
+    const d = doc.data();
+    if (!d.token) return;
+    // deviceId match হলে সেটাই best
+    if (d.deviceId === DB.deviceId) {
+      fcmToken = d.token;
+      latestTime = 9999999999;
       return;
     }
-    if (!DB.deviceId) {
-      try { DB.deviceId = localStorage.getItem('deviceId') || DB.deviceId; } catch(e) {}
-      if (!DB.deviceId) return;
+    // otherwise latest token track করি
+    const t = d.updatedAt && d.updatedAt.seconds ? d.updatedAt.seconds : 0;
+    if (t > latestTime) {
+      latestTime = t;
+      latestToken = d.token;
     }
-    
-    var alerts = [];
-    try { alerts = getAlerts(); } catch(e) { alerts = []; }
-    var today = new Date().toISOString().split('T')[0];
-    
-    // FCM Token - Use local DB.fcmToken directly (don't query whole fcmTokens collection - slow + permission error)
-    var fcmToken = '';
-    try {
-      if (DB.fcmToken && DB.fcmToken.length > 20) {
-        fcmToken = DB.fcmToken;
-      } else {
-        var lt = localStorage.getItem('fcmToken');
-        if (lt && lt.length > 20) fcmToken = lt;
-      }
-    } catch(e) {}
-    
-    console.log('syncAlerts: device='+DB.deviceId+', alerts='+alerts.length+', token='+(fcmToken ? 'YES '+fcmToken.substring(0,20)+'...' : 'NO'));
+  });
+  // deviceId match না পেলে latest token
+  if (!fcmToken && latestToken) fcmToken = latestToken;
+} catch(e) {
+  console.warn('Token lookup failed:', e);
+}
+console.log('FCM Token:', fcmToken ? 'Found (' + fcmToken.length + ' chars)' : 'Not found');
     
     // User info
-    var uid = '';
-    try { var user = window._auth && window._auth.currentUser; uid = user ? user.uid : ''; } catch(e) {}
+    const user = window._auth && window._auth.currentUser;
+    const uid = user ? user.uid : '';
     
-    var docData = {
+    // Firestore-এ save
+    await window._db.collection('alertSchedule').doc(DB.deviceId).set({
       deviceId: DB.deviceId,
       uid: uid,
       fcmToken: fcmToken,
-      farmName: DB.settings.farmName || 'Khudra khamar',
+      farmName: DB.settings.farmName || '',
       phone: DB.settings.phone || '',
-      lang: DB.settings.lang || 'en',
-      alerts: alerts.map(function(a){ return {
-        id: a.id || '',
+      lang: DB.settings.lang || 'bn',
+      alerts: alerts.map(a => ({
+        id: a.id,
         cowId: a.cowId || '',
         type: a.type || '',
         title: a.title || '',
@@ -7852,40 +7559,30 @@ async function syncAlertsToFirestore() {
         action: a.action || '',
         icon: a.icon || '',
         color: a.color || ''
-      }; }),
+      })),
       alertCount: alerts.length,
       lastSync: Date.now(),
       lastSyncDate: today,
-      appVersion: '3.0',
-      active: true
-    };
+      appVersion: '3.0'
+    }, { merge: true });
     
-    // Save with merge true - never overwrite token if empty
-    if (!fcmToken) {
-      // Don't overwrite existing fcmToken in Firestore if we don't have token now
-      delete docData.fcmToken;
-    }
-    
-    await window._db.collection('alertSchedule').doc(DB.deviceId).set(docData, { merge: true });
-    console.log('✅ Alerts synced to alertSchedule/'+DB.deviceId+' count='+alerts.length+' token='+(fcmToken?'YES':'NO'));
+    console.log('✅ Alerts synced:', alerts.length);
   } catch(e) {
-    console.warn('Alert sync failed:', e.message);
+    console.warn('Alert sync failed:', e);
   }
 }
 
 function renderAlertCenter() {
-  var badge = document.getElementById('alertBadge');
+  const badge = document.getElementById('alertBadge');
   if (!badge) return;
-  var alerts = [];
-  try { alerts = getAlerts(); } catch(e) {}
+  const alerts = getAlerts();
   if (alerts.length > 0) {
     badge.textContent = alerts.length;
     badge.style.display = 'flex';
   } else {
     badge.style.display = 'none';
   }
-  // Sync to Firestore with small delay to ensure DB ready
-  setTimeout(function(){ try { syncAlertsToFirestore(); } catch(e) {} }, 1000);
+syncAlertsToFirestore();
 }
   
 function renderAlertsFull() {
@@ -8279,7 +7976,57 @@ function buildPdfHtml() {
       Dairy Manager • Generated: ${formatDate(new Date())}<br>
       Total Days: ${d.days} • Entries: ${d.entries.length}
     </div>
-    </body></html>`;
+    
+<script>
+// WHITE SCREEN FIX - V24
+(function() {
+  function fixWhiteScreen() {
+    try {
+      const splash = document.getElementById('dmSplash');
+      const body = document.body;
+      const main = document.getElementById('mainContent');
+      const login = document.getElementById('loginScreen');
+      const trial = document.getElementById('trialScreen');
+      
+      // If splash gone but body white and no content visible
+      const isWhite = !main || main.style.display === 'none' || main.offsetHeight < 10;
+      const loginVisible = login && login.style.display !== 'none' && login.offsetHeight > 10;
+      const trialVisible = trial && trial.style.display !== 'none' && trial.offsetHeight > 10;
+      
+      if (isWhite && !loginVisible && !trialVisible) {
+        console.warn('⚠️ White screen detected - forcing trial/login');
+        if (splash) { try { splash.remove(); } catch(e) {} }
+        // Try to show trial
+        if (typeof showTrialScreen === 'function') {
+          try { showTrialScreen(); } catch(e) {}
+        } else if (trial) {
+          trial.style.display = 'flex';
+        } else if (login) {
+          login.style.display = 'flex';
+        }
+        if (main) main.style.display = 'block';
+      }
+    } catch(e) {}
+  }
+  setTimeout(fixWhiteScreen, 3000);
+  setTimeout(fixWhiteScreen, 5000);
+  setTimeout(fixWhiteScreen, 7000);
+})();
+</script>
+
+
+<script>
+(function() {
+  function forceRemoveSplash() {
+    try { const s=document.getElementById('dmSplash'); if(s){ s.style.transition='opacity 0.3s'; s.style.opacity='0'; setTimeout(function(){ try { s.remove(); } catch(e) { s.style.display='none'; } },350); } } catch(e) {}
+  }
+  setTimeout(forceRemoveSplash, 2000);
+  setTimeout(forceRemoveSplash, 4000);
+  window.addEventListener('load', function(){ setTimeout(forceRemoveSplash,1500); });
+})();
+</script>
+
+</body></html>`;
 }
 
 function downloadPdf() {
@@ -9113,7 +8860,57 @@ function generateRetailPDF(customerId, month) {
     '<div class="row total"><span>' + (due > 0 ? '⚠️ Due' : '✅ Clear') + '</span><span>' + Math.abs(due).toFixed(0) + ' Rs</span></div>' +
     '</div>' +
     '<div class="footer">Generated by Dairy Manager • ' + formatDate(new Date()) + '</div>' +
-    '</body></html>';
+    '
+<script>
+// WHITE SCREEN FIX - V24
+(function() {
+  function fixWhiteScreen() {
+    try {
+      const splash = document.getElementById('dmSplash');
+      const body = document.body;
+      const main = document.getElementById('mainContent');
+      const login = document.getElementById('loginScreen');
+      const trial = document.getElementById('trialScreen');
+      
+      // If splash gone but body white and no content visible
+      const isWhite = !main || main.style.display === 'none' || main.offsetHeight < 10;
+      const loginVisible = login && login.style.display !== 'none' && login.offsetHeight > 10;
+      const trialVisible = trial && trial.style.display !== 'none' && trial.offsetHeight > 10;
+      
+      if (isWhite && !loginVisible && !trialVisible) {
+        console.warn('⚠️ White screen detected - forcing trial/login');
+        if (splash) { try { splash.remove(); } catch(e) {} }
+        // Try to show trial
+        if (typeof showTrialScreen === 'function') {
+          try { showTrialScreen(); } catch(e) {}
+        } else if (trial) {
+          trial.style.display = 'flex';
+        } else if (login) {
+          login.style.display = 'flex';
+        }
+        if (main) main.style.display = 'block';
+      }
+    } catch(e) {}
+  }
+  setTimeout(fixWhiteScreen, 3000);
+  setTimeout(fixWhiteScreen, 5000);
+  setTimeout(fixWhiteScreen, 7000);
+})();
+</script>
+
+
+<script>
+(function() {
+  function forceRemoveSplash() {
+    try { const s=document.getElementById('dmSplash'); if(s){ s.style.transition='opacity 0.3s'; s.style.opacity='0'; setTimeout(function(){ try { s.remove(); } catch(e) { s.style.display='none'; } },350); } } catch(e) {}
+  }
+  setTimeout(forceRemoveSplash, 2000);
+  setTimeout(forceRemoveSplash, 4000);
+  window.addEventListener('load', function(){ setTimeout(forceRemoveSplash,1500); });
+})();
+</script>
+
+</body></html>';
   
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
@@ -9710,7 +9507,57 @@ function buildSaleBillHtml(c) {
     Generated by Dairy Manager • ${formatDate(new Date())}<br>
     Contact: ${phone || '9800696104'}
   </div>
-  </body></html>`;
+  
+<script>
+// WHITE SCREEN FIX - V24
+(function() {
+  function fixWhiteScreen() {
+    try {
+      const splash = document.getElementById('dmSplash');
+      const body = document.body;
+      const main = document.getElementById('mainContent');
+      const login = document.getElementById('loginScreen');
+      const trial = document.getElementById('trialScreen');
+      
+      // If splash gone but body white and no content visible
+      const isWhite = !main || main.style.display === 'none' || main.offsetHeight < 10;
+      const loginVisible = login && login.style.display !== 'none' && login.offsetHeight > 10;
+      const trialVisible = trial && trial.style.display !== 'none' && trial.offsetHeight > 10;
+      
+      if (isWhite && !loginVisible && !trialVisible) {
+        console.warn('⚠️ White screen detected - forcing trial/login');
+        if (splash) { try { splash.remove(); } catch(e) {} }
+        // Try to show trial
+        if (typeof showTrialScreen === 'function') {
+          try { showTrialScreen(); } catch(e) {}
+        } else if (trial) {
+          trial.style.display = 'flex';
+        } else if (login) {
+          login.style.display = 'flex';
+        }
+        if (main) main.style.display = 'block';
+      }
+    } catch(e) {}
+  }
+  setTimeout(fixWhiteScreen, 3000);
+  setTimeout(fixWhiteScreen, 5000);
+  setTimeout(fixWhiteScreen, 7000);
+})();
+</script>
+
+
+<script>
+(function() {
+  function forceRemoveSplash() {
+    try { const s=document.getElementById('dmSplash'); if(s){ s.style.transition='opacity 0.3s'; s.style.opacity='0'; setTimeout(function(){ try { s.remove(); } catch(e) { s.style.display='none'; } },350); } } catch(e) {}
+  }
+  setTimeout(forceRemoveSplash, 2000);
+  setTimeout(forceRemoveSplash, 4000);
+  window.addEventListener('load', function(){ setTimeout(forceRemoveSplash,1500); });
+})();
+</script>
+
+</body></html>`;
 }
 
 function openSaleBill(id) {
@@ -10172,28 +10019,15 @@ return;
 
 async function saveGuestTrialUser() {
   try {
-    if (!window._db) return;
-    if (!DB.deviceId) return;
-    const deviceId = DB.deviceId;
-    const now = Date.now();
-    const ref = window._db.collection('trialUsers').doc(deviceId);
-    const guestData = {
-      type: 'guest',
-      deviceId: deviceId,
-      farmerName: DB.settings.farmName || '',
-      ownerName: DB.settings.ownerName || '',
-      phone: DB.settings.phone || '',
-      email: '',
-      firstSeen: now,
-      lastSeen: now,
-      appVersion: '3.0',
-      converted: false
-    };
-    await ref.set(guestData, { merge: true });
-    console.log('✅ Guest saved no-get:', deviceId);
-  } catch(e) {
-    console.warn('Guest save failed:', e.message);
-  }
+    if (!window._db || !DB.deviceId) return;
+    await window._db.collection('trialUsers').doc(DB.deviceId).set({
+      type: 'guest', deviceId: DB.deviceId,
+      farmerName: DB.settings.farmName || '', ownerName: DB.settings.ownerName || '',
+      phone: DB.settings.phone || '', email: '',
+      lastSeen: Date.now(), firstSeen: Date.now(), appVersion: '3.0', converted: false
+    }, { merge: true });
+    console.log('✅ Guest saved');
+  } catch(e) { console.warn('Guest fail', e.message); }
 }, 2800);
     } else {
       // Already আছে — lastSeen update
@@ -11816,136 +11650,63 @@ function waitForAuthThenCheckLicense() {
 
 // ========== INIT ==========
 async function initApp() {
+  console.log('🚀 initApp start V9 safe');
+  // Failsafe splash removal timers already set outside
   try {
-    // Step 1: Initialize IndexedDB - FAST
-    await initIndexedDB();
-    const hasIDBData = await loadDBAsync();
-    // fetchAlertSettings moved to background - don't block UI
-    
-    // Step 3: If IDB has no data, try localStorage (migration)
-    if (!hasIDBData || DB.cows.length === 0) {
-      const localData = localStorage.getItem('dairyDBv3');
-      if (localData) {
-        try {
-          const parsed = JSON.parse(localData);
-          DB = Object.assign(DB, parsed);
-          idbLog('Migrated from localStorage');
-          await saveDBAsync();
-        } catch(e) {
-          idbLog('Migration error: ' + e.message);
-        }
-      } else {
-        loadDB();
-      }
-    }
-    
-    // Step 4: Normalize DB structure
-    if (!DB.fcmToken) DB.fcmToken = '';
-  if (DB.notifEnabled === undefined) DB.notifEnabled = false;
-  // Restore from dedicated localStorage keys (persistent across cache clear)
-  try {
-    var savedToken = localStorage.getItem('fcmToken');
-    var savedEnabled = localStorage.getItem('notifEnabled');
-    if (savedToken && !DB.fcmToken) DB.fcmToken = savedToken;
-    if (savedEnabled === 'true') DB.notifEnabled = true;
-    // Also check if token exists in old DB dump
-    if (parsed && parsed.fcmToken && !DB.fcmToken) DB.fcmToken = parsed.fcmToken;
-    if (parsed && parsed.notifEnabled) DB.notifEnabled = true;
-  } catch(e) {}
-  if (!DB.cows) DB.cows = [];
-    if (!DB.milk) DB.milk = [];
-    if (!DB.finance) DB.finance = [];
-    if (!DB.medicine) DB.medicine = [];
-    if (!DB.notes) DB.notes = [];
-    if (!DB.medStock) DB.medStock = [];
-    if (!DB.feedStock) DB.feedStock = [];
-    if (!DB.contacts) DB.contacts = [];
-    if (!DB.customers) DB.customers = [];
-    if (!DB.retailEntries) DB.retailEntries = [];
-    if (!DB.snoozed) DB.snoozed = {};
-    if (!DB.security) DB.security = { pin:'', skipped:false };
-    if (!DB.security.skipped) DB.security.skipped = false;
-    if (!DB.license) DB.license = { code:'', expiry:'', trial:false };
-    if (!DB.settings) DB.settings = {};
-    
-    if (!DB.settings.features) DB.settings.features = {
-      lactation:true, milkRecord:false, alertsPD:true, alertsHeat:true,
-      alertsDry:true, alertsCalving:true, alertsDeworm:true,
-      alertsVaccine:true, medicine:true, notes:true, retail:true
-    };
-    if (DB.settings.features.retail === undefined) DB.settings.features.retail = true;
-    if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
-    if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
-    
-    // Default Preset Advanced
-    if (!DB.settings.preset) DB.settings.preset = 'advanced';
-    if (!DB.settings.price) DB.settings.price = 40;
-    if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
-    
-    // Step 5: Device ID
-    if (!DB.deviceId) {
-      DB.deviceId = generateDeviceId();
-    try{ localStorage.setItem('deviceId', DB.deviceId); }catch(e){}
-    // New device created - auto register FCM after 2 sec
-    setTimeout(function(){ autoRegisterFCM(true); }, 2500);
-      await saveDBAsync();
-    }
-    
-    const dShow = document.getElementById('deviceIdShow');
-    if (dShow) dShow.textContent = DB.deviceId;
-
-    // ===== FAST RENDER - Home immediately =====
     try {
-      if (DB.settings.setupDone) {
-        if (typeof applyLang === 'function') applyLang();
-        if (typeof renderHome === 'function') renderHome();
-        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
-        const setupEl = document.getElementById('setupScreen');
-        if (setupEl) setupEl.style.display = 'none';
+      // Load DB from localStorage first - never block on IndexedDB
+      if (typeof loadDB === 'function') {
+        try { loadDB(); } catch(e) { console.warn('loadDB fail', e.message); }
       }
-    } catch(e){}
-
-    const splashEarly = document.getElementById('dmSplash');
-    if (splashEarly) {
-      splashEarly.style.transition = 'opacity 0.3s';
-      splashEarly.style.opacity = '0';
-      setTimeout(function() { if (splashEarly && splashEarly.parentNode) splashEarly.remove(); }, 350);
-    }
-
-    try { if (typeof fetchAlertSettings === 'function') fetchAlertSettings(); } catch(e){}
+    } catch(e) {}
     
-    // Background retry for FCM Alert Sync - ensures 5-6 AM push
-    (function retryAlertSyncForFCM(){
-      var attempts=0;
-      function trySync(){
-        attempts++;
-        if (window._db && window._fbReady) {
-          try {
-            if (typeof syncAlertsToFirestore === 'function') {
-              syncAlertsToFirestore();
-              console.log('✅ Auto Alert Sync for 5-6 AM push');
-              localStorage.setItem('lastFcmSync', new Date().toLocaleString('bn-BD'));
-            }
-          } catch(e){}
-          return;
-        }
-        if (attempts<30) setTimeout(trySync, 1000);
+    try {
+      // Photos load - non blocking
+      if (typeof loadAllPhotosSeparately === 'function') {
+        loadAllPhotosSeparately().catch(function(pe){ console.warn('Photos skip', pe.message); });
       }
-      setTimeout(trySync, 2000);
-    })();
-
-    // ===== Firestore থেকে Setup Restore করি - background =====
-// Local setupDone না থাকলে কিন্তু Firestore-এ থাকলে → restore
-if (!DB.settings.setupDone && DB.deviceId && window._db) {
-  try {
-    const restored = await loadDeviceSetupFromFirestore();
-    if (restored) {
-      console.log('✅ Setup restored from Firestore');
-    }
+    } catch(e) {}
+    
+    // Try to proceed
+    try {
+      if (typeof proceedAfterLogin === 'function') {
+        // Give a small delay to ensure DOM ready
+        setTimeout(function() {
+          try { proceedAfterLogin(); } catch(ee) { 
+            console.warn('proceedAfterLogin fail', ee.message);
+            // Force show main
+            try {
+              const main = document.getElementById('mainContent');
+              const login = document.getElementById('loginScreen');
+              if (main) main.style.display = 'block';
+              // If no DB, show trial
+              if (typeof showTrialScreen === 'function') {
+                const hasTrial = localStorage.getItem('dairy_trial_active');
+                if (!hasTrial) { try { showTrialScreen(); } catch(e) {} }
+              }
+            } catch(e) {}
+          }
+        }, 300);
+      }
+    } catch(e) { console.warn('proceed fail', e.message); }
+    
   } catch(e) {
-    console.warn('Setup restore failed:', e);
+    console.error('initApp outer fail', e.message);
+  } finally {
+    // Always try to remove splash and show something
+    setTimeout(function() {
+      try {
+        const splash = document.getElementById('dmSplash');
+        if (splash) { splash.style.opacity='0'; setTimeout(function(){ try { splash.remove(); } catch(e) {} },300); }
+        // If still white, force show body
+        document.body.style.background = '#e8f5e9';
+        const main = document.getElementById('mainContent') || document.getElementById('app');
+        if (main && main.style.display === 'none') main.style.display = 'block';
+      } catch(e) {}
+    }, 1000);
   }
 }
+
 
     
 // Step 6: Setup wizard or license check
@@ -11966,9 +11727,6 @@ if (!DB.settings.setupDone) {
   
   // Firebase Auth ready হওয়ার অপেক্ষা করি
   waitForAuthThenCheckLicense();
-    scheduleAutoFCM();
-    // Also try auto register immediately if deviceId exists
-    setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
 }
     
     idbLog('App initialized successfully - splash already removed');
@@ -11982,9 +11740,6 @@ if (splashErr) splashErr.remove();
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
     waitForAuthThenCheckLicense();
-    scheduleAutoFCM();
-    // Also try auto register immediately if deviceId exists
-    setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
   }
 }
 
@@ -11994,16 +11749,6 @@ initApp();
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    // Skip SW if not https - file:// content:// null origin fails - don't block loading
-    if (location.protocol === 'file:' || location.protocol === 'content:' || location.origin === 'null' || location.hostname === '') {
-      console.warn('⚠️ SW skipped - file:// or null origin - use GitHub Pages https:// for SW');
-      // Still remove splash and init app
-      try {
-        const splash = document.getElementById('dmSplash');
-        if (splash) { splash.style.transition = 'opacity 0.3s'; splash.style.opacity = '0'; setTimeout(function(){ if(splash && splash.parentNode) splash.remove(); }, 350); }
-      } catch(e) {}
-      return;
-    }
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ SW registered:', reg.scope);
       
@@ -12136,6 +11881,56 @@ document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     
   </div>
 </div>
+
+
+<script>
+// WHITE SCREEN FIX - V24
+(function() {
+  function fixWhiteScreen() {
+    try {
+      const splash = document.getElementById('dmSplash');
+      const body = document.body;
+      const main = document.getElementById('mainContent');
+      const login = document.getElementById('loginScreen');
+      const trial = document.getElementById('trialScreen');
+      
+      // If splash gone but body white and no content visible
+      const isWhite = !main || main.style.display === 'none' || main.offsetHeight < 10;
+      const loginVisible = login && login.style.display !== 'none' && login.offsetHeight > 10;
+      const trialVisible = trial && trial.style.display !== 'none' && trial.offsetHeight > 10;
+      
+      if (isWhite && !loginVisible && !trialVisible) {
+        console.warn('⚠️ White screen detected - forcing trial/login');
+        if (splash) { try { splash.remove(); } catch(e) {} }
+        // Try to show trial
+        if (typeof showTrialScreen === 'function') {
+          try { showTrialScreen(); } catch(e) {}
+        } else if (trial) {
+          trial.style.display = 'flex';
+        } else if (login) {
+          login.style.display = 'flex';
+        }
+        if (main) main.style.display = 'block';
+      }
+    } catch(e) {}
+  }
+  setTimeout(fixWhiteScreen, 3000);
+  setTimeout(fixWhiteScreen, 5000);
+  setTimeout(fixWhiteScreen, 7000);
+})();
+</script>
+
+
+<script>
+(function() {
+  function forceRemoveSplash() {
+    try { const s=document.getElementById('dmSplash'); if(s){ s.style.transition='opacity 0.3s'; s.style.opacity='0'; setTimeout(function(){ try { s.remove(); } catch(e) { s.style.display='none'; } },350); } } catch(e) {}
+  }
+  setTimeout(forceRemoveSplash, 2000);
+  setTimeout(forceRemoveSplash, 4000);
+  window.addEventListener('load', function(){ setTimeout(forceRemoveSplash,1500); });
+})();
+</script>
 
 </body>
 </html>
