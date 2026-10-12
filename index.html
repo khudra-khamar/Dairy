@@ -3005,6 +3005,7 @@ async function saveFCMToken(token) {
         if (window._db && DB.deviceId) {
           window._db.collection('fcmTokens').doc(DB.deviceId).set({
             token: token, deviceId: DB.deviceId, active: true,
+            email: (window._auth && window._auth.currentUser && window._auth.currentUser.email) || DB.userEmail || localStorage.getItem('userEmail') || '',
             farmName: DB.settings.farmName || 'Khudra khamar',
             lang: DB.settings.lang || 'en',
             updatedAt: Date.now()
@@ -10178,17 +10179,18 @@ async function saveGuestTrialUser() {
     const deviceId = DB.deviceId;
     const now = Date.now();
     const ref = window._db.collection('trialUsers').doc(deviceId);
+    let snap = null;
     let isNew = true;
     try {
-      const snap = await ref.get({ source: 'server' }).catch(async () => await ref.get({ source: 'cache' }).catch(() => null));
+      snap = await ref.get();
       if (snap && snap.exists) isNew = false;
-    } catch(e) {
-      console.log('ℹ️ Guest check offline, assuming new doc');
+    } catch(ge) {
+      console.log('ℹ️ Guest get offline/failed, will create with merge', ge.message);
       isNew = true;
     }
     
-    if (isNew) {
-      // প্রথমবার — নতুন guest doc — set with merge, no get required
+    if (isNew || !snap || !snap.exists) {
+      // প্রথমবার — নতুন guest doc
       await ref.set({
         type: 'guest',
         deviceId: deviceId,
@@ -10206,7 +10208,7 @@ async function saveGuestTrialUser() {
   if (typeof toast === 'function') toast(t('guest_trial_saved'));
 }, 2800);
     } else {
-      // Already আছে — lastSeen update — only allowed fields per Rules
+      // Already আছে — lastSeen update — only allowed fields
       try {
         await ref.update({
   lastSeen: now,
@@ -10215,7 +10217,6 @@ async function saveGuestTrialUser() {
   phone: DB.settings.phone || ''
 });
       } catch(upErr) {
-        // If update fails due to offline or rules, try set merge with only allowed fields
         await ref.set({
           deviceId: deviceId,
           lastSeen: now,
@@ -12005,11 +12006,9 @@ if (splashErr) splashErr.remove();
     if (dShow) dShow.textContent = DB.deviceId;
     waitForAuthThenCheckLicense();
     scheduleAutoFCM();
-    // Also try auto register immediately if deviceId exists
     setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
-    // Guest Trial Save - offline resilient
     setTimeout(function(){ try { if(DB.deviceId) saveGuestTrialUser(); } catch(e) {} }, 3500);
-    setTimeout(function(){ try { if(DB.deviceId) autoRegisterFCM(); } catch(e) {} }, 5000);
+    setTimeout(function(){ try { if(DB.deviceId) autoRegisterFCM(); } catch(e) {} }, 6000);
   }
 }
 
