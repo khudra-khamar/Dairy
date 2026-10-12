@@ -2668,7 +2668,13 @@ function loadDB() {
   if (!DB.customers) DB.customers = [];
   if (!DB.retailEntries) DB.retailEntries = [];
   if (!DB.snoozed) DB.snoozed = {};
-  if (!DB.deviceId) DB.deviceId = '';
+  if (!DB.deviceId) {
+    try {
+      var savedDevId = localStorage.getItem('deviceId');
+      if (savedDevId && savedDevId.startsWith('DEV-')) DB.deviceId = savedDevId;
+      else DB.deviceId = '';
+    } catch(e) { DB.deviceId = ''; }
+  }
   if (!DB.security) DB.security = { pin:'', skipped:false };
   if (!DB.security.skipped) DB.security.skipped = false;
   if (!DB.license) DB.license = { code:'', expiry:'', trial:false };
@@ -2820,12 +2826,6 @@ async function enableNotifications() {
   const btn = document.getElementById('notifBtn');
   const statusEl = document.getElementById('notifStatus');
   
-if (!window._messaging) {
-  const dbg = 'PROTO: ' + location.protocol + '\nHOST: ' + location.hostname + '\nFB: ' + typeof firebase + '\nMSG_FN: ' + (typeof firebase !== 'undefined' ? typeof firebase.messaging : 'no-firebase') + '\nMSG_OBJ: ' + typeof window._messaging + '\nSW_REG: ' + typeof window._fcmSWReg + '\nFB_READY: ' + window._fbReady;
-  alert(dbg);
-  return;
-}
-  
   // Check support
   if (!('Notification' in window)) {
     showAlert('❌ Not Supported', 'আপনার browser Notification support করে না।');
@@ -2833,12 +2833,18 @@ if (!window._messaging) {
   }
   
   if (!window._messaging) {
-    showAlert('❌ Not Ready', 'Firebase Messaging এখনো ready হয়নি। একটু পরে try করুন।');
+    var dbg = 'PROTO: ' + location.protocol + '\nHOST: ' + location.hostname + '\nFB: ' + typeof firebase + '\nMSG: ' + typeof window._messaging + '\nSW_REG: ' + typeof window._fcmSWReg + '\nFB_READY: ' + window._fbReady;
+    console.log(dbg);
+    showAlert('❌ Not Ready', 'Firebase Messaging এখনো ready হয়নি। ২ সেকেন্ড পর আবার try করুন।');
+    // Retry after 2 sec
+    setTimeout(function(){ if(window._messaging) enableNotifications(); }, 2000);
     return;
   }
   
-  btn.disabled = true;
-  btn.textContent = '⏳ Requesting...';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Requesting...';
+  }
   
   try {
     // Step 1: Request permission
@@ -2846,68 +2852,222 @@ if (!window._messaging) {
     
     if (permission !== 'granted') {
       showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।\n\nBrowser settings থেকে আবার enable করতে পারবেন।');
-      btn.disabled = false;
-      btn.textContent = '🔔 Enable Notifications';
+      if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
       return;
     }
     
     // Step 2: Get FCM Token
-    btn.textContent = '⏳ Getting token...';
+    if (btn) btn.textContent = '⏳ Getting token...';
     
-// Wait for SW registration if not ready
-if (!window._fcmSWReg) {
-  await new Promise(resolve => setTimeout(resolve, 1500));
-}
+    if (!window._fcmSWReg) {
+      await new Promise(function(r){ setTimeout(r, 1500); });
+    }
 
-const tokenOptions = { vapidKey: VAPID_KEY };
-if (window._fcmSWReg) {
-  tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-}
+    var tokenOptions = { vapidKey: VAPID_KEY };
+    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
 
-const token = await window._messaging.getToken(tokenOptions);
-
-console.log('✅ FCM Token:', token);
+    var token = await window._messaging.getToken(tokenOptions);
+    console.log('✅ FCM Token got:', token ? token.substring(0,30)+'...' : 'EMPTY');
     
-    // Step 3: Save to Firestore
-    btn.textContent = '⏳ Saving...';
-    await saveFCMToken(token);
+    if (!token) {
+      throw new Error('Empty token from FCM');
+    }
     
-    // Step 4: Save locally
+    // Step 3: Save locally FIRST - UI will be enabled immediately
     DB.fcmToken = token;
     DB.notifEnabled = true;
+    try {
+      localStorage.setItem('fcmToken', token);
+      localStorage.setItem('notifEnabled', 'true');
+      localStorage.setItem('deviceId', DB.deviceId);
+      localStorage.setItem('fcmTokenTime', String(Date.now()));
+    } catch(e) {}
     saveDB();
-    
-    toast('✅ Notifications চালু হয়েছে!');
     updateNotificationUI();
+    toast('✅ Token পাওয়া গেছে, Firebase এ Save হচ্ছে...');
+    
+    // Step 4: Save to Firestore in background (non-blocking, with retry)
+    if (btn) btn.textContent = '⏳ Saving to Firebase...';
+    
+    // Save to both collections in parallel, don't wait more than 6 sec
+    var saveToFirestore = async function() {
+      try {
+        if (!window._db) {
+          console.log('⚠️ _db not ready for Firestore save');
+          return false;
+        }
+        if (!DB.deviceId) {
+          console.log('❌ No deviceId');
+          return false;
+        }
+        var docData = {
+          token: token,
+          deviceId: DB.deviceId,
+          farmName: DB.settings.farmName || 'Khudra khamar',
+          ownerName: DB.settings.ownerName || '',
+          phone: DB.settings.phone || '',
+          lang: DB.settings.lang || 'en',
+          active: true,
+          appVersion: '3.0',
+          lastToken: token.substring(0,20),
+          updatedAt: Date.now()
+        };
+        // Try with serverTimestamp, fallback to Date.now if fails
+        try {
+          docData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+        } catch(e) {
+          docData.updatedAt = Date.now();
+        }
+        
+        // Save to fcmTokens
+        await window._db.collection('fcmTokens').doc(DB.deviceId).set(docData, { merge: true });
+        console.log('✅ Saved to fcmTokens/'+DB.deviceId);
+        
+        // Also save to alertSchedule with merge
+        try {
+          await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+            deviceId: DB.deviceId,
+            fcmToken: token,
+            farmName: DB.settings.farmName || 'Khudra khamar',
+            lang: DB.settings.lang || 'en',
+            appVersion: '3.0',
+            lastSync: Date.now(),
+            active: true
+          }, { merge: true });
+          console.log('✅ Saved to alertSchedule/'+DB.deviceId);
+        } catch(e2) {
+          console.log('alertSchedule save failed (may not exist yet):', e2.message);
+        }
+        
+        return true;
+      } catch(e) {
+        console.error('Firestore save error:', e.message);
+        return false;
+      }
+    };
+    
+    var result = await saveToFirestore();
+    
+    if (result) {
+      if (btn) btn.textContent = '✅ Saved to Firebase';
+      toast('✅ Firebase এ Token Save হয়েছে!');
+      // Force sync alerts too
+      try { if (typeof syncAlertsToFirestore === 'function') syncAlertsToFirestore(); } catch(e) {}
+    } else {
+      if (btn) btn.textContent = '✅ Saved Locally (Firebase retrying)';
+      toast('⚠️ Local Save হয়েছে, Firebase Background এ চেষ্টা করছে');
+      // Retry in background after 3 sec
+      setTimeout(function() {
+        saveToFirestore().then(function(r){
+          if (r) {
+            console.log('✅ Retry save success');
+            toast('✅ Firebase এ এখন Save হয়েছে!');
+            updateNotificationUI();
+          }
+        });
+      }, 3000);
+    }
+    
+    // Final UI update after 1 sec
+    setTimeout(function(){
+      DB.fcmToken = token;
+      DB.notifEnabled = true;
+      saveDB();
+      updateNotificationUI();
+    }, 1000);
     
   } catch(e) {
     console.error('❌ enableNotifications error:', e);
-    showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
-    btn.disabled = false;
-    btn.textContent = '🔔 Enable Notifications';
+    showAlert('❌ Error', e.message || 'Token পাওয়া যায়নি। Network check করুন, আবার try করুন।');
+    if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
   }
 }
 
 async function saveFCMToken(token) {
   try {
-    if (!window._db || !DB.deviceId) return false;
+    if (!token) return false;
+    if (!DB.deviceId) {
+      console.log('❌ No deviceId for saveFCMToken');
+      try { DB.deviceId = localStorage.getItem('deviceId') || ''; } catch(e) {}
+      if (!DB.deviceId) return false;
+    }
+    // Save locally first - always
+    try {
+      localStorage.setItem('fcmToken', token);
+      localStorage.setItem('notifEnabled', 'true');
+      localStorage.setItem('deviceId', DB.deviceId);
+      localStorage.setItem('fcmTokenTime', String(Date.now()));
+    } catch(e) {}
     
-    await window._db.collection('fcmTokens').doc(DB.deviceId).set({
+    if (!window._db) {
+      console.log('⚠️ Firestore _db not ready, saved locally - will sync later');
+      setTimeout(function() {
+        if (window._db && DB.deviceId) {
+          window._db.collection('fcmTokens').doc(DB.deviceId).set({
+            token: token, deviceId: DB.deviceId, active: true,
+            farmName: DB.settings.farmName || 'Khudra khamar',
+            lang: DB.settings.lang || 'en',
+            updatedAt: Date.now()
+          }, { merge: true }).then(function(){ console.log('✅ Late sync to fcmTokens'); }).catch(function(e){});
+          window._db.collection('alertSchedule').doc(DB.deviceId).set({
+            deviceId: DB.deviceId, fcmToken: token, active: true,
+            farmName: DB.settings.farmName || 'Khudra khamar',
+            lang: DB.settings.lang || 'en',
+            lastSync: Date.now()
+          }, { merge: true }).then(function(){ console.log('✅ Late sync to alertSchedule'); }).catch(function(e){});
+        }
+      }, 2000);
+      return true;
+    }
+    
+    // Prepare data without serverTimestamp first (to avoid permission error)
+    var baseData = {
       token: token,
       deviceId: DB.deviceId,
-      farmName: DB.settings.farmName || '',
+      farmName: DB.settings.farmName || 'Khudra khamar',
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
-      lang: DB.settings.lang || 'bn',
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      active: true
-    });
+      lang: DB.settings.lang || 'en',
+      active: true,
+      appVersion: '3.0'
+    };
     
-    console.log('✅ FCM Token saved to Firestore');
+    // Try save to fcmTokens with merge
+    try {
+      await window._db.collection('fcmTokens').doc(DB.deviceId).set(Object.assign({}, baseData, { updatedAt: Date.now() }), { merge: true });
+      console.log('✅ Saved to fcmTokens/'+DB.deviceId);
+      // Now try with serverTimestamp for updatedAt
+      try {
+        await window._db.collection('fcmTokens').doc(DB.deviceId).set({ updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      } catch(e) {}
+    } catch(e) {
+      console.error('fcmTokens save failed:', e.message, e.code);
+      // If permission denied, still return true because local save done
+      if (e.code === 'permission-denied') {
+        console.log('⚠️ Firestore permission denied - check Rules, but local save ok');
+      }
+    }
+    
+    // Also save to alertSchedule
+    try {
+      await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+        deviceId: DB.deviceId,
+        fcmToken: token,
+        farmName: DB.settings.farmName || 'Khudra khamar',
+        lang: DB.settings.lang || 'en',
+        appVersion: '3.0',
+        lastSync: Date.now(),
+        active: true
+      }, { merge: true });
+      console.log('✅ Saved to alertSchedule/'+DB.deviceId);
+    } catch(e) {
+      console.error('alertSchedule save failed:', e.message);
+    }
+    
     return true;
   } catch(e) {
-    console.error('❌ Save token error:', e);
-    return false;
+    console.error('❌ saveFCMToken error:', e.message);
+    return true; // Return true anyway - local save done
   }
 }
 
