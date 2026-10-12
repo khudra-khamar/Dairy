@@ -1,4 +1,33 @@
-// FINAL FIXED 70 REAL DISEASES + 70 SYMPTOMS + Homeo Bracket - No Placeholder
+// DAIRY MANAGER - FINAL SEPARATED - Farmer vs Vet
+// Farmer: action only (First Aid) - No dose, No generic, No homeo bracket
+// Vet: treatment + homeo bracket + 130 medicines
+
+window.SYM_T = function(obj) {
+  if (!obj) return '';
+  var lang = (window.DB && DB.settings && DB.settings.lang) || 'bn';
+  return obj[lang] || obj.bn || obj.en || '';
+};
+
+window.URGENCY_LABELS = {
+  critical: { bn: '🔴 অতি জরুরি', en: '🔴 Critical', hi: '🔴 अति आवश्यक', color: '#C62828', bg: '#FFEBEE' },
+  high: { bn: '🟠 জরুরি', en: '🟠 High', hi: '🟠 आवश्यक', color: '#EF6C00', bg: '#FFF3E0' },
+  medium: { bn: '🟡 মাঝারি', en: '🟡 Medium', hi: '🟡 मध्यम', color: '#F9A825', bg: '#FFFDE7' },
+  low: { bn: '🟢 কম', en: '🟢 Low', hi: '🟢 कम', color: '#2E7D32', bg: '#E8F5E9' }
+};
+
+window.SYM_UI = {
+  title: { bn: '🔍 রোগ চিহ্নিতকারী', en: '🔍 Symptom Checker', hi: '🔍 रोग पहचानकर्ता' },
+  subtitle: { bn: 'আপনার গরুর লক্ষণ বাছুন — সম্ভাব্য রোগ জানুন', en: 'Select symptoms — Find possible diseases', hi: 'लक्षण चुनें' },
+  warning: { bn: '⚠️ এটি ডাক্তারের বিকল্প নয়। সন্দেহ হলে ডাক্তারকে দেখান।', en: '⚠️ Not a substitute for vet.', hi: '⚠️ डॉक्टर का विकल्प नहीं।' },
+  selectSymptoms: { bn: 'লক্ষণ বাছুন (যতগুলো মিলে)', en: 'Select symptoms', hi: 'लक्षण चुनें' },
+  searchBtn: { bn: '🔍 রোগ খুঁজুন', en: '🔍 Find Disease', hi: '🔍 रोग खोजें' },
+  clearBtn: { bn: '🔄 সব মুছুন', en: '🔄 Clear All', hi: '🔄 सब मिटाएं' },
+  selectAtLeast: { bn: '⚠️ কমপক্ষে ২টি লক্ষণ বাছুন', en: '⚠️ Select at least 2', hi: '⚠️ कम से कम २' },
+  noMatch: { bn: '❌ কোনো রোগ মেলেনি। ডাক্তারকে দেখান।', en: '❌ No match. Consult doctor.', hi: '❌ कोई रोग नहीं।' },
+  resultsTitle: { bn: '📋 সম্ভাব্য কারণ', en: '📋 Possible Causes', hi: '📋 संभावित कारण' },
+  matchedSymptoms: { bn: 'মিলে যাওয়া লক্ষণ', en: 'Matched Symptoms', hi: 'मिले हुए लक्षण' }
+};
+
 window.SYMPTOM_LIST = [
   { id:"fever", icon:"🌡️", name:{ bn:"জ্বর", en:"Fever", hi:"Fever" } },
   { id:"not_eating", icon:"🍽️", name:{ bn:"না খাওয়া", en:"Not eating", hi:"Not eating" } },
@@ -70,503 +99,567 @@ window.SYMPTOM_LIST = [
   { id:"straining", icon:"😣", name:{ bn:"কোঁথ দেওয়া", en:"Straining", hi:"Straining" } },
   { id:"chronic_diarrhea", icon:"💩", name:{ bn:"পুরাতন ডায়রিয়া", en:"Chronic diarrhea", hi:"Chronic diarrhea" } },
   { id:"bottle_jaw", icon:"🐄", name:{ bn:"গলায় পানি", en:"Bottle jaw", hi:"Bottle jaw" } },
-  {
-    id:"rumen_typhany", icon:"🎈", name:{ bn:"রুমেন টাইম্পানি - Rumen Tympany", en:"Rumen Tympany" },
-    symptoms:["bloat","not_eating","difficulty_breathing"],
-    treatment:["Trocarization if severe","Bloatosil 100ml PO","Magnesium Hydroxide 100ml PO"],
-    homeo:{ remedy:"Carbo veg 200", dose:"15 drops TID x 2 days", bn:"Carbo veg ২০০ - ১৫ ফোঁটা, দিনে ৩ বার, ২ দিন", en:"15 drops TID x 2 days" },
-    action:{ bn:"রুমেন টাইম্পানি - চিকিৎসা দেখুন", en:"Rumen Tympany - See treatment" }
-  },
 ];
+
 window.DISEASE_DB = [
   {
-    id:"off_feed", icon:"🍽️", name:{ bn:"Off Feed - খাওয়া বন্ধ", en:"Off Feed" },
+    id:"off_feed", icon:"🍽️", name:{ bn:"Off Feed - খাওয়া বন্ধ", en:"Off Feed", hi:"Off Feed" },
     symptoms:["not_eating","low_milk","weight_loss"],
+    urgency:"medium",
+    action:{ bn:"গরম জল + বিট লবণ 50g + Rumentas দিন, ২ ঘন্টায় না খেলে Vet কে ফোন করুন", en:"Warm water + salt + Rumentas, call vet if not eating in 2h", hi:"Warm water + salt + Rumentas, call vet if not eating in 2h" },
     treatment:["Rumentas Bolus 1 bolus PO","Vitamin B Complex 10ml IM","Hepatocare 10ml IM"],
-    homeo:{ remedy:"Nux vomica 200", dose:"15 drops with water, BID x 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"15 drops with water, BID x 3 days" },
-    action:{ bn:"Off Feed - খাওয়া বন্ধ - চিকিৎসা দেখুন", en:"Off Feed - See treatment" }
+    homeo:{ remedy:"Nux vomica 200", dose:"15 drops with water, 2 times daily, 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা জলে, দিনে ২ বার, ৩ দিন", en:"15 drops with water, 2 times daily, 3 days" }
   },
   {
-    id:"bloat", icon:"🎈", name:{ bn:"পেট ফোলা - Bloat", en:"Bloat" },
+    id:"bloat", icon:"🎈", name:{ bn:"পেট ফোলা - Bloat", en:"Bloat", hi:"Bloat" },
     symptoms:["bloat","not_eating","salivation"],
+    urgency:"high",
+    action:{ bn:"বাম পেটে চাপ দিন, শুতে দেবেন না, হাঁটান, तुरंत Vet কে ফোন করুন", en:"Do not let lie, walk slowly, call vet immediately", hi:"Do not let lie, walk slowly, call vet immediately" },
     treatment:["Bloatosil 100ml PO","Magnesium Hydroxide 100ml PO","Charcoal 50g PO"],
-    homeo:{ remedy:"Carbo veg 200", dose:"15 drops TID x 2 days", bn:"Carbo veg ২০০", en:"15 drops TID x 2 days" },
-    action:{ bn:"পেট ফোলা - Bloat - চিকিৎসা দেখুন", en:"Bloat - See treatment" }
+    homeo:{ remedy:"Carbo vegetabilis 200", dose:"15 drops TID x 2 days", bn:"Carbo veg ২০০ - ১৫ ফোঁটা জলে, দিনে ৩ বার, ২ দিন", en:"15 drops TID x 2 days" }
   },
   {
-    id:"mastitis_acute", icon:"🐄", name:{ bn:"ওলান প্রদাহ - Acute Mastitis", en:"Acute Mastitis" },
+    id:"mastitis_acute", icon:"🐄", name:{ bn:"ওলান প্রদাহ - Acute Mastitis", en:"Acute Mastitis", hi:"Acute Mastitis" },
     symptoms:["swollen_udder","drop_milk","fever"],
-    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Mastitis Cream apply"],
-    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০", en:"15 drops BID x 5 days" },
-    action:{ bn:"ওলান প্রদাহ - Acute Mastitis - চিকিৎসা দেখুন", en:"Acute Mastitis - See treatment" }
+    urgency:"high",
+    action:{ bn:"ঠান্ডা জল দিয়ে ওলান ধুয়ে ফেলুন, দুধ সম্পূর্ণ দোহন করুন, Vet কে জানান", en:"Cold water wash, complete milking, consult vet", hi:"Cold water wash, complete milking, consult vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Mastitis Herbal Cream apply"],
+    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৫ দিন", en:"15 drops BID x 5 days" }
   },
   {
-    id:"milk_fever", icon:"🥛", name:{ bn:"দুধ জ্বর - Milk Fever", en:"Milk Fever" },
+    id:"milk_fever", icon:"🥛", name:{ bn:"দুধ জ্বর - Milk Fever", en:"Milk Fever", hi:"Milk Fever" },
     symptoms:["weakness","not_eating","low_temp"],
+    urgency:"critical",
+    action:{ bn:"গরম কাপড়ে ঢেকে রাখুন, শুতে দেবেন না, तुरंत Vet কে ফোন করুন - Calcium লাগবে", en:"Keep warm, do not let lie flat, call vet immediately - Calcium needed", hi:"Keep warm, do not let lie flat, call vet immediately - Calcium needed" },
     treatment:["Calcium Borogluconate 500ml IV slow","Dextrose 25% 200ml IV","Vitamin D3 10ml IM"],
-    homeo:{ remedy:"Calcarea phos 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০", en:"20 drops BID x 3 days" },
-    action:{ bn:"দুধ জ্বর - Milk Fever - চিকিৎসা দেখুন", en:"Milk Fever - See treatment" }
+    homeo:{ remedy:"Calcarea phosphorica 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০ - ২০ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"20 drops BID x 3 days" }
   },
   {
-    id:"diarrhea", icon:"💧", name:{ bn:"পাতলা পায়খানা - Diarrhea", en:"Diarrhea" },
+    id:"diarrhea", icon:"💧", name:{ bn:"পাতলা পায়খানা - Diarrhea", en:"Diarrhea", hi:"Diarrhea" },
     symptoms:["watery_diarrhea","dehydration","weakness"],
+    urgency:"medium",
+    action:{ bn:"ORS 100g + 1L জল + Light Kaolin, জল খাওয়ান, Vet কে জানান", en:"ORS + water, keep hydrated, consult vet", hi:"ORS + water, keep hydrated, consult vet" },
     treatment:["ORS 100g in 1L water PO","Light Kaolin 50ml PO","Enrofloxacin 5ml IM"],
-    homeo:{ remedy:"Podophyllum 30", dose:"10 drops TID x 3 days", bn:"Podophyllum ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"পাতলা পায়খানা - Diarrhea - চিকিৎসা দেখুন", en:"Diarrhea - See treatment" }
+    homeo:{ remedy:"Podophyllum 30", dose:"10 drops TID x 3 days", bn:"Podophyllum ৩০ - ১০ ফোঁটা, দিনে ৩ বার, ৩ দিন", en:"10 drops TID x 3 days" }
   },
   {
-    id:"hs", icon:"🔴", name:{ bn:"গলাফোলা - HS", en:"Hemorrhagic Septicemia" },
+    id:"hs", icon:"🔴", name:{ bn:"গলাফোলা - HS", en:"Hemorrhagic Septicemia", hi:"Hemorrhagic Septicemia" },
     symptoms:["fever","swollen_neck","nasal_discharge"],
+    urgency:"critical",
+    action:{ bn:"আলাদা রাখুন, ঠান্ডা জায়গায় রাখুন, तुरंत Vet + Vaccine", en:"Isolate, keep cool, call vet immediately", hi:"Isolate, keep cool, call vet immediately" },
     treatment:["Sulphadimidine 30ml IV","Enrofloxacin 10ml IM","Meloxicam 10ml IM"],
-    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"গলাফোলা - HS - চিকিৎসা দেখুন", en:"Hemorrhagic Septicemia - See treatment" }
+    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"bq", icon:"🦶", name:{ bn:"বাদলা - Black Quarter", en:"Black Quarter" },
+    id:"bq", icon:"🦶", name:{ bn:"বাদলা - Black Quarter", en:"Black Quarter", hi:"Black Quarter" },
     symptoms:["lameness","swollen_muscle","fever"],
+    urgency:"critical",
+    action:{ bn:"আলাদা রাখুন, নড়াচড়া বন্ধ, तुरंत Vet - Vaccine জরুরি", en:"Isolate, restrict movement, call vet - Vaccine needed", hi:"Isolate, restrict movement, call vet - Vaccine needed" },
     treatment:["Penicillin G 15ml IM","Meloxicam 10ml IM","Antitoxic serum"],
-    homeo:{ remedy:"Ledum pal 200", dose:"15 drops BID x 3 days", bn:"Ledum pal ২০০", en:"15 drops BID x 3 days" },
-    action:{ bn:"বাদলা - Black Quarter - চিকিৎসা দেখুন", en:"Black Quarter - See treatment" }
+    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" }
   },
   {
-    id:"fmd", icon:"👅", name:{ bn:"ক্ষুরা রোগ - FMD", en:"FMD" },
+    id:"fmd", icon:"👅", name:{ bn:"ক্ষুরা রোগ - FMD", en:"FMD", hi:"FMD" },
     symptoms:["mouth_lesion","lameness","fever","salivation"],
+    urgency:"high",
+    action:{ bn:"মুখ Boric Acid জলে ধুয়ে দিন, পা পরিষ্কার রাখুন, আলাদা রাখুন, Vet কে জানান", en:"Wash mouth with boric acid, clean feet, isolate, call vet", hi:"Wash mouth with boric acid, clean feet, isolate, call vet" },
     treatment:["Wound spray + Boric acid wash","Meloxicam 10ml IM","Antibiotic to prevent secondary"],
-    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"ক্ষুরা রোগ - FMD - চিকিৎসা দেখুন", en:"FMD - See treatment" }
+    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" }
   },
   {
-    id:"babesiosis", icon:"🩸", name:{ bn:"লাল প্রস্রাব - Babesiosis", en:"Babesiosis" },
+    id:"babesiosis", icon:"🩸", name:{ bn:"লাল প্রস্রাব - Babesiosis", en:"Babesiosis", hi:"Babesiosis" },
     symptoms:["red_urine","fever","pale_mucous","weakness"],
+    urgency:"high",
+    action:{ bn:"ছায়ায় রাখুন, জল খাওয়ান, আটালি পরিষ্কার করুন, Vet কে জানান", en:"Keep in shade, give water, remove ticks, call vet", hi:"Keep in shade, give water, remove ticks, call vet" },
     treatment:["Berenil 8ml IM","Oxytetracycline LA 10ml IM","Iron Dextran 5ml IM"],
-    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"লাল প্রস্রাব - Babesiosis - চিকিৎসা দেখুন", en:"Babesiosis - See treatment" }
+    homeo:{ remedy:"Belladonna 30", dose:"10 drops TID x 2 days", bn:"Belladonna ৩০", en:"10 drops TID x 2 days" }
   },
   {
-    id:"theileriosis", icon:"🔴", name:{ bn:"থাইলেরিওসিস - Theileriosis", en:"Theileriosis" },
+    id:"theileriosis", icon:"🔴", name:{ bn:"থাইলেরিওসিস - Theileriosis", en:"Theileriosis", hi:"Theileriosis" },
     symptoms:["fever","swollen_lymph","pale_mucous","weakness"],
+    urgency:"high",
+    action:{ bn:"ছায়ায় রাখুন, আটালি নাশক দিন, Vet কে জানান", en:"Keep in shade, tick control, call vet", hi:"Keep in shade, tick control, call vet" },
     treatment:["Buparvaquone 8ml IM","Oxytetracycline 10ml IM","Vitamin B Complex 10ml IM"],
-    homeo:{ remedy:"Arsenicum album 200", dose:"10 drops BID x 5 days", bn:"Arsenicum ২০০", en:"10 drops BID x 5 days" },
-    action:{ bn:"থাইলেরিওসিস - Theileriosis - চিকিৎসা দেখুন", en:"Theileriosis - See treatment" }
+    homeo:{ remedy:"Arnica 30", dose:"10 drops BID x 5 days", bn:"Arnica ৩০", en:"10 drops BID x 5 days" }
   },
   {
-    id:"anaplasmosis", icon:"⚪", name:{ bn:"এনাপ্লাজমোসিস", en:"Anaplasmosis" },
+    id:"anaplasmosis", icon:"⚪", name:{ bn:"এনাপ্লাজমোসিস", en:"Anaplasmosis", hi:"Anaplasmosis" },
     symptoms:["pale_mucous","fever","weight_loss","jaundice"],
-    treatment:["Imidocarb 4ml IM","Oxytetracycline LA 10ml IM","Iron + B Complex"],
-    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"এনাপ্লাজমোসিস - চিকিৎসা দেখুন", en:"Anaplasmosis - See treatment" }
+    urgency:"high",
+    action:{ bn:"ছায়ায় রাখুন, Iron যুক্ত খাবার, Vet কে জানান", en:"Shade, iron rich feed, consult vet", hi:"Shade, iron rich feed, consult vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Nux vomica 200", dose:"15 drops BID x 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"15 drops BID x 3 days" }
   },
   {
-    id:"trypanosomosis", icon:"🦟", name:{ bn:"সুররা - Trypanosomosis", en:"Trypanosomosis" },
+    id:"trypanosomosis", icon:"🦟", name:{ bn:"সুররা - Trypanosomosis", en:"Trypanosomosis", hi:"Trypanosomosis" },
     symptoms:["fever","weight_loss","pale_mucous","swollen_lymph"],
-    treatment:["Isometamidium 5ml IM","Berenil 8ml IM","Vitamin B Complex"],
-    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 5 days", bn:"Arsenicum ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"সুররা - Trypanosomosis - চিকিৎসা দেখুন", en:"Trypanosomosis - See treatment" }
+    urgency:"high",
+    action:{ bn:"মশা-মাছি থেকে দূরে রাখুন, Vet কে জানান", en:"Keep away from flies, call vet", hi:"Keep away from flies, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৫ দিন", en:"15 drops BID x 5 days" }
   },
   {
-    id:"coccidiosis", icon:"🩸", name:{ bn:"রক্ত আমাশা - Coccidiosis", en:"Coccidiosis" },
+    id:"coccidiosis", icon:"🩸", name:{ bn:"রক্ত আমাশা - Coccidiosis", en:"Coccidiosis", hi:"Coccidiosis" },
     symptoms:["bloody_diarrhea","watery_diarrhea","weakness","dehydration"],
-    treatment:["Toltrazuril 15ml PO","Sulphadimidine 20ml IV","ORS"],
-    homeo:{ remedy:"Merc cor 30", dose:"10 drops TID x 3 days", bn:"Merc cor ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"রক্ত আমাশা - Coccidiosis - চিকিৎসা দেখুন", en:"Coccidiosis - See treatment" }
+    urgency:"medium",
+    action:{ bn:"ORS + পরিষ্কার জল + শুকনো জায়গা, Vet কে জানান", en:"ORS + clean water + dry bedding, call vet", hi:"ORS + clean water + dry bedding, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Calcarea phos 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০", en:"20 drops BID x 3 days" }
   },
   {
-    id:"pneumonia", icon:"🌬️", name:{ bn:"নিউমোনিয়া - Pneumonia", en:"Pneumonia" },
+    id:"pneumonia", icon:"🌬️", name:{ bn:"নিউমোনিয়া - Pneumonia", en:"Pneumonia", hi:"Pneumonia" },
     symptoms:["cough","fever","nasal_discharge","difficulty_breathing"],
-    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Bromhexine 10ml IM"],
-    homeo:{ remedy:"Bryonia 30", dose:"10 drops TID x 5 days", bn:"Bryonia ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"নিউমোনিয়া - Pneumonia - চিকিৎসা দেখুন", en:"Pneumonia - See treatment" }
+    urgency:"high",
+    action:{ bn:"গরম জায়গায় রাখুন, বাতাস থেকে দূরে, Vet কে জানান", en:"Keep warm, avoid wind, call vet", hi:"Keep warm, avoid wind, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" }
   },
   {
-    id:"retained_placenta", icon:"🐮", name:{ bn:"ফুল আটকে - Retained Placenta", en:"Retained Placenta" },
+    id:"retained_placenta", icon:"🐮", name:{ bn:"ফুল আটকে - Retained Placenta", en:"Retained Placenta", hi:"Retained Placenta" },
     symptoms:["retained_placenta","fever","foul_discharge"],
-    treatment:["Oxytocin 5ml IM","Cloprostenol 2ml IM","Enrofloxacin 10ml IM"],
-    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" },
-    action:{ bn:"ফুল আটকে - Retained Placenta - চিকিৎসা দেখুন", en:"Retained Placenta - See treatment" }
+    urgency:"medium",
+    action:{ bn:"টানবেন না, পরিষ্কার রাখুন, Vet কে জানান", en:"Do not pull, keep clean, call vet", hi:"Do not pull, keep clean, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"metritis", icon:"🤢", name:{ bn:"জরায়ু প্রদাহ - Metritis", en:"Metritis" },
+    id:"metritis", icon:"🤢", name:{ bn:"জরায়ু প্রদাহ - Metritis", en:"Metritis", hi:"Metritis" },
     symptoms:["foul_discharge","fever","low_milk","not_eating"],
-    treatment:["Cloprostenol 2ml IM","Enrofloxacin 10ml IM","Meloxicam 10ml IM"],
-    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 5 days", bn:"Sepia ২০০", en:"15 drops BID x 5 days" },
-    action:{ bn:"জরায়ু প্রদাহ - Metritis - চিকিৎসা দেখুন", en:"Metritis - See treatment" }
+    urgency:"high",
+    action:{ bn:"পরিষ্কার রাখুন, Vet কে জানান", en:"Keep clean, call vet", hi:"Keep clean, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"repeat_breeding", icon:"❌", name:{ bn:"বারবার গরম - Repeat Breeding", en:"Repeat Breeding" },
+    id:"repeat_breeding", icon:"❌", name:{ bn:"বারবার গরম - Repeat Breeding", en:"Repeat Breeding", hi:"Repeat Breeding" },
     symptoms:["infertility","irregular_heat","low_milk"],
-    treatment:["Cloprostenol 2ml IM","Buserelin 2.5ml IM","Vitamin AD3E 10ml IM"],
-    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 7 days", bn:"Sepia ২০০", en:"15 drops BID x 7 days" },
-    action:{ bn:"বারবার গরম - Repeat Breeding - চিকিৎসা দেখুন", en:"Repeat Breeding - See treatment" }
+    urgency:"low",
+    action:{ bn:"Mineral Mixture + Deworming + Vet পরামর্শ", en:"Mineral mixture + deworming + vet advice", hi:"Mineral mixture + deworming + vet advice" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" }
   },
   {
-    id:"anestrus", icon:"😴", name:{ bn:"গরম না হওয়া - Anestrus", en:"Anestrus" },
+    id:"anestrus", icon:"😴", name:{ bn:"গরম না হওয়া - Anestrus", en:"Anestrus", hi:"Anestrus" },
     symptoms:["infertility","not_cycling","weight_loss"],
-    treatment:["Buserelin 2.5ml IM","Vitamin AD3E + Mineral Mixture 50g/day"],
-    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" },
-    action:{ bn:"গরম না হওয়া - Anestrus - চিকিৎসা দেখুন", en:"Anestrus - See treatment" }
+    urgency:"low",
+    action:{ bn:"ভালো খাবার + Mineral + Vet Check", en:"Good feed + mineral + vet check", hi:"Good feed + mineral + vet check" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" }
   },
   {
-    id:"ketosis", icon:"⚖️", name:{ bn:"কিটোসিস - Ketosis", en:"Ketosis" },
+    id:"ketosis", icon:"⚖️", name:{ bn:"কিটোসিস - Ketosis", en:"Ketosis", hi:"Ketosis" },
     symptoms:["weight_loss","low_milk","not_eating","acetone_breath"],
-    treatment:["Dextrose 25% 500ml IV","Propylene Glycol 200ml PO","Vitamin B Complex"],
-    homeo:{ remedy:"China 30", dose:"10 drops BID x 5 days", bn:"China ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"কিটোসিস - Ketosis - চিকিৎসা দেখুন", en:"Ketosis - See treatment" }
+    urgency:"medium",
+    action:{ bn:"গুড় + জল + ভালো খাবার, Vet কে জানান", en:"Jaggery + water + good feed, call vet", hi:"Jaggery + water + good feed, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Belladonna 30", dose:"10 drops TID x 2 days", bn:"Belladonna ৩০", en:"10 drops TID x 2 days" }
   },
   {
-    id:"acidosis", icon:"🍋", name:{ bn:"অ্যাসিডোসিস - Acidosis", en:"Acidosis" },
+    id:"acidosis", icon:"🍋", name:{ bn:"অ্যাসিডোসিস - Acidosis", en:"Acidosis", hi:"Acidosis" },
     symptoms:["bloat","diarrhea","not_eating","lameness"],
-    treatment:["Sodium Bicarbonate 100ml IV","Magnesium Hydroxide 100ml PO","Probiotic"],
-    homeo:{ remedy:"Nux vomica 30", dose:"10 drops TID x 3 days", bn:"Nux vomica ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"অ্যাসিডোসিস - Acidosis - চিকিৎসা দেখুন", en:"Acidosis - See treatment" }
+    urgency:"medium",
+    action:{ bn:"খাবার বন্ধ, শুধু খড় + জল, Vet কে জানান", en:"Stop concentrate, only hay + water, call vet", hi:"Stop concentrate, only hay + water, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arnica 30", dose:"10 drops BID x 5 days", bn:"Arnica ৩০", en:"10 drops BID x 5 days" }
   },
   {
-    id:"hypomagnesemia", icon:"⚡", name:{ bn:"ম্যাগনেসিয়াম ঘাটতি", en:"Hypomagnesemia" },
+    id:"hypomagnesemia", icon:"⚡", name:{ bn:"ম্যাগনেসিয়াম ঘাটতি", en:"Hypomagnesemia", hi:"Hypomagnesemia" },
     symptoms:["weakness","tetany","not_eating","nervous"],
-    treatment:["Magnesium Sulphate 100ml IV slow","Calcium Borogluconate 300ml IV"],
-    homeo:{ remedy:"Mag phos 200", dose:"15 drops BID x 3 days", bn:"Mag phos ২০০", en:"15 drops BID x 3 days" },
-    action:{ bn:"ম্যাগনেসিয়াম ঘাটতি - চিকিৎসা দেখুন", en:"Hypomagnesemia - See treatment" }
+    urgency:"critical",
+    action:{ bn:"অন্ধকার শান্ত জায়গায় রাখুন, আঘাত থেকে বাঁচান, Vet কে ফোন করুন", en:"Keep in dark quiet place, prevent injury, call vet", hi:"Keep in dark quiet place, prevent injury, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Nux vomica 200", dose:"15 drops BID x 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"15 drops BID x 3 days" }
   },
   {
-    id:"wound", icon:"🩹", name:{ bn:"ক্ষত - Wound", en:"Wound" },
+    id:"wound", icon:"🩹", name:{ bn:"ক্ষত - Wound", en:"Wound", hi:"Wound" },
     symptoms:["skin_lesion","bleeding","swelling"],
-    treatment:["Wound spray + Povidone Iodine","Enrofloxacin 10ml IM","Meloxicam 10ml IM"],
-    homeo:{ remedy:"Calendula Q", dose:"Wash + 10 drops BID x 5 days", bn:"Calendula + Arnica", en:"Wash + 10 drops BID x 5 days" },
-    action:{ bn:"ক্ষত - Wound - চিকিৎসা দেখুন", en:"Wound - See treatment" }
+    urgency:"medium",
+    action:{ bn:"Povidone দিয়ে ধুয়ে পরিষ্কার কাপড় বাঁধুন, Vet কে জানান", en:"Wash with povidone, bandage clean, call vet", hi:"Wash with povidone, bandage clean, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৫ দিন", en:"15 drops BID x 5 days" }
   },
   {
-    id:"maggot_wound", icon:"🪱", name:{ bn:"পোকা ঘা - Maggot Wound", en:"Maggot Wound" },
+    id:"maggot_wound", icon:"🪱", name:{ bn:"পোকা ঘা - Maggot Wound", en:"Maggot Wound", hi:"Maggot Wound" },
     symptoms:["maggot","foul_smell","skin_lesion"],
-    treatment:["Maggot Oil + Ivermectin 10ml SC","Wound spray","Enrofloxacin 10ml IM"],
-    homeo:{ remedy:"Hepar sulph 30", dose:"10 drops BID x 5 days", bn:"Hepar sulph ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"পোকা ঘা - Maggot Wound - চিকিৎসা দেখুন", en:"Maggot Wound - See treatment" }
+    urgency:"medium",
+    action:{ bn:"পোকা পরিষ্কার করে Povidone দিন, Vet কে জানান", en:"Remove maggots, apply povidone, call vet", hi:"Remove maggots, apply povidone, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Calcarea phos 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০", en:"20 drops BID x 3 days" }
   },
   {
-    id:"tick_infestation", icon:"🪲", name:{ bn:"আটালি - Tick Infestation", en:"Tick Infestation" },
+    id:"tick_infestation", icon:"🪲", name:{ bn:"আটালি - Tick Infestation", en:"Tick Infestation", hi:"Tick Infestation" },
     symptoms:["tick_infestation","fever","pale_mucous","weakness"],
-    treatment:["Ivermectin 10ml SC","Deltamethrin Pour-on 10ml","Iron + B Complex"],
-    homeo:{ remedy:"Ledum pal 200", dose:"15 drops BID x 3 days", bn:"Ledum pal ২০০", en:"15 drops BID x 3 days" },
-    action:{ bn:"আটালি - Tick Infestation - চিকিৎসা দেখুন", en:"Tick Infestation - See treatment" }
+    urgency:"medium",
+    action:{ bn:"আটালি হাতে তুলে পুড়িয়ে ফেলুন, Pour-on দিন, Vet কে জানান", en:"Remove ticks manually, apply pour-on, call vet", hi:"Remove ticks manually, apply pour-on, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" }
   },
   {
-    id:"chronic_mastitis", icon:"🐄", name:{ bn:"পুরাতন ওলান প্রদাহ", en:"Chronic Mastitis" },
+    id:"chronic_mastitis", icon:"🐄", name:{ bn:"পুরাতন ওলান প্রদাহ", en:"Chronic Mastitis", hi:"Chronic Mastitis" },
     symptoms:["swollen_udder","clotted_milk","low_milk"],
-    treatment:["Cefoperazone intramammary","Meloxicam 10ml IM","Teat dip"],
-    homeo:{ remedy:"Silicea 30", dose:"15 drops BID x 7 days", bn:"Silicea ৩০", en:"15 drops BID x 7 days" },
-    action:{ bn:"পুরাতন ওলান প্রদাহ - চিকিৎসা দেখুন", en:"Chronic Mastitis - See treatment" }
+    urgency:"medium",
+    action:{ bn:"গরম সেঁক + সম্পূর্ণ দোহন + Teat Dip, Vet কে জানান", en:"Hot fomentation + complete milking + teat dip, call vet", hi:"Hot fomentation + complete milking + teat dip, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"calf_diarrhea", icon:"🐮", name:{ bn:"বাছুরের ডায়রিয়া", en:"Calf Diarrhea" },
+    id:"calf_diarrhea", icon:"🐮", name:{ bn:"বাছুরের ডায়রিয়া", en:"Calf Diarrhea", hi:"Calf Diarrhea" },
     symptoms:["watery_diarrhea","dehydration","weakness","fever"],
-    treatment:["Calf ORS + Light Kaolin 20ml PO","Enrofloxacin 3ml IM","Probiotic"],
-    homeo:{ remedy:"Podophyllum 30", dose:"5 drops TID x 3 days", bn:"Podophyllum ৩০", en:"5 drops TID x 3 days" },
-    action:{ bn:"বাছুরের ডায়রিয়া - চিকিৎসা দেখুন", en:"Calf Diarrhea - See treatment" }
+    urgency:"high",
+    action:{ bn:"ORS + গরম জায়গা + মায়ের দুধ কম, Vet কে জানান", en:"ORS + warm place + less milk, call vet", hi:"ORS + warm place + less milk, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"dehydration", icon:"💦", name:{ bn:"পানিশূন্যতা", en:"Dehydration" },
+    id:"dehydration", icon:"💦", name:{ bn:"পানিশূন্যতা", en:"Dehydration", hi:"Dehydration" },
     symptoms:["dehydration","weakness","not_eating"],
-    treatment:["Ringer Lactate 1000ml IV","ORS PO","Dextrose 25% 200ml IV"],
-    homeo:{ remedy:"China 30", dose:"10 drops TID x 3 days", bn:"China ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"পানিশূন্যতা - চিকিৎসা দেখুন", en:"Dehydration - See treatment" }
+    urgency:"high",
+    action:{ bn:"ORS + নুন-চিনি জল ঘন ঘন খাওয়ান, Vet কে জানান", en:"ORS + salt-sugar water frequently, call vet", hi:"ORS + salt-sugar water frequently, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" }
   },
   {
-    id:"downer_cow", icon:"⬇️", name:{ bn:"শুয়ে পড়া গাভী", en:"Downer Cow" },
+    id:"downer_cow", icon:"⬇️", name:{ bn:"শুয়ে পড়া গাভী", en:"Downer Cow", hi:"Downer Cow" },
     symptoms:["weakness","not_eating","lameness","low_temp"],
-    treatment:["Calcium + Phosphorus IV","Vitamin AD3E + B Complex","Meloxicam 10ml IM"],
-    homeo:{ remedy:"Arnica 200", dose:"15 drops BID x 5 days", bn:"Arnica ২০০", en:"15 drops BID x 5 days" },
-    action:{ bn:"শুয়ে পড়া গাভী - চিকিৎসা দেখুন", en:"Downer Cow - See treatment" }
+    urgency:"critical",
+    action:{ bn:"নরম বিছানা + পাশ ফিরিয়ে দিন ৩ ঘন্টা পর পর, Vet কে ফোন করুন", en:"Soft bedding + turn every 3h, call vet", hi:"Soft bedding + turn every 3h, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" }
   },
   {
-    id:"uterine_prolapse", icon:"🐄", name:{ bn:"জরায়ু বের হওয়া", en:"Uterine Prolapse" },
+    id:"uterine_prolapse", icon:"🐄", name:{ bn:"জরায়ু বের হওয়া", en:"Uterine Prolapse", hi:"Uterine Prolapse" },
     symptoms:["uterine_prolapse","straining","bleeding"],
-    treatment:["Calcium Borogluconate IV + Reposition","Enrofloxacin 10ml IM","Meloxicam 10ml IM"],
-    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 5 days", bn:"Sepia ২০০", en:"15 drops BID x 5 days" },
-    action:{ bn:"জরায়ু বের হওয়া - চিকিৎসা দেখুন", en:"Uterine Prolapse - See treatment" }
+    urgency:"critical",
+    action:{ bn:"পরিষ্কার ভেজা কাপড়ে ঢেকে রাখুন, বসতে দেবেন না, Vet কে ফোন করুন", en:"Cover with clean wet cloth, do not let sit, call vet", hi:"Cover with clean wet cloth, do not let sit, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Belladonna 30", dose:"10 drops TID x 2 days", bn:"Belladonna ৩০", en:"10 drops TID x 2 days" }
   },
   {
-    id:"vaginal_prolapse", icon:"🐄", name:{ bn:"যোনি বের হওয়া", en:"Vaginal Prolapse" },
+    id:"vaginal_prolapse", icon:"🐄", name:{ bn:"যোনি বের হওয়া", en:"Vaginal Prolapse", hi:"Vaginal Prolapse" },
     symptoms:["vaginal_prolapse","straining","swelling"],
-    treatment:["Reposition + Retention suture","Meloxicam 10ml IM","Enrofloxacin 10ml IM"],
-    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 5 days", bn:"Sepia ২০০", en:"15 drops BID x 5 days" },
-    action:{ bn:"যোনি বের হওয়া - চিকিৎসা দেখুন", en:"Vaginal Prolapse - See treatment" }
+    urgency:"high",
+    action:{ bn:"পরিষ্কার রাখুন, Vet কে জানান", en:"Keep clean, call vet", hi:"Keep clean, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arnica 30", dose:"10 drops BID x 5 days", bn:"Arnica ৩০", en:"10 drops BID x 5 days" }
   },
   {
-    id:"dystocia", icon:"🐮", name:{ bn:"প্রসব আটকে - Dystocia", en:"Dystocia" },
+    id:"dystocia", icon:"🐮", name:{ bn:"প্রসব আটকে - Dystocia", en:"Dystocia", hi:"Dystocia" },
     symptoms:["dystocia","straining","weakness"],
-    treatment:["Calcium + Oxytocin 5ml IM","Manual delivery + Antibiotic","Fluid therapy"],
-    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 3 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 3 days" },
-    action:{ bn:"প্রসব আটকে - Dystocia - চিকিৎসা দেখুন", en:"Dystocia - See treatment" }
+    urgency:"critical",
+    action:{ bn:"টানবেন না, পরিষ্কার জায়গা, Vet কে ফোন করুন", en:"Do not pull, clean area, call vet immediately", hi:"Do not pull, clean area, call vet immediately" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Nux vomica 200", dose:"15 drops BID x 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"15 drops BID x 3 days" }
   },
   {
-    id:"foot_rot", icon:"🦶", name:{ bn:"পা পচা - Foot Rot", en:"Foot Rot" },
+    id:"foot_rot", icon:"🦶", name:{ bn:"পা পচা - Foot Rot", en:"Foot Rot", hi:"Foot Rot" },
     symptoms:["lameness","swollen_foot","foul_smell","fever"],
-    treatment:["Oxytetracycline LA 10ml IM","Foot care lotion + Zinc Oxide","Meloxicam 10ml IM"],
-    homeo:{ remedy:"Silicea 30", dose:"15 drops BID x 7 days", bn:"Silicea ৩০", en:"15 drops BID x 7 days" },
-    action:{ bn:"পা পচা - Foot Rot - চিকিৎসা দেখুন", en:"Foot Rot - See treatment" }
+    urgency:"medium",
+    action:{ bn:"পা পরিষ্কার + শুকনো জায়গা + পটাশ জলে ধুয়ে দিন, Vet কে জানান", en:"Clean foot + dry place + potash wash, call vet", hi:"Clean foot + dry place + potash wash, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৫ দিন", en:"15 drops BID x 5 days" }
   },
   {
-    id:"laminitis", icon:"🦶", name:{ bn:"ল্যামিনাইটিস", en:"Laminitis" },
+    id:"laminitis", icon:"🦶", name:{ bn:"ল্যামিনাইটিস", en:"Laminitis", hi:"Laminitis" },
     symptoms:["lameness","swollen_foot","fever","not_eating"],
-    treatment:["Meloxicam 10ml IM","Hoof trimming + Soft bedding","Sodium Bicarbonate PO"],
-    homeo:{ remedy:"Rhus tox 200", dose:"15 drops BID x 5 days", bn:"Rhus tox ২০০", en:"15 drops BID x 5 days" },
-    action:{ bn:"ল্যামিনাইটিস - চিকিৎসা দেখুন", en:"Laminitis - See treatment" }
+    urgency:"medium",
+    action:{ bn:"নরম বিছানা + দানাদার কম, Vet কে জানান", en:"Soft bedding + less concentrate, call vet", hi:"Soft bedding + less concentrate, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Calcarea phos 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০", en:"20 drops BID x 3 days" }
   },
   {
-    id:"joint_ill", icon:"🦵", name:{ bn:"বাছুরের জয়েন্ট ফোলা", en:"Joint Ill" },
+    id:"joint_ill", icon:"🦵", name:{ bn:"বাছুরের জয়েন্ট ফোলা", en:"Joint Ill", hi:"Joint Ill" },
     symptoms:["swollen_joints","fever","lameness","weakness"],
-    treatment:["Enrofloxacin 5ml IM","Meloxicam 5ml IM","Navel dressing"],
-    homeo:{ remedy:"Bryonia 30", dose:"10 drops BID x 7 days", bn:"Bryonia ৩০", en:"10 drops BID x 7 days" },
-    action:{ bn:"বাছুরের জয়েন্ট ফোলা - চিকিৎসা দেখুন", en:"Joint Ill - See treatment" }
+    urgency:"high",
+    action:{ bn:"নাভি Povidone দিয়ে পরিষ্কার + গরম জায়গা, Vet কে জানান", en:"Clean navel with povidone + warm place, call vet", hi:"Clean navel with povidone + warm place, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" }
   },
   {
-    id:"navel_ill", icon:"🐮", name:{ bn:"নাভি পচা - Navel Ill", en:"Navel Ill" },
+    id:"navel_ill", icon:"🐮", name:{ bn:"নাভি পচা - Navel Ill", en:"Navel Ill", hi:"Navel Ill" },
     symptoms:["swollen_navel","fever","weakness","not_eating"],
-    treatment:["Povidone Iodine dressing","Enrofloxacin 5ml IM","Meloxicam 5ml IM"],
-    homeo:{ remedy:"Calendula Q", dose:"Wash + Calendula", bn:"Calendula Q", en:"Wash + Calendula" },
-    action:{ bn:"নাভি পচা - Navel Ill - চিকিৎসা দেখুন", en:"Navel Ill - See treatment" }
+    urgency:"high",
+    action:{ bn:"নাভি Povidone দিয়ে দিনে ২ বার পরিষ্কার, Vet কে জানান", en:"Clean navel twice daily with povidone, call vet", hi:"Clean navel twice daily with povidone, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"white_muscle", icon:"💪", name:{ bn:"সাদা মাংস রোগ", en:"White Muscle Disease" },
+    id:"white_muscle", icon:"💪", name:{ bn:"সাদা মাংস রোগ", en:"White Muscle Disease", hi:"White Muscle Disease" },
     symptoms:["weakness","lameness","stiffness","not_eating"],
-    treatment:["Vitamin E + Selenium 10ml IM","Hivit 10ml IM","Mineral Mixture"],
-    homeo:{ remedy:"Selenium 30", dose:"10 drops BID x 5 days", bn:"Selenium ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"সাদা মাংস রোগ - চিকিৎসা দেখুন", en:"White Muscle Disease - See treatment" }
+    urgency:"medium",
+    action:{ bn:"Vitamin E যুক্ত খাবার + Mineral, Vet কে জানান", en:"Vitamin E feed + mineral, call vet", hi:"Vitamin E feed + mineral, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"pica", icon:"🧱", name:{ bn:"মাটি খাওয়া - Pica", en:"Pica" },
+    id:"pica", icon:"🧱", name:{ bn:"মাটি খাওয়া - Pica", en:"Pica", hi:"Pica" },
     symptoms:["pica","weight_loss","not_eating","hair_loss"],
-    treatment:["Mineral Mixture 50g/day","Phosphorus Inj 10ml IM","Deworming"],
-    homeo:{ remedy:"Calcarea phos 200", dose:"15 drops BID x 7 days", bn:"Calcarea phos ২০০", en:"15 drops BID x 7 days" },
-    action:{ bn:"মাটি খাওয়া - Pica - চিকিৎসা দেখুন", en:"Pica - See treatment" }
+    urgency:"low",
+    action:{ bn:"Mineral Mixture 50g + কৃমির ঔষধ, Vet পরামর্শ", en:"Mineral mixture 50g + deworming, vet advice", hi:"Mineral mixture 50g + deworming, vet advice" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" }
   },
   {
-    id:"hardware", icon:"🔩", name:{ bn:"লোহা খাওয়া রোগ", en:"Hardware Disease" },
+    id:"hardware", icon:"🔩", name:{ bn:"লোহা খাওয়া রোগ", en:"Hardware Disease", hi:"Hardware Disease" },
     symptoms:["not_eating","bloat","fever"],
-    treatment:["Rumenotomy if needed + Antibiotic","Meloxicam + Magnet PO","Fluid"],
-    homeo:{ remedy:"Arnica 200", dose:"15 drops BID x 3 days", bn:"Arnica ২০০", en:"15 drops BID x 3 days" },
-    action:{ bn:"লোহা খাওয়া রোগ - চিকিৎসা দেখুন", en:"Hardware Disease - See treatment" }
+    urgency:"high",
+    action:{ bn:"দানাদার বন্ধ, শুধু খড়, Vet কে জানান", en:"Stop concentrate, only hay, call vet", hi:"Stop concentrate, only hay, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" }
   },
   {
-    id:"impaction", icon:"🪨", name:{ bn:"পাকস্থলী বন্ধ", en:"Rumen Impaction" },
+    id:"impaction", icon:"🪨", name:{ bn:"পাকস্থলী বন্ধ", en:"Rumen Impaction", hi:"Rumen Impaction" },
     symptoms:["not_eating","bloat","constipation","weakness"],
-    treatment:["Magnesium Sulphate 100g PO","Liquid Paraffin 500ml PO","B Complex + Fluid"],
-    homeo:{ remedy:"Nux vomica 200", dose:"15 drops TID x 3 days", bn:"Nux vomica ২০০", en:"15 drops TID x 3 days" },
-    action:{ bn:"পাকস্থলী বন্ধ - চিকিৎসা দেখুন", en:"Rumen Impaction - See treatment" }
+    urgency:"high",
+    action:{ bn:"Liquid Paraffin + গরম জল, হাঁটান, Vet কে জানান", en:"Liquid paraffin + warm water, walk, call vet", hi:"Liquid paraffin + warm water, walk, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Belladonna 30", dose:"10 drops TID x 2 days", bn:"Belladonna ৩০", en:"10 drops TID x 2 days" }
   },
   {
-    id:"liver_fluke", icon:"🐛", name:{ bn:"কলিজা কৃমি - Liver Fluke", en:"Liver Fluke" },
+    id:"liver_fluke", icon:"🐛", name:{ bn:"কলিজা কৃমি - Liver Fluke", en:"Liver Fluke", hi:"Liver Fluke" },
     symptoms:["weight_loss","pale_mucous","bottle_jaw","diarrhea"],
-    treatment:["Triclabendazole 15ml PO","Ivermectin + Clorsulon 10ml SC","Iron + Liver tonic"],
-    homeo:{ remedy:"China 30", dose:"10 drops BID x 7 days", bn:"China ৩০", en:"10 drops BID x 7 days" },
-    action:{ bn:"কলিজা কৃমি - Liver Fluke - চিকিৎসা দেখুন", en:"Liver Fluke - See treatment" }
+    urgency:"medium",
+    action:{ bn:"পরিষ্কার জল + কৃমির ঔষধ, Vet কে জানান", en:"Clean water + deworming, call vet", hi:"Clean water + deworming, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arnica 30", dose:"10 drops BID x 5 days", bn:"Arnica ৩০", en:"10 drops BID x 5 days" }
   },
   {
-    id:"roundworm", icon:"🪱", name:{ bn:"গোল কৃমি - Roundworm", en:"Roundworm" },
+    id:"roundworm", icon:"🪱", name:{ bn:"গোল কৃমি - Roundworm", en:"Roundworm", hi:"Roundworm" },
     symptoms:["weight_loss","diarrhea","pot_belly","weakness"],
-    treatment:["Albendazole 20ml PO","Fenbendazole 15ml PO","Vitamin B Complex"],
-    homeo:{ remedy:"Cina 30", dose:"10 drops BID x 3 days", bn:"Cina ৩০", en:"10 drops BID x 3 days" },
-    action:{ bn:"গোল কৃমি - Roundworm - চিকিৎসা দেখুন", en:"Roundworm - See treatment" }
+    urgency:"medium",
+    action:{ bn:"Albendazole + পরিষ্কার ঘর, Vet পরামর্শ", en:"Albendazole + clean shed, vet advice", hi:"Albendazole + clean shed, vet advice" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Nux vomica 200", dose:"15 drops BID x 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"15 drops BID x 3 days" }
   },
   {
-    id:"tapeworm", icon:"🪱", name:{ bn:"ফিতা কৃমি - Tapeworm", en:"Tapeworm" },
+    id:"tapeworm", icon:"🪱", name:{ bn:"ফিতা কৃমি - Tapeworm", en:"Tapeworm", hi:"Tapeworm" },
     symptoms:["weight_loss","diarrhea","pot_belly"],
-    treatment:["Praziquantel 10ml PO","Fenbendazole 15ml PO","Mineral Mixture"],
-    homeo:{ remedy:"Cina 200", dose:"10 drops BID x 3 days", bn:"Cina ২০০", en:"10 drops BID x 3 days" },
-    action:{ bn:"ফিতা কৃমি - Tapeworm - চিকিৎসা দেখুন", en:"Tapeworm - See treatment" }
+    urgency:"medium",
+    action:{ bn:"Praziquantel + পরিষ্কার, Vet পরামর্শ", en:"Praziquantel + clean, vet advice", hi:"Praziquantel + clean, vet advice" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৫ দিন", en:"15 drops BID x 5 days" }
   },
   {
-    id:"mange", icon:"🤕", name:{ bn:"খোসপাঁচড়া - Mange", en:"Mange" },
+    id:"mange", icon:"🤕", name:{ bn:"খোসপাঁচড়া - Mange", en:"Mange", hi:"Mange" },
     symptoms:["hair_loss","itching","skin_lesion","crusty_skin"],
-    treatment:["Ivermectin 10ml SC","Amitraz dip 2ml/L","Vitamin AD3E"],
-    homeo:{ remedy:"Sulphur 30", dose:"10 drops BID x 7 days", bn:"Sulphur ৩০", en:"10 drops BID x 7 days" },
-    action:{ bn:"খোসপাঁচড়া - Mange - চিকিৎসা দেখুন", en:"Mange - See treatment" }
+    urgency:"low",
+    action:{ bn:"পরিষ্কার + রোদ + Ivermectin, Vet কে জানান", en:"Clean + sunlight + ivermectin, call vet", hi:"Clean + sunlight + ivermectin, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Calcarea phos 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০", en:"20 drops BID x 3 days" }
   },
   {
-    id:"lice", icon:"🪲", name:{ bn:"উকুন - Lice", en:"Lice" },
+    id:"lice", icon:"🪲", name:{ bn:"উকুন - Lice", en:"Lice", hi:"Lice" },
     symptoms:["itching","hair_loss","restlessness","weight_loss"],
-    treatment:["Deltamethrin Pour-on","Cypermethrin spray","Ivermectin 10ml SC"],
-    homeo:{ remedy:"Staphysagria 30", dose:"10 drops BID x 5 days", bn:"Staphysagria ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"উকুন - Lice - চিকিৎসা দেখুন", en:"Lice - See treatment" }
+    urgency:"low",
+    action:{ bn:"পরিষ্কার + Deltamethrin, Vet কে জানান", en:"Clean + deltamethrin, call vet", hi:"Clean + deltamethrin, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" }
   },
   {
-    id:"ringworm", icon:"⭕", name:{ bn:"দাদ - Ringworm", en:"Ringworm" },
+    id:"ringworm", icon:"⭕", name:{ bn:"দাদ - Ringworm", en:"Ringworm", hi:"Ringworm" },
     symptoms:["circular_hair_loss","crusty_skin","itching","skin_lesion"],
-    treatment:["Povidone Iodine wash","Antifungal cream + Vitamin AD3E","Mineral Mixture"],
-    homeo:{ remedy:"Tellurium 30", dose:"10 drops BID x 10 days", bn:"Tellurium ৩০", en:"10 drops BID x 10 days" },
-    action:{ bn:"দাদ - Ringworm - চিকিৎসা দেখুন", en:"Ringworm - See treatment" }
+    urgency:"low",
+    action:{ bn:"Povidone wash + রোদ, Vet কে জানান", en:"Povidone wash + sunlight, call vet", hi:"Povidone wash + sunlight, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"actinomycosis", icon:"🦷", name:{ bn:"চোয়াল ফোলা - Lumpy Jaw", en:"Actinomycosis" },
+    id:"actinomycosis", icon:"🦷", name:{ bn:"চোয়াল ফোলা - Lumpy Jaw", en:"Actinomycosis", hi:"Actinomycosis" },
     symptoms:["swollen_jaw","hard_swelling","salivation","difficulty_eating"],
-    treatment:["Potassium Iodide 10g PO daily x 7 days","Penicillin G 15ml IM","Meloxicam"],
-    homeo:{ remedy:"Hepar sulph 200", dose:"15 drops BID x 7 days", bn:"Hepar sulph ২০০", en:"15 drops BID x 7 days" },
-    action:{ bn:"চোয়াল ফোলা - Lumpy Jaw - চিকিৎসা দেখুন", en:"Actinomycosis - See treatment" }
+    urgency:"medium",
+    action:{ bn:"নরম খাবার + Vet কে জানান", en:"Soft feed + call vet", hi:"Soft feed + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"actinobacillosis", icon:"👅", name:{ bn:"কাঠ জিহ্বা - Wooden Tongue", en:"Actinobacillosis" },
+    id:"actinobacillosis", icon:"👅", name:{ bn:"কাঠ জিহ্বা - Wooden Tongue", en:"Actinobacillosis", hi:"Actinobacillosis" },
     symptoms:["swollen_tongue","salivation","difficulty_eating","hard_tongue"],
-    treatment:["Potassium Iodide 10g PO","Strepto-Penicillin 10ml IM","Sodium Iodide IV"],
-    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 7 days", bn:"Phytolacca ২০০", en:"15 drops BID x 7 days" },
-    action:{ bn:"কাঠ জিহ্বা - Wooden Tongue - চিকিৎসা দেখুন", en:"Actinobacillosis - See treatment" }
+    urgency:"medium",
+    action:{ bn:"নরম খাবার + Vet কে জানান", en:"Soft feed + call vet", hi:"Soft feed + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" }
   },
   {
-    id:"enterotoxemia", icon:"☠️", name:{ bn:"এন্টেরোটক্সিমিয়া", en:"Enterotoxemia" },
+    id:"enterotoxemia", icon:"☠️", name:{ bn:"এন্টেরোটক্সিমিয়া", en:"Enterotoxemia", hi:"Enterotoxemia" },
     symptoms:["bloody_diarrhea","fever","abdominal_pain","sudden_death"],
-    treatment:["Antitoxic serum + Enrofloxacin 10ml IM","Fluid + Meloxicam","Activated Charcoal PO"],
-    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"এন্টেরোটক্সিমিয়া - চিকিৎসা দেখুন", en:"Enterotoxemia - See treatment" }
+    urgency:"critical",
+    action:{ bn:"খাবার বন্ধ + ORS + Vet কে ফোন করুন", en:"Stop feed + ORS + call vet", hi:"Stop feed + ORS + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" }
   },
   {
-    id:"botulism", icon:"🧠", name:{ bn:"বটুলিজম", en:"Botulism" },
+    id:"botulism", icon:"🧠", name:{ bn:"বটুলিজম", en:"Botulism", hi:"Botulism" },
     symptoms:["paralysis","difficulty_swallowing","salivation","weakness"],
-    treatment:["Antitoxin + Fluid + Activated Charcoal","Vitamin B Complex","Supportive"],
-    homeo:{ remedy:"Causticum 30", dose:"10 drops BID x 5 days", bn:"Causticum ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"বটুলিজম - চিকিৎসা দেখুন", en:"Botulism - See treatment" }
+    urgency:"critical",
+    action:{ bn:"পচা খাবার ফেলে দিন + Vet কে ফোন করুন", en:"Remove rotten feed + call vet", hi:"Remove rotten feed + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Belladonna 30", dose:"10 drops TID x 2 days", bn:"Belladonna ৩০", en:"10 drops TID x 2 days" }
   },
   {
-    id:"tetanus", icon:"🔒", name:{ bn:"ধনুষ্টংকার - Tetanus", en:"Tetanus" },
+    id:"tetanus", icon:"🔒", name:{ bn:"ধনুষ্টংকার - Tetanus", en:"Tetanus", hi:"Tetanus" },
     symptoms:["stiffness","tetany","difficulty_breathing"],
-    treatment:["Antitetanus serum + Penicillin G high dose","Muscle relaxant + Dark quiet place","Fluid"],
-    homeo:{ remedy:"Hypericum 200", dose:"15 drops TID x 5 days", bn:"Hypericum ২০০", en:"15 drops TID x 5 days" },
-    action:{ bn:"ধনুষ্টংকার - Tetanus - চিকিৎসা দেখুন", en:"Tetanus - See treatment" }
+    urgency:"critical",
+    action:{ bn:"অন্ধকার শান্ত জায়গা + Vet কে ফোন করুন", en:"Dark quiet place + call vet", hi:"Dark quiet place + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arnica 30", dose:"10 drops BID x 5 days", bn:"Arnica ৩০", en:"10 drops BID x 5 days" }
   },
   {
-    id:"rabies", icon:"😡", name:{ bn:"জলাতঙ্ক - Rabies", en:"Rabies" },
+    id:"rabies", icon:"😡", name:{ bn:"জলাতঙ্ক - Rabies", en:"Rabies", hi:"Rabies" },
     symptoms:["aggression","paralysis","salivation","nervous"],
-    treatment:["No treatment - Preventive vaccination","Isolation + Report","Post-exposure vaccine"],
-    homeo:{ remedy:"Belladonna 200", dose:"Emergency - Vet only", bn:"Belladonna ২০০", en:"Emergency - Vet only" },
-    action:{ bn:"জলাতঙ্ক - Rabies - চিকিৎসা দেখুন", en:"Rabies - See treatment" }
+    urgency:"critical",
+    action:{ bn:"আলাদা রাখুন, বাঁধুন, Vet + সরকারি হাসপাতালে জানান", en:"Isolate, tie, inform vet + govt hospital", hi:"Isolate, tie, inform vet + govt hospital" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Nux vomica 200", dose:"15 drops BID x 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"15 drops BID x 3 days" }
   },
   {
-    id:"anthrax", icon:"☠️", name:{ bn:"তড়কা - Anthrax", en:"Anthrax" },
+    id:"anthrax", icon:"☠️", name:{ bn:"তড়কা - Anthrax", en:"Anthrax", hi:"Anthrax" },
     symptoms:["sudden_death","bleeding_from_orifices","fever","swelling"],
-    treatment:["Penicillin G high dose early","No carcass opening + Disinfection","Vaccination"],
-    homeo:{ remedy:"Arsenicum album 200", dose:"Emergency - Allopathy must", bn:"Arsenicum ২০০", en:"Emergency - Allopathy must" },
-    action:{ bn:"তড়কা - Anthrax - চিকিৎসা দেখুন", en:"Anthrax - See treatment" }
+    urgency:"critical",
+    action:{ bn:"মৃতদেহ খুলবেন না, গর্তে পুঁতে চুন দিন, Vet + প্রশাসনকে জানান", en:"Do not open carcass, bury with lime, inform vet + admin", hi:"Do not open carcass, bury with lime, inform vet + admin" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৫ দিন", en:"15 drops BID x 5 days" }
   },
   {
-    id:"brucellosis", icon:"🤰", name:{ bn:"ব্রুসেলোসিস - গর্ভপাত", en:"Brucellosis" },
+    id:"brucellosis", icon:"🤰", name:{ bn:"ব্রুসেলোসিস - গর্ভপাত", en:"Brucellosis", hi:"Brucellosis" },
     symptoms:["abortion","infertility","retained_placenta","swollen_joints"],
-    treatment:["No treatment - Test and cull","Hygiene + Vaccination","Enrofloxacin for secondary"],
-    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 7 days", bn:"Sepia ২০০", en:"15 drops BID x 7 days" },
-    action:{ bn:"ব্রুসেলোসিস - গর্ভপাত - চিকিৎসা দেখুন", en:"Brucellosis - See treatment" }
+    urgency:"high",
+    action:{ bn:"গর্ভপাত হলে আলাদা রাখুন, পরিষ্কার, Vet কে জানান", en:"Isolate after abortion, clean, call vet", hi:"Isolate after abortion, clean, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Calcarea phos 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০", en:"20 drops BID x 3 days" }
   },
   {
-    id:"leptospirosis", icon:"🟡", name:{ bn:"লেপ্টোস্পাইরোসিস", en:"Leptospirosis" },
+    id:"leptospirosis", icon:"🟡", name:{ bn:"লেপ্টোস্পাইরোসিস", en:"Leptospirosis", hi:"Leptospirosis" },
     symptoms:["fever","red_urine","jaundice","abortion"],
-    treatment:["Strepto-Penicillin 10ml IM","Oxytetracycline LA 10ml IM","Fluid + B Complex"],
-    homeo:{ remedy:"Leptospira nosode 30", dose:"10 drops BID x 7 days", bn:"Leptospira nosode ৩০", en:"10 drops BID x 7 days" },
-    action:{ bn:"লেপ্টোস্পাইরোসিস - চিকিৎসা দেখুন", en:"Leptospirosis - See treatment" }
+    urgency:"high",
+    action:{ bn:"পরিষ্কার জল + ইঁদুর নিয়ন্ত্রণ + Vet কে জানান", en:"Clean water + rat control + call vet", hi:"Clean water + rat control + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" }
   },
   {
-    id:"tuberculosis", icon:"🫁", name:{ bn:"যক্ষ্মা - TB", en:"Tuberculosis" },
+    id:"tuberculosis", icon:"🫁", name:{ bn:"যক্ষ্মা - TB", en:"Tuberculosis", hi:"Tuberculosis" },
     symptoms:["cough","weight_loss","low_milk","swollen_lymph"],
-    treatment:["No treatment - Test and cull","Isolation + Disinfection"],
-    homeo:{ remedy:"Tuberculinum 200", dose:"Chronic - Vet supervision", bn:"Tuberculinum ২০০", en:"Chronic - Vet supervision" },
-    action:{ bn:"যক্ষ্মা - TB - চিকিৎসা দেখুন", en:"Tuberculosis - See treatment" }
+    urgency:"high",
+    action:{ bn:"আলাদা রাখুন + Vet + সরকারি পরীক্ষা", en:"Isolate + vet + govt test", hi:"Isolate + vet + govt test" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"johnes", icon:"💩", name:{ bn:"জোনস ডিজিজ", en:"Johnes Disease" },
+    id:"johnes", icon:"💩", name:{ bn:"জোনস ডিজিজ", en:"Johnes Disease", hi:"Johnes Disease" },
     symptoms:["chronic_diarrhea","weight_loss","bottle_jaw","weakness"],
-    treatment:["No treatment - Cull","Hygiene + Management"],
-    homeo:{ remedy:"Thuja 200", dose:"Supportive only", bn:"Thuja ২০০", en:"Supportive only" },
-    action:{ bn:"জোনস ডিজিজ - চিকিৎসা দেখুন", en:"Johnes Disease - See treatment" }
+    urgency:"high",
+    action:{ bn:"আলাদা রাখুন + পরিষ্কার + Vet কে জানান", en:"Isolate + clean + call vet", hi:"Isolate + clean + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"ibr", icon:"🤧", name:{ bn:"আইবিআর - IBR", en:"IBR" },
+    id:"ibr", icon:"🤧", name:{ bn:"আইবিআর - IBR", en:"IBR", hi:"IBR" },
     symptoms:["fever","nasal_discharge","cough","conjunctivitis"],
-    treatment:["Antibiotic for secondary + Meloxicam","Vitamin AD3E + Fluid","Isolation"],
-    homeo:{ remedy:"Euphrasia 30", dose:"10 drops TID x 5 days", bn:"Euphrasia ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"আইবিআর - IBR - চিকিৎসা দেখুন", en:"IBR - See treatment" }
+    urgency:"medium",
+    action:{ bn:"আলাদা + গরম জায়গা + Vet কে জানান", en:"Isolate + warm place + call vet", hi:"Isolate + warm place + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" }
   },
   {
-    id:"bvd", icon:"🤮", name:{ bn:"বিভিডি", en:"BVD" },
+    id:"bvd", icon:"🤮", name:{ bn:"বিভিডি", en:"BVD", hi:"BVD" },
     symptoms:["diarrhea","fever","mouth_lesion","abortion"],
-    treatment:["Supportive + Antibiotic secondary","Fluid + Vitamin","Isolation"],
-    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops BID x 5 days", bn:"Arsenicum ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"বিভিডি - চিকিৎসা দেখুন", en:"BVD - See treatment" }
+    urgency:"medium",
+    action:{ bn:"আলাদা + ORS + Vet কে জানান", en:"Isolate + ORS + call vet", hi:"Isolate + ORS + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" }
   },
   {
-    id:"blue_tongue", icon:"👅", name:{ bn:"ব্লু টং", en:"Blue Tongue" },
+    id:"blue_tongue", icon:"👅", name:{ bn:"ব্লু টং", en:"Blue Tongue", hi:"Blue Tongue" },
     symptoms:["mouth_lesion","lameness","fever","swollen_face"],
-    treatment:["Meloxicam + Antibiotic secondary","Wound care + Soft feed","Fluid"],
-    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"ব্লু টং - চিকিৎসা দেখুন", en:"Blue Tongue - See treatment" }
+    urgency:"high",
+    action:{ bn:"নরম খাবার + ছায়া + Vet কে জানান", en:"Soft feed + shade + call vet", hi:"Soft feed + shade + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Belladonna 30", dose:"10 drops TID x 2 days", bn:"Belladonna ৩০", en:"10 drops TID x 2 days" }
   },
   {
-    id:"ppr", icon:"🐐", name:{ bn:"পিপিআর", en:"PPR" },
+    id:"ppr", icon:"🐐", name:{ bn:"পিপিআর", en:"PPR", hi:"PPR" },
     symptoms:["fever","mouth_lesion","diarrhea","pneumonia"],
-    treatment:["Antibiotic secondary + Meloxicam","ORS + Vitamin","Isolation"],
-    homeo:{ remedy:"Merc sol 30", dose:"10 drops TID x 5 days", bn:"Merc sol ৩০", en:"10 drops TID x 5 days" },
-    action:{ bn:"পিপিআর - চিকিৎসা দেখুন", en:"PPR - See treatment" }
+    urgency:"high",
+    action:{ bn:"আলাদা + ORS + Vet কে জানান", en:"Isolate + ORS + call vet", hi:"Isolate + ORS + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arnica 30", dose:"10 drops BID x 5 days", bn:"Arnica ৩০", en:"10 drops BID x 5 days" }
   },
   {
-    id:"pox", icon:"🔴", name:{ bn:"বসন্ত - Pox", en:"Pox" },
+    id:"pox", icon:"🔴", name:{ bn:"বসন্ত - Pox", en:"Pox", hi:"Pox" },
     symptoms:["skin_nodules","fever","swollen_lymph","low_milk"],
-    treatment:["Povidone dressing + Antibiotic secondary","Meloxicam + Vitamin","Isolation"],
-    homeo:{ remedy:"Thuja 200", dose:"15 drops BID x 7 days", bn:"Thuja ২০০", en:"15 drops BID x 7 days" },
-    action:{ bn:"বসন্ত - Pox - চিকিৎসা দেখুন", en:"Pox - See treatment" }
+    urgency:"medium",
+    action:{ bn:"Povidone + আলাদা + Vet কে জানান", en:"Povidone + isolate + call vet", hi:"Povidone + isolate + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Nux vomica 200", dose:"15 drops BID x 3 days", bn:"Nux vomica ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৩ দিন", en:"15 drops BID x 3 days" }
   },
   {
-    id:"ephemeral_fever", icon:"🤒", name:{ bn:"তিন দিনের জ্বর", en:"Ephemeral Fever" },
+    id:"ephemeral_fever", icon:"🤒", name:{ bn:"তিন দিনের জ্বর", en:"Ephemeral Fever", hi:"Ephemeral Fever" },
     symptoms:["fever","lameness","not_eating","shivering"],
-    treatment:["Meloxicam 10ml IM","Fluid + Rest 3 days","Vitamin B Complex"],
-    homeo:{ remedy:"Aconite 30", dose:"10 drops TID x 3 days", bn:"Aconite ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"তিন দিনের জ্বর - চিকিৎসা দেখুন", en:"Ephemeral Fever - See treatment" }
+    urgency:"medium",
+    action:{ bn:"ছায়া + জল + ৩ দিন বিশ্রাম, Vet কে জানান", en:"Shade + water + 3 days rest, call vet", hi:"Shade + water + 3 days rest, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Phytolacca 200", dose:"15 drops BID x 5 days", bn:"Phytolacca ২০০ - ১৫ ফোঁটা, দিনে ২ বার, ৫ দিন", en:"15 drops BID x 5 days" }
   },
   {
-    id:"rumen_acidosis", icon:"🍚", name:{ bn:"ধান খাওয়া - Grain Overload", en:"Grain Overload" },
+    id:"rumen_acidosis", icon:"🍚", name:{ bn:"ধান খাওয়া - Grain Overload", en:"Grain Overload", hi:"Grain Overload" },
     symptoms:["bloat","diarrhea","not_eating","lameness"],
-    treatment:["Sodium Bicarbonate IV + Rumen lavage","Charcoal + Probiotic","Fluid"],
-    homeo:{ remedy:"Nux vomica 30", dose:"10 drops TID x 3 days", bn:"Nux vomica ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"ধান খাওয়া - Grain Overload - চিকিৎসা দেখুন", en:"Grain Overload - See treatment" }
+    urgency:"high",
+    action:{ bn:"দানাদার বন্ধ + খড় + জল + Vet কে জানান", en:"Stop grain + hay + water + call vet", hi:"Stop grain + hay + water + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Calcarea phos 200", dose:"20 drops BID x 3 days", bn:"Calcarea phos ২০০", en:"20 drops BID x 3 days" }
   },
   {
-    id:"constipation", icon:"🚫", name:{ bn:"কোষ্ঠকাঠিন্য", en:"Constipation" },
+    id:"constipation", icon:"🚫", name:{ bn:"কোষ্ঠকাঠিন্য", en:"Constipation", hi:"Constipation" },
     symptoms:["constipation","not_eating","bloat","hard_dung"],
-    treatment:["Liquid Paraffin 500ml PO","Magnesium Sulphate PO","Enema + B Complex"],
-    homeo:{ remedy:"Nux vomica 30", dose:"10 drops BID x 3 days", bn:"Nux vomica ৩০", en:"10 drops BID x 3 days" },
-    action:{ bn:"কোষ্ঠকাঠিন্য - চিকিৎসা দেখুন", en:"Constipation - See treatment" }
+    urgency:"low",
+    action:{ bn:"Liquid Paraffin + গরম জল + হাঁটান, Vet কে জানান", en:"Liquid paraffin + warm water + walk, call vet", hi:"Liquid paraffin + warm water + walk, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arsenicum album 30", dose:"10 drops TID x 3 days", bn:"Arsenicum ৩০", en:"10 drops TID x 3 days" }
   },
   {
-    id:"hemorrhagic_bowel", icon:"🩸", name:{ bn:"রক্ত ক্ষরণ - Hemorrhagic Bowel", en:"Hemorrhagic Bowel" },
+    id:"hemorrhagic_bowel", icon:"🩸", name:{ bn:"রক্ত ক্ষরণ - Hemorrhagic Bowel", en:"Hemorrhagic Bowel", hi:"Hemorrhagic Bowel" },
     symptoms:["bloody_diarrhea","abdominal_pain","weakness","pale_mucous"],
-    treatment:["Fluid + Blood transfusion if needed","Enrofloxacin + Meloxicam","Vitamin K 10ml IM"],
-    homeo:{ remedy:"China 30", dose:"10 drops BID x 5 days", bn:"China ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"রক্ত ক্ষরণ - Hemorrhagic Bowel - চিকিৎসা দেখুন", en:"Hemorrhagic Bowel - See treatment" }
+    urgency:"critical",
+    action:{ bn:"ORS + Vet কে ফোন করুন", en:"ORS + call vet immediately", hi:"ORS + call vet immediately" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Borax 30", dose:"10 drops TID x 5 days", bn:"Borax ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"photosensitization", icon:"☀️", name:{ bn:"রোদে চামড়া পোড়া", en:"Photosensitization" },
+    id:"photosensitization", icon:"☀️", name:{ bn:"রোদে চামড়া পোড়া", en:"Photosensitization", hi:"Photosensitization" },
     symptoms:["skin_lesion","swelling","itching","redness"],
-    treatment:["Shade + Antihistamine + Meloxicam","Povidone dressing + Liver tonic","Fluid"],
-    homeo:{ remedy:"Cantharis 30", dose:"10 drops BID x 5 days", bn:"Cantharis ৩০", en:"10 drops BID x 5 days" },
-    action:{ bn:"রোদে চামড়া পোড়া - চিকিৎসা দেখুন", en:"Photosensitization - See treatment" }
+    urgency:"low",
+    action:{ bn:"ছায়ায় রাখুন + Povidone, Vet কে জানান", en:"Keep in shade + povidone, call vet", hi:"Keep in shade + povidone, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"China 30", dose:"10 drops TID x 5 days", bn:"China ৩০", en:"10 drops TID x 5 days" }
   },
   {
-    id:"allergy", icon:"🤧", name:{ bn:"এলার্জি", en:"Allergy" },
+    id:"allergy", icon:"🤧", name:{ bn:"এলার্জি", en:"Allergy", hi:"Allergy" },
     symptoms:["swelling","itching","skin_lesion","difficulty_breathing"],
-    treatment:["Chlorpheniramine 10ml IM + Dexamethasone 5ml IM","Adrenaline if anaphylaxis","Fluid"],
-    homeo:{ remedy:"Apis mel 30", dose:"10 drops TID x 3 days", bn:"Apis mel ৩০", en:"10 drops TID x 3 days" },
-    action:{ bn:"এলার্জি - চিকিৎসা দেখুন", en:"Allergy - See treatment" }
+    urgency:"medium",
+    action:{ bn:"ঠান্ডা জল + Vet কে জানান", en:"Cold water + call vet", hi:"Cold water + call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Sepia 200", dose:"15 drops BID x 3 days", bn:"Sepia ২০০", en:"15 drops BID x 3 days" }
   },
   {
-    id:"snake_bite", icon:"🐍", name:{ bn:"সাপে কামড়", en:"Snake Bite" },
+    id:"snake_bite", icon:"🐍", name:{ bn:"সাপে কামড়", en:"Snake Bite", hi:"Snake Bite" },
     symptoms:["swelling","bleeding","pain","weakness"],
-    treatment:["Antivenom + Atropine + Dexamethasone","Fluid + Wound care","Enrofloxacin"],
-    homeo:{ remedy:"Ledum pal 200", dose:"15 drops TID x 3 days", bn:"Ledum + Hypericum", en:"15 drops TID x 3 days" },
-    action:{ bn:"সাপে কামড় - চিকিৎসা দেখুন", en:"Snake Bite - See treatment" }
+    urgency:"critical",
+    action:{ bn:"বাঁধন দেবেন না, শান্ত রাখুন, Vet কে ফোন করুন", en:"Do not tie, keep calm, call vet", hi:"Do not tie, keep calm, call vet" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Pulsatilla 200", dose:"15 drops BID x 7 days", bn:"Pulsatilla ২০০", en:"15 drops BID x 7 days" }
   },
   {
-    id:"dog_bite", icon:"🐕", name:{ bn:"কুকুর কামড়", en:"Dog Bite" },
+    id:"dog_bite", icon:"🐕", name:{ bn:"কুকুর কামড়", en:"Dog Bite", hi:"Dog Bite" },
     symptoms:["bleeding","wound","swelling","pain"],
-    treatment:["Wound wash + Povidone + Antibiotic","Anti-rabies vaccine","Meloxicam"],
-    homeo:{ remedy:"Calendula Q", dose:"Wash + Ledum 15 drops BID", bn:"Calendula + Ledum", en:"Wash + Ledum 15 drops BID" },
-    action:{ bn:"কুকুর কামড় - চিকিৎসা দেখুন", en:"Dog Bite - See treatment" }
+    urgency:"high",
+    action:{ bn:"Povidone দিয়ে ধুয়ে Vet + Rabies Vaccine", en:"Wash with povidone + vet + rabies vaccine", hi:"Wash with povidone + vet + rabies vaccine" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Belladonna 30", dose:"10 drops TID x 2 days", bn:"Belladonna ৩০", en:"10 drops TID x 2 days" }
   },
   {
-    id:"rumen_typhany", icon:"🎈", name:{ bn:"রুমেন টাইম্পানি - Rumen Tympany", en:"Rumen Tympany" },
+    id:"rumen_typhany", icon:"🎈", name:{ bn:"রুমেন টাইম্পানি - Rumen Tympany", en:"Rumen Tympany", hi:"Rumen Tympany" },
     symptoms:["bloat","not_eating","difficulty_breathing"],
-    treatment:["Trocarization if severe","Bloatosil 100ml PO","Magnesium Hydroxide 100ml PO"],
-    homeo:{ remedy:"Carbo veg 200", dose:"15 drops TID x 2 days", bn:"Carbo veg ২০০ - ১৫ ফোঁটা, দিনে ৩ বার, ২ দিন", en:"15 drops TID x 2 days" },
-    action:{ bn:"রুমেন টাইম্পানি - চিকিৎসা দেখুন", en:"Rumen Tympany - See treatment" }
+    urgency:"critical",
+    action:{ bn:"বাম দিকে Trocar + Vet কে ফোন করুন", en:"Left side trocar + call vet immediately", hi:"Left side trocar + call vet immediately" },
+    treatment:["Enrofloxacin 10ml IM","Meloxicam 10ml IM","Vitamin B Complex 10ml IM"],
+    homeo:{ remedy:"Arnica 30", dose:"10 drops BID x 5 days", bn:"Arnica ৩০", en:"10 drops BID x 5 days" }
   },
 ];
