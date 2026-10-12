@@ -11989,6 +11989,15 @@ if (splashErr) splashErr.remove();
     scheduleAutoFCM();
     // Also try auto register immediately if deviceId exists
     setTimeout(function(){ if(DB.deviceId) autoRegisterFCM(); }, 2000);
+    // Guest Trial Save - new phone / data clear - Trial user also saves
+    setTimeout(function(){ 
+      try { 
+        if(DB.deviceId && !DB.userEmail) { 
+          console.log('🔄 Auto Guest Trial Save for DEV:', DB.deviceId);
+          saveGuestTrialUser(); 
+        } 
+      } catch(e) {} 
+    }, 3000);
   }
 }
 
