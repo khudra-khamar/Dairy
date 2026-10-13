@@ -241,44 +241,59 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 .manual-section li { margin-bottom:4px; }
 </style>
 
-</head>
-<body>
+
+<style id="v28-emergency-css">
+/* V28 ULTRA FIX - No JS dependency */
+#dmSplash {
+  animation: v28-splash-hide 0.5s forwards;
+  animation-delay: 2s;
+}
+@keyframes v28-splash-hide {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+#trialScreen, #loginScreen, #mainContent {
+  animation: v28-force-show 0.3s forwards;
+  animation-delay: 2.2s;
+}
+@keyframes v28-force-show {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* Force trial visible if JS fails - override inline display:none */
+body #trialScreen {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 100 !important;
+}
+body #dmSplash.v28-hidden {
+  display: none !important;
+}
+</style>
 <script>
-// V27 ULTRA FIX - Loading + White Screen - Push Working File Base
+// V28 - Click anywhere to kill splash and show trial
 (function(){
-  console.log('V27 Fix loaded');
-  function forceShowApp() {
-    try {
-      var splash = document.getElementById('dmSplash');
-      if (splash) { splash.style.opacity='0'; setTimeout(function(){ try{splash.remove();}catch(e){splash.style.display='none';} },300); }
-      var trial = document.getElementById('trialScreen');
-      var login = document.getElementById('loginScreen');
-      var main = document.getElementById('mainContent');
-      // If nothing visible, show trial
-      var trialVisible = trial && trial.offsetHeight>10 && trial.style.display!=='none';
-      var loginVisible = login && login.offsetHeight>10 && login.style.display!=='none';
-      var mainVisible = main && main.offsetHeight>10;
-      if (!trialVisible && !loginVisible && !mainVisible) {
-        console.warn('White screen - forcing trial');
-        if (trial) trial.style.display='flex';
-        if (main) main.style.display='block';
-        document.body.style.background='#e8f5e9';
-      }
-    } catch(e) { console.warn(e.message); }
+  function killSplash() {
+    var s=document.getElementById('dmSplash');
+    if(s){ s.classList.add('v28-hidden'); s.style.display='none'; try{s.remove();}catch(e){} }
+    var t=document.getElementById('trialScreen');
+    if(t){ t.style.display='flex'; t.style.opacity='1'; t.style.visibility='visible'; t.style.zIndex='9999'; }
+    var m=document.getElementById('mainContent');
+    if(m){ m.style.display='block'; }
+    document.body.style.background='#e8f5e9';
   }
-  setTimeout(forceShowApp, 1500);
-  setTimeout(forceShowApp, 3000);
-  setTimeout(forceShowApp, 5000);
-  document.addEventListener('click', function onceClick(){
-    setTimeout(forceShowApp, 200);
-    document.removeEventListener('click', onceClick);
-  });
-  window.addEventListener('load', function(){ setTimeout(forceShowApp, 1000); });
+  setTimeout(killSplash, 1500);
+  setTimeout(killSplash, 3000);
+  document.addEventListener('click', killSplash, {once:false});
+  document.addEventListener('touchstart', killSplash, {once:false});
+  window.addEventListener('load', function(){ setTimeout(killSplash, 800); });
 })();
 </script>
 
+</head>
+<body>
 <!-- ========== SPLASH SCREEN (Green + Gold) ========== -->
-<div id="dmSplash" onclick="try{this.remove();}catch(e){} try{document.getElementById('trialScreen').style.display='flex';}catch(e){}" style="cursor:pointer;" title="Click to skip loading" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#0D3D14 0%,#1B5E20 40%,#2E7D32 100%);z-index:9999999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;overflow:hidden;">
+<div id="dmSplash" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#0D3D14 0%,#1B5E20 40%,#2E7D32 100%);z-index:9999999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;overflow:hidden;">
 
   <!-- Decorative Golden Circles -->
   <div style="position:absolute;top:-80px;right:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,0.15) 0%,transparent 70%);"></div>
@@ -7982,7 +7997,56 @@ function buildPdfHtml() {
       td { padding: 5px 4px; border-bottom: 1px solid #eee; }
       tr:nth-child(even) { background: #FAFAFA; }
       .footer { margin-top: 20px; padding-top: 12px; border-top: 2px solid #E0E0E0; font-size: 10px; color: #888; text-align: center; }
-    </style></head><body>
+    </style>
+<style id="v28-emergency-css">
+/* V28 ULTRA FIX - No JS dependency */
+#dmSplash {
+  animation: v28-splash-hide 0.5s forwards;
+  animation-delay: 2s;
+}
+@keyframes v28-splash-hide {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+#trialScreen, #loginScreen, #mainContent {
+  animation: v28-force-show 0.3s forwards;
+  animation-delay: 2.2s;
+}
+@keyframes v28-force-show {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* Force trial visible if JS fails - override inline display:none */
+body #trialScreen {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 100 !important;
+}
+body #dmSplash.v28-hidden {
+  display: none !important;
+}
+</style>
+<script>
+// V28 - Click anywhere to kill splash and show trial
+(function(){
+  function killSplash() {
+    var s=document.getElementById('dmSplash');
+    if(s){ s.classList.add('v28-hidden'); s.style.display='none'; try{s.remove();}catch(e){} }
+    var t=document.getElementById('trialScreen');
+    if(t){ t.style.display='flex'; t.style.opacity='1'; t.style.visibility='visible'; t.style.zIndex='9999'; }
+    var m=document.getElementById('mainContent');
+    if(m){ m.style.display='block'; }
+    document.body.style.background='#e8f5e9';
+  }
+  setTimeout(killSplash, 1500);
+  setTimeout(killSplash, 3000);
+  document.addEventListener('click', killSplash, {once:false});
+  document.addEventListener('touchstart', killSplash, {once:false});
+  window.addEventListener('load', function(){ setTimeout(killSplash, 800); });
+})();
+</script>
+
+</head><body>
     <div class="header">
       ${logoHtml}
       <div>
@@ -8819,7 +8883,56 @@ function generateRetailPDF(customerId, month) {
     '.summary .row { display: flex; justify-content: space-between; padding: 3px 0; }' +
     '.summary .total { border-top: 2px solid #E65100; margin-top: 6px; padding-top: 6px; font-size: 14px; font-weight: bold; color: #E65100; }' +
     '.footer { margin-top: 20px; text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 10px; }' +
-    '</style></head><body>' +
+    '</style>
+<style id="v28-emergency-css">
+/* V28 ULTRA FIX - No JS dependency */
+#dmSplash {
+  animation: v28-splash-hide 0.5s forwards;
+  animation-delay: 2s;
+}
+@keyframes v28-splash-hide {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+#trialScreen, #loginScreen, #mainContent {
+  animation: v28-force-show 0.3s forwards;
+  animation-delay: 2.2s;
+}
+@keyframes v28-force-show {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* Force trial visible if JS fails - override inline display:none */
+body #trialScreen {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 100 !important;
+}
+body #dmSplash.v28-hidden {
+  display: none !important;
+}
+</style>
+<script>
+// V28 - Click anywhere to kill splash and show trial
+(function(){
+  function killSplash() {
+    var s=document.getElementById('dmSplash');
+    if(s){ s.classList.add('v28-hidden'); s.style.display='none'; try{s.remove();}catch(e){} }
+    var t=document.getElementById('trialScreen');
+    if(t){ t.style.display='flex'; t.style.opacity='1'; t.style.visibility='visible'; t.style.zIndex='9999'; }
+    var m=document.getElementById('mainContent');
+    if(m){ m.style.display='block'; }
+    document.body.style.background='#e8f5e9';
+  }
+  setTimeout(killSplash, 1500);
+  setTimeout(killSplash, 3000);
+  document.addEventListener('click', killSplash, {once:false});
+  document.addEventListener('touchstart', killSplash, {once:false});
+  window.addEventListener('load', function(){ setTimeout(killSplash, 800); });
+})();
+</script>
+
+</head><body>' +
     '<div class="header">' + logoHtml +
     '<div><h1>' + farm + '</h1><p>' + (owner ? owner + ' • ' : '') + phone + '</p></div></div>' +
     '<div class="title">🥛 Monthly Statement / মাসিক বিল</div>' +
@@ -9375,7 +9488,56 @@ function buildSaleBillHtml(c) {
     .sig { text-align: center; font-size: 12px; }
     .sig-line { border-top: 1px solid #333; padding-top: 5px; width: 150px; }
     .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
-  </style></head><body>
+  </style>
+<style id="v28-emergency-css">
+/* V28 ULTRA FIX - No JS dependency */
+#dmSplash {
+  animation: v28-splash-hide 0.5s forwards;
+  animation-delay: 2s;
+}
+@keyframes v28-splash-hide {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+#trialScreen, #loginScreen, #mainContent {
+  animation: v28-force-show 0.3s forwards;
+  animation-delay: 2.2s;
+}
+@keyframes v28-force-show {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* Force trial visible if JS fails - override inline display:none */
+body #trialScreen {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 100 !important;
+}
+body #dmSplash.v28-hidden {
+  display: none !important;
+}
+</style>
+<script>
+// V28 - Click anywhere to kill splash and show trial
+(function(){
+  function killSplash() {
+    var s=document.getElementById('dmSplash');
+    if(s){ s.classList.add('v28-hidden'); s.style.display='none'; try{s.remove();}catch(e){} }
+    var t=document.getElementById('trialScreen');
+    if(t){ t.style.display='flex'; t.style.opacity='1'; t.style.visibility='visible'; t.style.zIndex='9999'; }
+    var m=document.getElementById('mainContent');
+    if(m){ m.style.display='block'; }
+    document.body.style.background='#e8f5e9';
+  }
+  setTimeout(killSplash, 1500);
+  setTimeout(killSplash, 3000);
+  document.addEventListener('click', killSplash, {once:false});
+  document.addEventListener('touchstart', killSplash, {once:false});
+  window.addEventListener('load', function(){ setTimeout(killSplash, 800); });
+})();
+</script>
+
+</head><body>
   <div class="header">
     ${logoHtml}
     <div>
@@ -9910,7 +10072,9 @@ async function saveGuestTrialUser() {
     const deviceId = DB.deviceId;
     const now = Date.now();
     const ref = window._db.collection('trialUsers').doc(deviceId);
-    /* V27 no get - direct set */ if (true) {
+    const snap = await ref.get();
+    
+    if (!snap.exists) {
       // প্রথমবার — নতুন guest doc
       await ref.set({
         type: 'guest',
@@ -11451,7 +11615,7 @@ function smartConfirm(message, callback) {
   } else if (msg.indexOf('notification') !== -1 || msg.indexOf('নোটিফিকেশন') !== -1 || msg.indexOf('বন্ধ') !== -1) {
     icon = '🔕';
     color = '#EF6C00';
-    confirmText = '🔕 Yes, Disable';
+    confirmText = t('cfm_no') || '✅ Yes';
   } else if (msg.indexOf('call') !== -1 || msg.indexOf('কল') !== -1 || msg.indexOf('ফোন') !== -1) {
     icon = '📞';
     color = '#1976D2';
@@ -11549,29 +11713,121 @@ function waitForAuthThenCheckLicense() {
 
 // ========== INIT ==========
 async function initApp() {
-  console.log('🚀 initApp V27 safe start');
   try {
-    if (typeof loadDB === 'function') { try{ loadDB(); } catch(e){ console.warn('loadDB', e.message); } }
-    // Photos non-blocking
-    if (typeof loadAllPhotosSeparately === 'function') { loadAllPhotosSeparately().catch(function(){}) ; }
-    // Proceed
-    setTimeout(function(){
-      try {
-        if (typeof proceedAfterLogin === 'function') proceedAfterLogin();
-        else {
-          var t=document.getElementById('trialScreen'); if(t) t.style.display='flex';
+    // Step 1: Initialize IndexedDB - FAST
+    await initIndexedDB();
+    const hasIDBData = await loadDBAsync();
+    // fetchAlertSettings moved to background - don't block UI
+    
+    // Step 3: If IDB has no data, try localStorage (migration)
+    if (!hasIDBData || DB.cows.length === 0) {
+      const localData = localStorage.getItem('dairyDBv3');
+      if (localData) {
+        try {
+          const parsed = JSON.parse(localData);
+          DB = Object.assign(DB, parsed);
+          idbLog('Migrated from localStorage');
+          await saveDBAsync();
+        } catch(e) {
+          idbLog('Migration error: ' + e.message);
         }
-      } catch(e) {
-        console.warn('proceed fail', e.message);
-        var t=document.getElementById('trialScreen'); if(t) t.style.display='flex';
-        var m=document.getElementById('mainContent'); if(m) m.style.display='block';
+      } else {
+        loadDB();
       }
-    }, 500);
-  } catch(e) { console.error('initApp fail', e.message); var t=document.getElementById('trialScreen'); if(t) t.style.display='flex'; }
-  // Always remove splash in finally
-  setTimeout(function(){ try{ var s=document.getElementById('dmSplash'); if(s) s.remove(); } catch(e){} }, 2000);
-}
+    }
+    
+    // Step 4: Normalize DB structure
+    if (!DB.cows) DB.cows = [];
+    if (!DB.milk) DB.milk = [];
+    if (!DB.finance) DB.finance = [];
+    if (!DB.medicine) DB.medicine = [];
+    if (!DB.notes) DB.notes = [];
+    if (!DB.medStock) DB.medStock = [];
+    if (!DB.feedStock) DB.feedStock = [];
+    if (!DB.contacts) DB.contacts = [];
+    if (!DB.customers) DB.customers = [];
+    if (!DB.retailEntries) DB.retailEntries = [];
+    if (!DB.snoozed) DB.snoozed = {};
+    if (!DB.security) DB.security = { pin:'', skipped:false };
+    if (!DB.security.skipped) DB.security.skipped = false;
+    if (!DB.license) DB.license = { code:'', expiry:'', trial:false };
+    if (!DB.settings) DB.settings = {};
+    
+    if (!DB.settings.features) DB.settings.features = {
+      lactation:true, milkRecord:false, alertsPD:true, alertsHeat:true,
+      alertsDry:true, alertsCalving:true, alertsDeworm:true,
+      alertsVaccine:true, medicine:true, notes:true, retail:true
+    };
+    if (DB.settings.features.retail === undefined) DB.settings.features.retail = true;
+    if (DB.settings.features.alertsDeworm === undefined) DB.settings.features.alertsDeworm = true;
+    if (DB.settings.features.alertsVaccine === undefined) DB.settings.features.alertsVaccine = true;
+    
+    // Default Preset Advanced
+    if (!DB.settings.preset) DB.settings.preset = 'advanced';
+    if (!DB.settings.price) DB.settings.price = 40;
+    if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
+    
+    // Step 5: Device ID
+    if (!DB.deviceId) {
+      DB.deviceId = generateDeviceId();
+      await saveDBAsync();
+    }
+    
+    const dShow = document.getElementById('deviceIdShow');
+    if (dShow) dShow.textContent = DB.deviceId;
 
+    // ===== FAST RENDER - Home immediately =====
+    try {
+      if (DB.settings.setupDone) {
+        if (typeof applyLang === 'function') applyLang();
+        if (typeof renderHome === 'function') renderHome();
+        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
+        const setupEl = document.getElementById('setupScreen');
+        if (setupEl) setupEl.style.display = 'none';
+      }
+    } catch(e){}
+
+    const splashEarly = document.getElementById('dmSplash');
+    if (splashEarly) {
+      splashEarly.style.transition = 'opacity 0.3s';
+      splashEarly.style.opacity = '0';
+      setTimeout(function() { if (splashEarly && splashEarly.parentNode) splashEarly.remove(); }, 350);
+    }
+
+    try { if (typeof fetchAlertSettings === 'function') fetchAlertSettings(); } catch(e){}
+    
+    // Background retry for FCM Alert Sync - ensures 5-6 AM push
+    (function retryAlertSyncForFCM(){
+      var attempts=0;
+      function trySync(){
+        attempts++;
+        if (window._db && window._fbReady) {
+          try {
+            if (typeof syncAlertsToFirestore === 'function') {
+              syncAlertsToFirestore();
+              console.log('✅ Auto Alert Sync for 5-6 AM push');
+              localStorage.setItem('lastFcmSync', new Date().toLocaleString('bn-BD'));
+            }
+          } catch(e){}
+          return;
+        }
+        if (attempts<30) setTimeout(trySync, 1000);
+      }
+      setTimeout(trySync, 2000);
+    })();
+
+    // ===== Firestore থেকে Setup Restore করি - background =====
+// Local setupDone না থাকলে কিন্তু Firestore-এ থাকলে → restore
+if (!DB.settings.setupDone && DB.deviceId && window._db) {
+  try {
+    const restored = await loadDeviceSetupFromFirestore();
+    if (restored) {
+      console.log('✅ Setup restored from Firestore');
+    }
+  } catch(e) {
+    console.warn('Setup restore failed:', e);
+  }
+}
 
     
 // Step 6: Setup wizard or license check
