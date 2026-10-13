@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script>try{if('caches' in window){caches.keys().then(function(ns){ns.forEach(function(n){caches.delete(n);});});} if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){try{r.unregister();}catch(e){}});});}}catch(e){}</script>
+<head>
 <!-- Firebase Preconnect — দ্রুত connection -->
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
@@ -242,117 +242,49 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </style>
 
 </head>
-<body>
-<div id="v30-fallback" style="position:fixed; inset:0; background:linear-gradient(135deg,#1b5e20,#2e7d32); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999999; padding:20px; text-align:center; overflow:auto;">
-<div style="background:#fff; padding:28px 20px; border-radius:20px; max-width:360px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
-<div style="font-size:56px;">🐄</div>
-<h2 style="color:#1b5e20; margin:16px 0 8px; font-size:22px;">Dairy Manager</h2>
-<p style="color:#2e7d32; font-weight:bold; font-size:13px; background:#e8f5e9; padding:6px 12px; border-radius:20px; display:inline-block;">V30 - Push Working - White Fix</p>
-<p id="v30-status" style="color:#666; font-size:13px; margin:14px 0; line-height:1.5;">✅ SW Cleared<br>⏳ App Loading...<br>White Screen হলে নিচের বাটন Click করুন</p>
-<button id="v30-openBtn" style="background:#2e7d32; color:#fff; border:none; padding:16px 24px; border-radius:14px; width:100%; font-size:17px; font-weight:bold; cursor:pointer; box-shadow:0 4px 12px rgba(46,125,50,0.3);">✅ App খুলুন - এখানে Click করুন</button>
-<button onclick="location.reload(true)" style="background:#fff; color:#2e7d32; border:2px solid #2e7d32; padding:12px; border-radius:12px; width:100%; font-size:14px; margin-top:10px; cursor:pointer;">🔄 Reload</button>
-<p style="font-size:11px; color:#999; margin-top:12px;">কাল রাতে Notification এসেছে - Push Working<br>Device: <span id="v30-dev"></span></p>
+<body style="background:#e8f5e9;">
+<div id="v31-fallback" style="position:fixed; inset:0; background:linear-gradient(135deg,#1b5e20,#2e7d32); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999999; padding:20px; text-align:center;">
+<div style="background:#fff; padding:24px; border-radius:20px; max-width:340px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+<div style="font-size:50px;">🐄</div>
+<h2 style="color:#1b5e20; margin:12px 0;">Dairy Manager</h2>
+<p style="background:#e8f5e9; color:#2e7d32; padding:6px 12px; border-radius:20px; font-size:12px; display:inline-block; font-weight:bold;">V31 - Green Screen Fixed</p>
+<p id="v31-status" style="color:#666; font-size:13px; margin:12px 0;">⏳ App Loading...</p>
+<button id="v31-btn" style="background:#2e7d32; color:#fff; border:none; padding:14px 24px; border-radius:14px; width:100%; font-size:16px; font-weight:bold; cursor:pointer;">✅ App খুলুন</button>
+<p style="font-size:11px; color:#999; margin-top:10px;">Push Working - Notification এসেছে</p>
 </div>
 </div>
 <script>
 (function(){
-  var dev = '';
-  try { dev = localStorage.getItem('dairy_device_id') || 'Loading...'; } catch(e){ dev='N/A'; }
-  var el=document.getElementById('v30-dev'); if(el) el.textContent=dev;
-  var btn=document.getElementById('v30-openBtn');
-  var status=document.getElementById('v30-status');
-  function openApp(){
+  function v31Open(){
     try {
-      var fb=document.getElementById('v30-fallback');
+      var fb=document.getElementById('v31-fallback');
       var splash=document.getElementById('dmSplash');
-      if(splash){ try{splash.remove();}catch(e){splash.style.display='none';} }
-      var trial=document.getElementById('trialScreen');
-      var login=document.getElementById('loginScreen');
-      var main=document.getElementById('mainContent');
-      if(trial){ trial.style.display='flex'; trial.style.opacity='1'; trial.style.visibility='visible'; trial.style.zIndex='100'; }
-      // Hide fallback after opening
-      setTimeout(function(){ if(fb) fb.style.display='none'; }, 300);
-      if(status) status.innerHTML='✅ App Opened - Trial Should Be Visible';
-      console.log('V30 Open clicked - trial forced');
-    } catch(e){ if(status) status.textContent='Error: '+e.message; }
+      if(splash) { try{splash.remove();}catch(e){splash.style.display='none';} }
+      var mainApp=document.getElementById('mainApp');
+      if(mainApp){ mainApp.style.display='block'; mainApp.style.opacity='1'; mainApp.style.visibility='visible'; }
+      var setup=document.getElementById('setupScreen');
+      if(setup) setup.style.display='none';
+      if(fb) setTimeout(function(){ fb.style.display='none'; }, 300);
+      console.log('V31 open clicked');
+      try { if(typeof proceedAfterLogin==='function') proceedAfterLogin(); } catch(e){}
+    } catch(e){ console.warn(e.message); }
   }
-  if(btn) btn.addEventListener('click', openApp);
-  if(btn) btn.addEventListener('touchstart', openApp);
-  // Auto try after 3s, but keep fallback visible if still white
+  var btn=document.getElementById('v31-btn');
+  if(btn){ btn.addEventListener('click', v31Open); btn.addEventListener('touchstart', v31Open); }
   setTimeout(function(){
     try {
-      var trial=document.getElementById('trialScreen');
-      var main=document.getElementById('mainContent');
-      var login=document.getElementById('loginScreen');
-      var anyVisible = (trial && trial.offsetHeight>50) || (main && main.offsetHeight>50) || (login && login.offsetHeight>50);
-      if(!anyVisible){
-        if(status) status.innerHTML='⚠️ White Screen Detected<br>নিচের বাটনে Click করুন<br>✅ App খুলুন';
-      } else {
-        // App visible, hide fallback
-        var fb=document.getElementById('v30-fallback');
+      var mainApp=document.getElementById('mainApp');
+      if(mainApp && mainApp.offsetHeight>50){
+        var fb=document.getElementById('v31-fallback');
         if(fb) fb.style.display='none';
+      } else {
+        var st=document.getElementById('v31-status');
+        if(st) st.innerHTML='⚠️ Loading আটকে - নিচের বাটনে Click করুন';
       }
     } catch(e){}
-  }, 3500);
-})();
-</script>
-
-<script id="v30-anti-white">
-// V30 ANTI WHITE SCREEN - MutationObserver + Persistent Fallback
-(function(){
-  const FORCE_SHOW_IDS = ['trialScreen','loginScreen','mainContent'];
-  
-  function forceShow() {
-    try {
-      var fallback = document.getElementById('v30-fallback');
-      if (!fallback) return; // Already opened
-      var trial = document.getElementById('trialScreen');
-      var login = document.getElementById('loginScreen');
-      var main = document.getElementById('mainContent');
-      var splash = document.getElementById('dmSplash');
-      // If any main UI hidden, keep fallback visible
-      var anyVisible = false;
-      if (trial && trial.style.display !== 'none' && trial.offsetHeight > 50) anyVisible = true;
-      if (login && login.style.display !== 'none' && login.offsetHeight > 50) anyVisible = true;
-      if (main && main.style.display !== 'none' && main.offsetHeight > 50) anyVisible = true;
-      if (!anyVisible) {
-        // Keep fallback
-        if (fallback) fallback.style.display = 'flex';
-      }
-    } catch(e){}
-  }
-
-  // MutationObserver to prevent trial being hidden
-  function watchTrial() {
-    try {
-      var trial = document.getElementById('trialScreen');
-      if (!trial) { setTimeout(watchTrial, 500); return; }
-      var observer = new MutationObserver(function(mutations){
-        mutations.forEach(function(m){
-          if (m.attributeName === 'style') {
-            var el = m.target;
-            if (el.id === 'trialScreen' && el.style.display === 'none') {
-              // If main and login also hidden, force trial back
-              var login = document.getElementById('loginScreen');
-              var main = document.getElementById('mainContent');
-              var loginHidden = !login || login.style.display === 'none' || login.offsetHeight < 10;
-              var mainHidden = !main || main.style.display === 'none' || main.offsetHeight < 10;
-              if (loginHidden && mainHidden) {
-                console.warn('Trial hidden but nothing else visible - forcing back');
-                el.style.display = 'flex';
-                el.style.opacity = '1';
-                el.style.visibility = 'visible';
-              }
-            }
-          }
-        });
-      });
-      observer.observe(trial, {attributes:true, attributeFilter:['style']});
-    } catch(e){}
-  }
-
-  setTimeout(watchTrial, 1000);
-  setInterval(forceShow, 2000);
+  }, 2500);
+  // Auto open after 2s
+  setTimeout(v31Open, 2000);
 })();
 </script>
 
@@ -8044,7 +7976,7 @@ function buildPdfHtml() {
     ? `<img src="${d.logo}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">`
     : `<div style="width:60px;height:60px;background:#2E7D32;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;">🐄</div>`;
 
-  return `<!DOCTYPE html><html><head><script>try{if('caches' in window){caches.keys().then(function(ns){ns.forEach(function(n){caches.delete(n);});});} if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){try{r.unregister();}catch(e){}});});}}catch(e){}</script><meta charset="UTF-8">
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
     <style>
       * { font-family: Arial, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
       body { padding: 20px; color: #222; }
@@ -8880,7 +8812,7 @@ function generateRetailPDF(customerId, month) {
     '<td style="text-align:right;">' + Number(e.amount).toFixed(0) + '</td></tr>'
   ).join('');
   
-  const pdfHtml = '<!DOCTYPE html><html><head><script>try{if('caches' in window){caches.keys().then(function(ns){ns.forEach(function(n){caches.delete(n);});});} if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){try{r.unregister();}catch(e){}});});}}catch(e){}</script><meta charset="UTF-8"><style>' +
+  const pdfHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' +
     '* { font-family: Arial, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }' +
     'body { padding: 20px; color: #222; }' +
     '.header { display: flex; align-items: center; gap: 12px; border-bottom: 3px solid #2E7D32; padding-bottom: 10px; margin-bottom: 14px; }' +
@@ -9431,7 +9363,7 @@ function buildSaleBillHtml(c) {
   const purchase = c.purchasePrice || 0;
   const sale = c.salePrice || 0;
 
-  return `<!DOCTYPE html><html><head><script>try{if('caches' in window){caches.keys().then(function(ns){ns.forEach(function(n){caches.delete(n);});});} if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){try{r.unregister();}catch(e){}});});}}catch(e){}</script><meta charset="UTF-8">
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <style>
     * { font-family: Arial, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { padding: 20px; color: #222; }
@@ -10367,72 +10299,83 @@ window.addEventListener('error', function(e) {
 });
 
 // ========== AFTER LOGIN — Farm Name + Main App ==========
-async function proceedAfterLogin() {
+async async function proceedAfterLogin() {
+  console.log('🚀 proceedAfterLogin V31');
   try {
-    // License screen লুকাই
     const licScreen = document.getElementById('licenseScreen');
     if (licScreen) licScreen.style.display = 'none';
+    const setupScreen = document.getElementById('setupScreen');
+    if (setupScreen) setupScreen.style.display = 'none';
     
-    // PIN set থাকলে PIN Login
     if (DB.security && DB.security.pin) {
       const pinLogin = document.getElementById('pinLoginScreen');
       if (pinLogin) pinLogin.style.display = 'flex';
+      // Still show mainApp behind? No, return for PIN
       return;
     }
-    
-    // Default Preset Advanced
+  } catch(e) { console.warn('proceed part1', e.message); }
+  
+  try {
     if (!DB.settings.preset) {
       DB.settings.preset = 'advanced';
       if (typeof PRESETS !== 'undefined' && PRESETS.advanced) {
         DB.settings.features = PRESETS.advanced;
       }
-      saveDB();
+      try { saveDB(); } catch(e){}
     }
-    
-    // Farm Name Modal — একবার per session
-    if (!DB.settings.farmName) {
-      let asked = '0';
-      try {
-        asked = sessionStorage.getItem('dm_farmNameAsked') || '0';
-      } catch(e) {}
-      
-      if (asked !== '1') {
-        try {
-          sessionStorage.setItem('dm_farmNameAsked', '1');
-        } catch(e) {}
-        
-        try {
-          if (typeof askNameModal === 'function') {
-            const name = await askNameModal();
-            if (name) {
-              DB.settings.farmName = name;
-              saveDB();
-              if (typeof saveNameToFirestore === 'function') {
-                try { await saveNameToFirestore(name); } catch(e) {}
-              }
-            }
-          }
-        } catch(e) {
-          console.warn('Farm name modal failed:', e);
-        }
-      }
-    }
-  } catch(e) {
-    console.error('proceedAfterLogin error:', e);
-  }
+  } catch(e){}
   
-  // Main App দেখাই (error হলেও)
+  // Force show mainApp IMMEDIATELY - no await blocking
   try {
     const mainApp = document.getElementById('mainApp');
-    if (mainApp) mainApp.style.display = 'block';
-    
+    if (mainApp) {
+      mainApp.style.display = 'block';
+      mainApp.style.opacity = '1';
+      mainApp.style.visibility = 'visible';
+    }
+    console.log('✅ mainApp forced visible');
+  } catch(e) { console.warn('mainApp show fail', e.message); }
+  
+  // Farm name modal - non blocking, after mainApp visible
+  setTimeout(async function(){
+    try {
+      if (!DB.settings.farmName) {
+        let asked = '0';
+        try { asked = sessionStorage.getItem('dm_farmNameAsked') || '0'; } catch(e){}
+        if (asked !== '1') {
+          try { sessionStorage.setItem('dm_farmNameAsked','1'); } catch(e){}
+          if (typeof askNameModal === 'function') {
+            try {
+              const name = await askNameModal();
+              if (name) {
+                DB.settings.farmName = name;
+                try { saveDB(); } catch(e){}
+                if (typeof saveNameToFirestore === 'function') { try { await saveNameToFirestore(name); } catch(e){} }
+              }
+            } catch(e){ console.warn('askNameModal fail', e.message); }
+          }
+        }
+      }
+    } catch(e){}
+  }, 800);
+  
+  try {
     if (typeof afterLogin === 'function') {
       afterLogin();
     }
-  } catch(e) {
-    console.error('afterLogin error:', e);
-  }
+  } catch(e) { console.error('afterLogin error:', e.message); }
+  
+  // Hide fallback
+  setTimeout(function(){
+    try {
+      var fb=document.getElementById('v31-fallback');
+      if(fb) fb.style.display='none';
+      var splash=document.getElementById('dmSplash');
+      if(splash) { try{splash.remove();}catch(e){ splash.style.display='none'; } }
+    } catch(e){}
+  }, 500);
 }
+
 
 
 function continueWithTrial() {
@@ -11629,7 +11572,7 @@ function waitForAuthThenCheckLicense() {
 }
 
 // ========== INIT ==========
-async function initApp() {
+async function initApp() { console.log('initApp V31'); try {
   try {
     // Step 1: Initialize IndexedDB - FAST
     await initIndexedDB();
