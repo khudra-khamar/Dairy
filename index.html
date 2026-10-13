@@ -241,127 +241,8 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 .manual-section li { margin-bottom:4px; }
 </style>
 
-
-<script id="v32-header-btn-fix">
-(function(){
-  function v32FixHeaderAndButtons(){
-    try {
-      // Fix header Loading...
-      var sub = document.getElementById('hdrSubtitle');
-      if (sub) {
-        var l = 'bn';
-        try { l = (typeof DB !== 'undefined' && DB.settings && DB.settings.lang) ? DB.settings.lang : 'bn'; } catch(e){}
-        var count = 0;
-        try { count = (DB.cows || []).filter(c=>c.status!=='sold').length; } catch(e){}
-        var countText = l==='bn' ? count + 'টি পশু' : l==='hi' ? count + ' पशु' : count + ' animals';
-        var activeText = l==='bn' ? 'সক্রিয়' : l==='hi' ? 'सक्रिय' : 'active';
-        sub.textContent = countText + ' · ' + activeText;
-        sub.style.opacity = '1';
-      }
-      var title = document.getElementById('hdrTitle');
-      if (title) {
-        try {
-          var farm = (DB.settings && DB.settings.farmName) ? DB.settings.farmName : '';
-          title.textContent = farm ? '🐄 ' + farm : '🐄 Dairy Manager';
-        } catch(e){}
-      }
-
-      // Fix buttons - ensure navigation works
-      // The app uses showPage() and bottom nav - make sure they are clickable
-      var mainApp = document.getElementById('mainApp');
-      if (mainApp) {
-        mainApp.style.pointerEvents = 'auto';
-        mainApp.style.opacity = '1';
-      }
-
-      // Force renderHome again to populate counts
-      try {
-        if (typeof renderHome === 'function') renderHome();
-        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
-        if (typeof applyLang === 'function') applyLang();
-      } catch(e){ console.warn('render fix', e.message); }
-
-      console.log('V32 header & buttons fixed');
-    } catch(e){ console.warn('V32 fix error', e.message); }
-  }
-
-  // Run multiple times
-  setTimeout(v32FixHeaderAndButtons, 1000);
-  setTimeout(v32FixHeaderAndButtons, 2500);
-  setTimeout(v32FixHeaderAndButtons, 4000);
-  setTimeout(v32FixHeaderAndButtons, 6000);
-
-  // Also on click anywhere, try to fix
-  document.addEventListener('click', function(){
-    setTimeout(v32FixHeaderAndButtons, 300);
-  });
-
-  // Fix bottom nav clicks - ensure they work even if JS partially broken
-  function fixBottomNav(){
-    try {
-      var nav = document.getElementById('bottomNav');
-      if (!nav) return;
-      var buttons = nav.querySelectorAll('button, div, a');
-      buttons.forEach(function(btn){
-        if (btn.dataset.v32Fixed) return;
-        btn.dataset.v32Fixed = '1';
-        btn.style.pointerEvents = 'auto';
-        btn.style.cursor = 'pointer';
-      });
-    } catch(e){}
-  }
-  setTimeout(fixBottomNav, 1500);
-  setInterval(fixBottomNav, 3000);
-})();
-</script>
-
 </head>
-<body style="background:#e8f5e9;">
-<div id="v31-fallback" style="position:fixed; inset:0; background:linear-gradient(135deg,#1b5e20,#2e7d32); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999999; padding:20px; text-align:center;">
-<div style="background:#fff; padding:24px; border-radius:20px; max-width:340px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
-<div style="font-size:50px;">🐄</div>
-<h2 style="color:#1b5e20; margin:12px 0;">Dairy Manager</h2>
-<p style="background:#e8f5e9; color:#2e7d32; padding:6px 12px; border-radius:20px; font-size:12px; display:inline-block; font-weight:bold;">V31 - Green Screen Fixed</p>
-<p id="v31-status" style="color:#666; font-size:13px; margin:12px 0;">⏳ App Loading...</p>
-<button id="v31-btn" style="background:#2e7d32; color:#fff; border:none; padding:14px 24px; border-radius:14px; width:100%; font-size:16px; font-weight:bold; cursor:pointer;">✅ App খুলুন</button>
-<p style="font-size:11px; color:#999; margin-top:10px;">Push Working - Notification এসেছে</p>
-</div>
-</div>
-<script>
-(function(){
-  function v31Open(){
-    try {
-      var fb=document.getElementById('v31-fallback');
-      var splash=document.getElementById('dmSplash');
-      if(splash) { try{splash.remove();}catch(e){splash.style.display='none';} }
-      var mainApp=document.getElementById('mainApp');
-      if(mainApp){ mainApp.style.display='block'; mainApp.style.opacity='1'; mainApp.style.visibility='visible'; }
-      var setup=document.getElementById('setupScreen');
-      if(setup) setup.style.display='none';
-      if(fb) setTimeout(function(){ fb.style.display='none'; }, 300);
-      console.log('V31 open clicked');
-      try { if(typeof proceedAfterLogin==='function') proceedAfterLogin(); } catch(e){}
-    } catch(e){ console.warn(e.message); }
-  }
-  var btn=document.getElementById('v31-btn');
-  if(btn){ btn.addEventListener('click', v31Open); btn.addEventListener('touchstart', v31Open); }
-  setTimeout(function(){
-    try {
-      var mainApp=document.getElementById('mainApp');
-      if(mainApp && mainApp.offsetHeight>50){
-        var fb=document.getElementById('v31-fallback');
-        if(fb) fb.style.display='none';
-      } else {
-        var st=document.getElementById('v31-status');
-        if(st) st.innerHTML='⚠️ Loading আটকে - নিচের বাটনে Click করুন';
-      }
-    } catch(e){}
-  }, 2500);
-  // Auto open after 2s
-  setTimeout(v31Open, 2000);
-})();
-</script>
-
+<body>
 <!-- ========== SPLASH SCREEN (Green + Gold) ========== -->
 <div id="dmSplash" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#0D3D14 0%,#1B5E20 40%,#2E7D32 100%);z-index:9999999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;overflow:hidden;">
 
@@ -8067,81 +7948,7 @@ function buildPdfHtml() {
       td { padding: 5px 4px; border-bottom: 1px solid #eee; }
       tr:nth-child(even) { background: #FAFAFA; }
       .footer { margin-top: 20px; padding-top: 12px; border-top: 2px solid #E0E0E0; font-size: 10px; color: #888; text-align: center; }
-    </style>
-<script id="v32-header-btn-fix">
-(function(){
-  function v32FixHeaderAndButtons(){
-    try {
-      // Fix header Loading...
-      var sub = document.getElementById('hdrSubtitle');
-      if (sub) {
-        var l = 'bn';
-        try { l = (typeof DB !== 'undefined' && DB.settings && DB.settings.lang) ? DB.settings.lang : 'bn'; } catch(e){}
-        var count = 0;
-        try { count = (DB.cows || []).filter(c=>c.status!=='sold').length; } catch(e){}
-        var countText = l==='bn' ? count + 'টি পশু' : l==='hi' ? count + ' पशु' : count + ' animals';
-        var activeText = l==='bn' ? 'সক্রিয়' : l==='hi' ? 'सक्रिय' : 'active';
-        sub.textContent = countText + ' · ' + activeText;
-        sub.style.opacity = '1';
-      }
-      var title = document.getElementById('hdrTitle');
-      if (title) {
-        try {
-          var farm = (DB.settings && DB.settings.farmName) ? DB.settings.farmName : '';
-          title.textContent = farm ? '🐄 ' + farm : '🐄 Dairy Manager';
-        } catch(e){}
-      }
-
-      // Fix buttons - ensure navigation works
-      // The app uses showPage() and bottom nav - make sure they are clickable
-      var mainApp = document.getElementById('mainApp');
-      if (mainApp) {
-        mainApp.style.pointerEvents = 'auto';
-        mainApp.style.opacity = '1';
-      }
-
-      // Force renderHome again to populate counts
-      try {
-        if (typeof renderHome === 'function') renderHome();
-        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
-        if (typeof applyLang === 'function') applyLang();
-      } catch(e){ console.warn('render fix', e.message); }
-
-      console.log('V32 header & buttons fixed');
-    } catch(e){ console.warn('V32 fix error', e.message); }
-  }
-
-  // Run multiple times
-  setTimeout(v32FixHeaderAndButtons, 1000);
-  setTimeout(v32FixHeaderAndButtons, 2500);
-  setTimeout(v32FixHeaderAndButtons, 4000);
-  setTimeout(v32FixHeaderAndButtons, 6000);
-
-  // Also on click anywhere, try to fix
-  document.addEventListener('click', function(){
-    setTimeout(v32FixHeaderAndButtons, 300);
-  });
-
-  // Fix bottom nav clicks - ensure they work even if JS partially broken
-  function fixBottomNav(){
-    try {
-      var nav = document.getElementById('bottomNav');
-      if (!nav) return;
-      var buttons = nav.querySelectorAll('button, div, a');
-      buttons.forEach(function(btn){
-        if (btn.dataset.v32Fixed) return;
-        btn.dataset.v32Fixed = '1';
-        btn.style.pointerEvents = 'auto';
-        btn.style.cursor = 'pointer';
-      });
-    } catch(e){}
-  }
-  setTimeout(fixBottomNav, 1500);
-  setInterval(fixBottomNav, 3000);
-})();
-</script>
-
-</head><body>
+    </style></head><body>
     <div class="header">
       ${logoHtml}
       <div>
@@ -8978,81 +8785,7 @@ function generateRetailPDF(customerId, month) {
     '.summary .row { display: flex; justify-content: space-between; padding: 3px 0; }' +
     '.summary .total { border-top: 2px solid #E65100; margin-top: 6px; padding-top: 6px; font-size: 14px; font-weight: bold; color: #E65100; }' +
     '.footer { margin-top: 20px; text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 10px; }' +
-    '</style>
-<script id="v32-header-btn-fix">
-(function(){
-  function v32FixHeaderAndButtons(){
-    try {
-      // Fix header Loading...
-      var sub = document.getElementById('hdrSubtitle');
-      if (sub) {
-        var l = 'bn';
-        try { l = (typeof DB !== 'undefined' && DB.settings && DB.settings.lang) ? DB.settings.lang : 'bn'; } catch(e){}
-        var count = 0;
-        try { count = (DB.cows || []).filter(c=>c.status!=='sold').length; } catch(e){}
-        var countText = l==='bn' ? count + 'টি পশু' : l==='hi' ? count + ' पशु' : count + ' animals';
-        var activeText = l==='bn' ? 'সক্রিয়' : l==='hi' ? 'सक्रिय' : 'active';
-        sub.textContent = countText + ' · ' + activeText;
-        sub.style.opacity = '1';
-      }
-      var title = document.getElementById('hdrTitle');
-      if (title) {
-        try {
-          var farm = (DB.settings && DB.settings.farmName) ? DB.settings.farmName : '';
-          title.textContent = farm ? '🐄 ' + farm : '🐄 Dairy Manager';
-        } catch(e){}
-      }
-
-      // Fix buttons - ensure navigation works
-      // The app uses showPage() and bottom nav - make sure they are clickable
-      var mainApp = document.getElementById('mainApp');
-      if (mainApp) {
-        mainApp.style.pointerEvents = 'auto';
-        mainApp.style.opacity = '1';
-      }
-
-      // Force renderHome again to populate counts
-      try {
-        if (typeof renderHome === 'function') renderHome();
-        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
-        if (typeof applyLang === 'function') applyLang();
-      } catch(e){ console.warn('render fix', e.message); }
-
-      console.log('V32 header & buttons fixed');
-    } catch(e){ console.warn('V32 fix error', e.message); }
-  }
-
-  // Run multiple times
-  setTimeout(v32FixHeaderAndButtons, 1000);
-  setTimeout(v32FixHeaderAndButtons, 2500);
-  setTimeout(v32FixHeaderAndButtons, 4000);
-  setTimeout(v32FixHeaderAndButtons, 6000);
-
-  // Also on click anywhere, try to fix
-  document.addEventListener('click', function(){
-    setTimeout(v32FixHeaderAndButtons, 300);
-  });
-
-  // Fix bottom nav clicks - ensure they work even if JS partially broken
-  function fixBottomNav(){
-    try {
-      var nav = document.getElementById('bottomNav');
-      if (!nav) return;
-      var buttons = nav.querySelectorAll('button, div, a');
-      buttons.forEach(function(btn){
-        if (btn.dataset.v32Fixed) return;
-        btn.dataset.v32Fixed = '1';
-        btn.style.pointerEvents = 'auto';
-        btn.style.cursor = 'pointer';
-      });
-    } catch(e){}
-  }
-  setTimeout(fixBottomNav, 1500);
-  setInterval(fixBottomNav, 3000);
-})();
-</script>
-
-</head><body>' +
+    '</style></head><body>' +
     '<div class="header">' + logoHtml +
     '<div><h1>' + farm + '</h1><p>' + (owner ? owner + ' • ' : '') + phone + '</p></div></div>' +
     '<div class="title">🥛 Monthly Statement / মাসিক বিল</div>' +
@@ -9608,81 +9341,7 @@ function buildSaleBillHtml(c) {
     .sig { text-align: center; font-size: 12px; }
     .sig-line { border-top: 1px solid #333; padding-top: 5px; width: 150px; }
     .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
-  </style>
-<script id="v32-header-btn-fix">
-(function(){
-  function v32FixHeaderAndButtons(){
-    try {
-      // Fix header Loading...
-      var sub = document.getElementById('hdrSubtitle');
-      if (sub) {
-        var l = 'bn';
-        try { l = (typeof DB !== 'undefined' && DB.settings && DB.settings.lang) ? DB.settings.lang : 'bn'; } catch(e){}
-        var count = 0;
-        try { count = (DB.cows || []).filter(c=>c.status!=='sold').length; } catch(e){}
-        var countText = l==='bn' ? count + 'টি পশু' : l==='hi' ? count + ' पशु' : count + ' animals';
-        var activeText = l==='bn' ? 'সক্রিয়' : l==='hi' ? 'सक्रिय' : 'active';
-        sub.textContent = countText + ' · ' + activeText;
-        sub.style.opacity = '1';
-      }
-      var title = document.getElementById('hdrTitle');
-      if (title) {
-        try {
-          var farm = (DB.settings && DB.settings.farmName) ? DB.settings.farmName : '';
-          title.textContent = farm ? '🐄 ' + farm : '🐄 Dairy Manager';
-        } catch(e){}
-      }
-
-      // Fix buttons - ensure navigation works
-      // The app uses showPage() and bottom nav - make sure they are clickable
-      var mainApp = document.getElementById('mainApp');
-      if (mainApp) {
-        mainApp.style.pointerEvents = 'auto';
-        mainApp.style.opacity = '1';
-      }
-
-      // Force renderHome again to populate counts
-      try {
-        if (typeof renderHome === 'function') renderHome();
-        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
-        if (typeof applyLang === 'function') applyLang();
-      } catch(e){ console.warn('render fix', e.message); }
-
-      console.log('V32 header & buttons fixed');
-    } catch(e){ console.warn('V32 fix error', e.message); }
-  }
-
-  // Run multiple times
-  setTimeout(v32FixHeaderAndButtons, 1000);
-  setTimeout(v32FixHeaderAndButtons, 2500);
-  setTimeout(v32FixHeaderAndButtons, 4000);
-  setTimeout(v32FixHeaderAndButtons, 6000);
-
-  // Also on click anywhere, try to fix
-  document.addEventListener('click', function(){
-    setTimeout(v32FixHeaderAndButtons, 300);
-  });
-
-  // Fix bottom nav clicks - ensure they work even if JS partially broken
-  function fixBottomNav(){
-    try {
-      var nav = document.getElementById('bottomNav');
-      if (!nav) return;
-      var buttons = nav.querySelectorAll('button, div, a');
-      buttons.forEach(function(btn){
-        if (btn.dataset.v32Fixed) return;
-        btn.dataset.v32Fixed = '1';
-        btn.style.pointerEvents = 'auto';
-        btn.style.cursor = 'pointer';
-      });
-    } catch(e){}
-  }
-  setTimeout(fixBottomNav, 1500);
-  setInterval(fixBottomNav, 3000);
-})();
-</script>
-
-</head><body>
+  </style></head><body>
   <div class="header">
     ${logoHtml}
     <div>
@@ -10595,83 +10254,72 @@ window.addEventListener('error', function(e) {
 });
 
 // ========== AFTER LOGIN — Farm Name + Main App ==========
-async async function proceedAfterLogin() {
-  console.log('🚀 proceedAfterLogin V31');
+async function proceedAfterLogin() {
   try {
+    // License screen লুকাই
     const licScreen = document.getElementById('licenseScreen');
     if (licScreen) licScreen.style.display = 'none';
-    const setupScreen = document.getElementById('setupScreen');
-    if (setupScreen) setupScreen.style.display = 'none';
     
+    // PIN set থাকলে PIN Login
     if (DB.security && DB.security.pin) {
       const pinLogin = document.getElementById('pinLoginScreen');
       if (pinLogin) pinLogin.style.display = 'flex';
-      // Still show mainApp behind? No, return for PIN
       return;
     }
-  } catch(e) { console.warn('proceed part1', e.message); }
-  
-  try {
+    
+    // Default Preset Advanced
     if (!DB.settings.preset) {
       DB.settings.preset = 'advanced';
       if (typeof PRESETS !== 'undefined' && PRESETS.advanced) {
         DB.settings.features = PRESETS.advanced;
       }
-      try { saveDB(); } catch(e){}
+      saveDB();
     }
-  } catch(e){}
-  
-  // Force show mainApp IMMEDIATELY - no await blocking
-  try {
-    const mainApp = document.getElementById('mainApp');
-    if (mainApp) {
-      mainApp.style.display = 'block';
-      mainApp.style.opacity = '1';
-      mainApp.style.visibility = 'visible';
-    }
-    console.log('✅ mainApp forced visible');
-  } catch(e) { console.warn('mainApp show fail', e.message); }
-  
-  // Farm name modal - non blocking, after mainApp visible
-  setTimeout(async function(){
-    try {
-      if (!DB.settings.farmName) {
-        let asked = '0';
-        try { asked = sessionStorage.getItem('dm_farmNameAsked') || '0'; } catch(e){}
-        if (asked !== '1') {
-          try { sessionStorage.setItem('dm_farmNameAsked','1'); } catch(e){}
+    
+    // Farm Name Modal — একবার per session
+    if (!DB.settings.farmName) {
+      let asked = '0';
+      try {
+        asked = sessionStorage.getItem('dm_farmNameAsked') || '0';
+      } catch(e) {}
+      
+      if (asked !== '1') {
+        try {
+          sessionStorage.setItem('dm_farmNameAsked', '1');
+        } catch(e) {}
+        
+        try {
           if (typeof askNameModal === 'function') {
-            try {
-              const name = await askNameModal();
-              if (name) {
-                DB.settings.farmName = name;
-                try { saveDB(); } catch(e){}
-                if (typeof saveNameToFirestore === 'function') { try { await saveNameToFirestore(name); } catch(e){} }
+            const name = await askNameModal();
+            if (name) {
+              DB.settings.farmName = name;
+              saveDB();
+              if (typeof saveNameToFirestore === 'function') {
+                try { await saveNameToFirestore(name); } catch(e) {}
               }
-            } catch(e){ console.warn('askNameModal fail', e.message); }
+            }
           }
+        } catch(e) {
+          console.warn('Farm name modal failed:', e);
         }
       }
-    } catch(e){}
-  }, 800);
+    }
+  } catch(e) {
+    console.error('proceedAfterLogin error:', e);
+  }
   
+  // Main App দেখাই (error হলেও)
   try {
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) mainApp.style.display = 'block';
+    
     if (typeof afterLogin === 'function') {
       afterLogin();
     }
-  } catch(e) { console.error('afterLogin error:', e.message); }
-  
-  // Hide fallback
-  setTimeout(function(){
-    try {
-      var fb=document.getElementById('v31-fallback');
-      if(fb) fb.style.display='none';
-      var splash=document.getElementById('dmSplash');
-      if(splash) { try{splash.remove();}catch(e){ splash.style.display='none'; } }
-    } catch(e){}
-  }, 500);
+  } catch(e) {
+    console.error('afterLogin error:', e);
+  }
 }
-
 
 
 function continueWithTrial() {
@@ -11868,7 +11516,7 @@ function waitForAuthThenCheckLicense() {
 }
 
 // ========== INIT ==========
-async function initApp() { console.log('initApp V31'); try {
+async function initApp() {
   try {
     // Step 1: Initialize IndexedDB - FAST
     await initIndexedDB();
