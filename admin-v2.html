@@ -2558,6 +2558,35 @@ function showFeedFormModal(existing) {
 }
 
 // ========== TRIAL USERS ==========
+// ========== HELPER FUNCTIONS ==========
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return '—';
+  let time = timestamp;
+  if (timestamp.toMillis) time = timestamp.toMillis();
+  else if (timestamp.seconds) time = timestamp.seconds * 1000;
+  
+  const now = Date.now();
+  const diff = now - time;
+  
+  const seconds = Math.floor(diff / 1000);
+  if (seconds < 60) return 'Just now';
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes + ' mins ago';
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + ' hours ago';
+  
+  const days = Math.floor(hours / 24);
+  if (days < 30) return days + ' days ago';
+  
+  const months = Math.floor(days / 30);
+  if (months < 12) return months + ' months ago';
+  
+  const years = Math.floor(months / 12);
+  return years + ' years ago';
+}
+// =======================================
 let allTrialUsers = [];
 let currentTrialFilter = 'all';
 let currentSearchQuery = '';
