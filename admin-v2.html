@@ -1329,6 +1329,11 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
 <script src="feed-data.js"></script>
 <!-- ==================== PART 3A: MAIN JAVASCRIPT ==================== -->
 <script>
+
+window.onerror = function(msg, url, line) {
+  alert("⚠️ Error on line " + line + ":\n" + msg);
+  return false;
+};
 // ========== FIREBASE INIT ==========
 let auth, db;
 let currentUser = null;
