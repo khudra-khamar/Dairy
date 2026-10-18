@@ -10005,21 +10005,13 @@ async function saveGuestTrialUser() {
 
 async function saveUserAfterLogin(user, method) {
   try {
-    // ===== Check 1: Firebase Ready =====
-    if (!window._db) {
-      alert('❌ Error 1: window._db পাওয়া যায়নি (Firebase load হয়নি)');
-      return;
-    }
-    
-    if (!user || !user.uid) {
-      alert('❌ Error 2: User object বা UID পাওয়া যায়নি');
-      return;
-    }
+    if (!window._db) return;
+    if (!user || !user.uid) return;
     
     const uid = user.uid;
     const now = Date.now();
     
-    // ===== Save to users collection =====
+    // ===== 1. Save to users collection =====
     try {
       const userRef = window._db.collection('users').doc(uid);
       const userSnap = await userRef.get();
@@ -10047,11 +10039,10 @@ async function saveUserAfterLogin(user, method) {
         console.log('✅ users updated:', uid);
       }
     } catch(e) {
-      alert('❌ Error users collection: ' + e.message);
-      console.error('users save failed:', e);
+      console.warn('users save failed:', e);
     }
     
-    // ===== Save to trialUsers collection =====
+    // ===== 2. Save to trialUsers collection =====
     try {
       const trialRef = window._db.collection('trialUsers').doc(uid);
       const trialSnap = await trialRef.get();
@@ -10079,14 +10070,10 @@ async function saveUserAfterLogin(user, method) {
         console.log('✅ trialUsers updated:', uid);
       }
     } catch(e) {
-      alert('❌ Error trialUsers collection: ' + e.message);
-      console.error('trialUsers save failed:', e);
+      console.warn('trialUsers save failed:', e);
     }
     
-    alert('✅ Save সফল! Email: ' + (user.email || 'খালি'));
-    
   } catch(e) {
-    alert('❌ Error SaveUser: ' + e.message);
     console.error('❌ saveUserAfterLogin failed:', e);
   }
 }
@@ -11586,6 +11573,26 @@ function waitForAuthThenCheckLicense() {
       const unsub = window._auth.onAuthStateChanged(function(user) {
         unsub();
         console.log('✅ Auth state:', user ? user.email : 'guest');
+        
+        // Google/Phone Login হলে Trial Users ডকুমেন্ট আপডেট করা
+if (user && window._db && DB.deviceId) {
+    let authType = 'google';
+    if (user.providerData && user.providerData.length > 0) {
+        authType = user.providerData[0].providerId.includes('phone') ? 'phone' : 'google';
+    }
+    window._db.collection('trialUsers').doc(DB.deviceId).set({
+        email: user.email || '',
+        displayName: user.displayName || '',
+        uid: user.uid,
+        type: authType,
+        authMethod: authType,
+        lastSeen: Date.now()
+    }, { merge: true }).then(() => {
+        console.log('✅ Trial user updated with Auth info');
+    }).catch(err => {
+        console.error('❌ Trial user update failed:', err);
+    });
+}
         
         // ===== UID License Check (Background) =====
         if (user && user.uid && window._db) {
