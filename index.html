@@ -10010,6 +10010,7 @@ async function saveUserAfterLogin(user, method) {
     const uid = user.uid;
     const now = Date.now();
     
+    // ===== Save to users collection =====
     const userRef = window._db.collection('users').doc(uid);
     const userSnap = await userRef.get();
     
@@ -10035,11 +10036,16 @@ async function saveUserAfterLogin(user, method) {
       await userRef.update({
         lastSeen: now,
         deviceId: DB.deviceId || '',
-        authMethod: method
+        authMethod: method,
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        displayName: user.displayName || '',
+        photoURL: user.photoURL || ''
       });
       console.log('✅ Existing user updated:', uid);
     }
     
+    // ===== Save to trialUsers collection =====
     const trialRef = window._db.collection('trialUsers').doc(uid);
     const trialSnap = await trialRef.get();
     
@@ -10060,10 +10066,41 @@ async function saveUserAfterLogin(user, method) {
       });
       console.log('✅ Trial user doc created');
     } else {
+      // ✅ Update ALL fields — যাতে email, phone, type ঠিক থাকে
       await trialRef.update({
+        type: 'auth',
+        uid: uid,
+        authMethod: method,
+        deviceId: DB.deviceId || '',
+        email: user.email || '',
+        phone: user.phoneNumber || '',
         lastSeen: now,
-        deviceId: DB.deviceId || ''
+        appVersion: '2026.09'
       });
+      console.log('✅ Trial user updated with auth data');
+    }
+    
+    // ===== Merge guest doc (if exists) =====
+    // যদি আগে Guest Trial চালু করে থাকে (DEV-XXXX doc), তার ডেটাও রাখি
+    if (DB.deviceId && DB.deviceId !== uid) {
+      try {
+        const guestRef = window._db.collection('trialUsers').doc(DB.deviceId);
+        const guestSnap = await guestRef.get();
+        
+        if (guestSnap.exists) {
+          const guestData = guestSnap.data();
+          // guest ডেটা merge করি (farmerName/phone থাকলে)
+          if (guestData.farmerName && !DB.settings.farmName) {
+            await trialRef.update({ farmerName: guestData.farmerName });
+          }
+          if (guestData.phone && !DB.settings.phone) {
+            await trialRef.update({ phone: guestData.phone });
+          }
+          console.log('✅ Guest data merged into auth doc');
+        }
+      } catch(e) {
+        console.warn('Guest merge failed:', e);
+      }
     }
     
   } catch(e) {
