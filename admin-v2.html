@@ -2557,7 +2557,6 @@ function showFeedFormModal(existing) {
   });
 }
 
-// ========== TRIAL USERS ==========
 // ========== HELPER FUNCTIONS ==========
 function formatRelativeTime(timestamp) {
   if (!timestamp) return '—';
@@ -2586,7 +2585,8 @@ function formatRelativeTime(timestamp) {
   const years = Math.floor(months / 12);
   return years + ' years ago';
 }
-// =======================================
+
+// ========== TRIAL USERS ==========
 let allTrialUsers = [];
 let currentTrialFilter = 'all';
 let currentSearchQuery = '';
@@ -2607,39 +2607,10 @@ async function loadTrialUsers() {
       allTrialUsers.push(data);
     });
     
-    console.log('Loaded', allTrialUsers.length, 'trial users');
     if (countEl) countEl.textContent = allTrialUsers.length;
-    
     renderTrialUsers();
   } catch(e) {
     console.error('Load trial users failed:', e);
-    listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
-  }
-}
-
-async function loadLicenses() {
-  const listEl = document.getElementById('licenseList');
-  const countEl = document.getElementById('licenseCount');
-  
-  if (!listEl) return;
-  listEl.innerHTML = '<div class="loading">Loading licenses...</div>';
-  
-  try {
-    const snap = await db.collection('licenses').get();
-    allLicenses = [];
-    snap.forEach(doc => {
-      const data = doc.data();
-      data.id = doc.id;
-      allLicenses.push(data);
-    });
-    
-    console.log('Loaded', allLicenses.length, 'licenses');
-    
-    if (countEl) countEl.textContent = allLicenses.length;
-    
-    renderLicenses();
-  } catch(e) {
-    console.error('Load licenses failed:', e);
     listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
   }
 }
@@ -2650,7 +2621,6 @@ function renderTrialUsers() {
   
   let filtered = allTrialUsers.slice();
   
-  // ১. আগের ফিল্টার লজিক
   if (currentTrialFilter === 'google') {
     filtered = filtered.filter(u => u.authMethod === 'google');
   } else if (currentTrialFilter === 'phone') {
@@ -2661,7 +2631,6 @@ function renderTrialUsers() {
     filtered = filtered.filter(u => u.converted === true);
   }
 
-  // ২. নতুন সার্চ ফিল্টার লজিক
   if (currentSearchQuery) {
     filtered = filtered.filter(u => {
       const device = (u.deviceId || '').toLowerCase();
@@ -2691,7 +2660,6 @@ function renderTrialUsers() {
     else if (type === 'phone') { typeIcon = '📱'; typeLabel = 'Phone'; }
     
     const isAuthUser = (type === 'google' || type === 'phone');
-    
     const name = u.farmerName || u.ownerName || u.displayName || 'নাম নেই';
     const contact = u.email || u.phone || '';
     const device = u.deviceId || '—';
@@ -2704,7 +2672,6 @@ function renderTrialUsers() {
       : '<span class="lic-badge badge-expiring">⏳ TRIAL</span>';
     
     let actions = '';
-    
     if (isAuthUser) {
       if (u.phone) {
         const phoneClean = u.phone.replace(/\D/g, '');
@@ -2740,22 +2707,62 @@ function filterTrialUsers(filter) {
     const btn = document.getElementById(map[k]);
     if (!btn) return;
     if (k === filter) {
-      btn.style.background = '#2E7D32';
-      btn.style.color = '#fff';
-      btn.style.borderColor = '#2E7D32';
+      btn.style.background = '#2E7D32'; btn.style.color = '#fff'; btn.style.borderColor = '#2E7D32';
     } else {
-      btn.style.background = '#fff';
-      btn.style.color = '#666';
-      btn.style.borderColor = '#E0E0E0';
+      btn.style.background = '#fff'; btn.style.color = '#666'; btn.style.borderColor = '#E0E0E0';
     }
   });
   renderTrialUsers();
 }
 
-// সার্চ ইনপুট হ্যান্ডলার ফাংশন
 function searchTrialUsers(query) {
   currentSearchQuery = query.toLowerCase().trim();
   renderTrialUsers();
+}
+
+// ========== LICENSES (RESTORED) ==========
+let allLicenses = [];
+
+async function loadLicenses() {
+  const listEl = document.getElementById('licenseList');
+  const countEl = document.getElementById('licenseCount');
+  
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">Loading licenses...</div>';
+  
+  try {
+    const snap = await db.collection('licenses').get();
+    allLicenses = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allLicenses.push(data);
+    });
+    
+    if (countEl) countEl.textContent = allLicenses.length;
+    renderLicenses();
+  } catch(e) {
+    console.error('Load licenses failed:', e);
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
+function renderLicenses() {
+  const listEl = document.getElementById('licenseList');
+  if (!listEl) return;
+  
+  if (!allLicenses || allLicenses.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">No licenses</div><p>No active licenses found</p></div>';
+    return;
+  }
+  
+  listEl.innerHTML = allLicenses.map(lic => {
+    return '<div class="lic-card">' +
+      '<div class="l-code">🔑 ' + escapeHtml(lic.code || lic.id) + '</div>' +
+      '<div class="l-device">📱 ' + escapeHtml(lic.deviceId || '—') + '</div>' +
+      '<div class="l-row"><span class="l-label">Expiry</span><span class="l-value">' + escapeHtml(lic.expiry || '—') + '</span></div>' +
+    '</div>';
+  }).join('');
 }
 // ========== GIVE LICENSE ==========
 function openGiveLicenseModal(userId) {
