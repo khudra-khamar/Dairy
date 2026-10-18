@@ -1329,10 +1329,6 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
 <script src="feed-data.js"></script>
 <!-- ==================== PART 3A: MAIN JAVASCRIPT ==================== -->
 <script>
-window.onerror = function(msg, url, line) {
-  alert("⚠️ Error on line " + line + ":\n" + msg);
-  return false;
-};
 // ========== FIREBASE INIT ==========
 let auth, db;
 let currentUser = null;
@@ -2564,7 +2560,60 @@ function showFeedFormModal(existing) {
 // ========== TRIAL USERS ==========
 let allTrialUsers = [];
 let currentTrialFilter = 'all';
-let currentSearchQuery = ''; // নতুন সার্চ ভেরিয়েবল
+let currentSearchQuery = '';
+
+async function loadTrialUsers() {
+  const listEl = document.getElementById('trialUsersList');
+  const countEl = document.getElementById('trialUserCount');
+  
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">⏳ Loading trial users...</div>';
+  
+  try {
+    const snap = await db.collection('trialUsers').get();
+    allTrialUsers = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allTrialUsers.push(data);
+    });
+    
+    console.log('Loaded', allTrialUsers.length, 'trial users');
+    if (countEl) countEl.textContent = allTrialUsers.length;
+    
+    renderTrialUsers();
+  } catch(e) {
+    console.error('Load trial users failed:', e);
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
+async function loadLicenses() {
+  const listEl = document.getElementById('licenseList');
+  const countEl = document.getElementById('licenseCount');
+  
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">Loading licenses...</div>';
+  
+  try {
+    const snap = await db.collection('licenses').get();
+    allLicenses = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      allLicenses.push(data);
+    });
+    
+    console.log('Loaded', allLicenses.length, 'licenses');
+    
+    if (countEl) countEl.textContent = allLicenses.length;
+    
+    renderLicenses();
+  } catch(e) {
+    console.error('Load licenses failed:', e);
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
+  }
+}
 
 function renderTrialUsers() {
   const listEl = document.getElementById('trialUsersList');
@@ -2679,7 +2728,6 @@ function searchTrialUsers(query) {
   currentSearchQuery = query.toLowerCase().trim();
   renderTrialUsers();
 }
-
 // ========== GIVE LICENSE ==========
 function openGiveLicenseModal(userId) {
   const user = allTrialUsers.find(u => u.id === userId);
