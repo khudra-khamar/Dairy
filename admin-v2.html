@@ -1329,11 +1329,7 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
 <script src="feed-data.js"></script>
 <!-- ==================== PART 3A: MAIN JAVASCRIPT ==================== -->
 <script>
-
-window.onerror = function(msg, url, line) {
-  alert("⚠️ Error on line " + line + ":\n" + msg);
-  return false;
-};
+alert("SCRIPT_LOADED_OK");
 // ========== FIREBASE INIT ==========
 let auth, db;
 let currentUser = null;
@@ -1413,6 +1409,7 @@ function getFriendlyAuthError(err) {
 }
 
 function doLogin() {
+alert("LOGIN_BUTTON_CLICKED");
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
