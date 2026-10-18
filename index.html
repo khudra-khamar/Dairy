@@ -10005,69 +10005,58 @@ async function saveGuestTrialUser() {
 
 async function saveUserAfterLogin(user, method) {
   try {
-    if (!window._db) return;
+    // ===== Check 1: Firebase Ready =====
+    if (!window._db) {
+      alert('❌ Error 1: window._db পাওয়া যায়নি (Firebase load হয়নি)');
+      return;
+    }
+    
+    if (!user || !user.uid) {
+      alert('❌ Error 2: User object বা UID পাওয়া যায়নি');
+      return;
+    }
     
     const uid = user.uid;
     const now = Date.now();
     
     // ===== Save to users collection =====
-    const userRef = window._db.collection('users').doc(uid);
-    const userSnap = await userRef.get();
-    
-    const userData = {
-      uid: uid,
-      authMethod: method,
-      email: user.email || '',
-      phone: user.phoneNumber || '',
-      displayName: user.displayName || '',
-      photoURL: user.photoURL || '',
-      deviceId: DB.deviceId || '',
-      lastSeen: now
-    };
-    
-    if (!userSnap.exists) {
-      userData.firstSeen = now;
-      userData.farmerName = DB.settings.farmName || '';
-      userData.ownerName = DB.settings.ownerName || user.displayName || '';
-      userData.appVersion = '2026.09';
-      await userRef.set(userData);
-      console.log('✅ New user doc created:', uid);
-    } else {
-      await userRef.update({
-        lastSeen: now,
-        deviceId: DB.deviceId || '',
+    try {
+      const userRef = window._db.collection('users').doc(uid);
+      const userSnap = await userRef.get();
+      
+      const userData = {
+        uid: uid,
         authMethod: method,
         email: user.email || '',
         phone: user.phoneNumber || '',
         displayName: user.displayName || '',
-        photoURL: user.photoURL || ''
-      });
-      console.log('✅ Existing user updated:', uid);
+        photoURL: user.photoURL || '',
+        deviceId: DB.deviceId || '',
+        lastSeen: now
+      };
+      
+      if (!userSnap.exists) {
+        userData.firstSeen = now;
+        userData.farmerName = DB.settings ? (DB.settings.farmName || '') : '';
+        userData.ownerName = DB.settings ? (DB.settings.ownerName || user.displayName || '') : (user.displayName || '');
+        userData.appVersion = '2026.09';
+        await userRef.set(userData);
+        console.log('✅ users created:', uid);
+      } else {
+        await userRef.update(userData);
+        console.log('✅ users updated:', uid);
+      }
+    } catch(e) {
+      alert('❌ Error users collection: ' + e.message);
+      console.error('users save failed:', e);
     }
     
     // ===== Save to trialUsers collection =====
-    const trialRef = window._db.collection('trialUsers').doc(uid);
-    const trialSnap = await trialRef.get();
-    
-    if (!trialSnap.exists) {
-      await trialRef.set({
-        type: 'auth',
-        uid: uid,
-        authMethod: method,
-        deviceId: DB.deviceId || '',
-        email: user.email || '',
-        phone: user.phoneNumber || '',
-        farmerName: DB.settings.farmName || '',
-        ownerName: user.displayName || DB.settings.ownerName || '',
-        firstSeen: now,
-        lastSeen: now,
-        appVersion: '2026.09',
-        converted: false
-      });
-      console.log('✅ Trial user doc created');
-    } else {
-      // ✅ Update ALL fields — যাতে email, phone, type ঠিক থাকে
-      await trialRef.update({
+    try {
+      const trialRef = window._db.collection('trialUsers').doc(uid);
+      const trialSnap = await trialRef.get();
+      
+      const trialData = {
         type: 'auth',
         uid: uid,
         authMethod: method,
@@ -10076,34 +10065,28 @@ async function saveUserAfterLogin(user, method) {
         phone: user.phoneNumber || '',
         lastSeen: now,
         appVersion: '2026.09'
-      });
-      console.log('✅ Trial user updated with auth data');
+      };
+      
+      if (!trialSnap.exists) {
+        trialData.farmerName = DB.settings ? (DB.settings.farmName || '') : '';
+        trialData.ownerName = user.displayName || (DB.settings ? DB.settings.ownerName : '') || '';
+        trialData.firstSeen = now;
+        trialData.converted = false;
+        await trialRef.set(trialData);
+        console.log('✅ trialUsers created:', uid);
+      } else {
+        await trialRef.update(trialData);
+        console.log('✅ trialUsers updated:', uid);
+      }
+    } catch(e) {
+      alert('❌ Error trialUsers collection: ' + e.message);
+      console.error('trialUsers save failed:', e);
     }
     
-    // ===== Merge guest doc (if exists) =====
-    // যদি আগে Guest Trial চালু করে থাকে (DEV-XXXX doc), তার ডেটাও রাখি
-    if (DB.deviceId && DB.deviceId !== uid) {
-      try {
-        const guestRef = window._db.collection('trialUsers').doc(DB.deviceId);
-        const guestSnap = await guestRef.get();
-        
-        if (guestSnap.exists) {
-          const guestData = guestSnap.data();
-          // guest ডেটা merge করি (farmerName/phone থাকলে)
-          if (guestData.farmerName && !DB.settings.farmName) {
-            await trialRef.update({ farmerName: guestData.farmerName });
-          }
-          if (guestData.phone && !DB.settings.phone) {
-            await trialRef.update({ phone: guestData.phone });
-          }
-          console.log('✅ Guest data merged into auth doc');
-        }
-      } catch(e) {
-        console.warn('Guest merge failed:', e);
-      }
-    }
+    alert('✅ Save সফল! Email: ' + (user.email || 'খালি'));
     
   } catch(e) {
+    alert('❌ Error SaveUser: ' + e.message);
     console.error('❌ saveUserAfterLogin failed:', e);
   }
 }
