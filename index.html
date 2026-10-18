@@ -11581,6 +11581,7 @@ if (user && window._db && DB.deviceId) {
         authType = user.providerData[0].providerId.includes('phone') ? 'phone' : 'google';
     }
     window._db.collection('trialUsers').doc(DB.deviceId).set({
+        deviceId: DB.deviceId,
         email: user.email || '',
         displayName: user.displayName || '',
         uid: user.uid,
