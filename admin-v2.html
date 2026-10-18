@@ -854,12 +854,11 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
     <span class="count" id="trialUserCount">0</span>
   </div>
 
-  <!-- নতুন সার্চ বক্স -->
-  <div style="margin-bottom: 14px;">
-    <input type="text" id="trialSearchInput" oninput="searchTrialUsers(this.value)" placeholder="🔍 Email, Phone বা Device ID দিয়ে খুঁজুন..." 
-           style="width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 10px; font-size: 14px; outline: none; font-family: inherit; box-sizing: border-box; background-color: #fff;">
-  </div>
-  
+<!-- নতুন সার্চ বক্স -->
+<div style="margin-bottom: 14px;">
+  <input type="text" id="trialSearchInput" oninput="searchTrialUsers(this.value)" placeholder="🔍 Email, Phone বা Device ID দিয়ে খুঁজুন..." 
+         style="width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 10px; font-size: 14px; outline: none; font-family: inherit; box-sizing: border-box; background-color: #fff;">
+</div>  
   <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
     <button onclick="filterTrialUsers('all')" id="tfAll" style="flex:1;min-width:70px;padding:9px;border:2px solid #2E7D32;background:#2E7D32;color:#fff;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">All</button>
     <button onclick="filterTrialUsers('google')" id="tfGoogle" style="flex:1;min-width:70px;padding:9px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔵 Google</button>
@@ -1329,7 +1328,6 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
 <script src="feed-data.js"></script>
 <!-- ==================== PART 3A: MAIN JAVASCRIPT ==================== -->
 <script>
-alert("SCRIPT_LOADED_OK");
 // ========== FIREBASE INIT ==========
 let auth, db;
 let currentUser = null;
@@ -1409,7 +1407,6 @@ function getFriendlyAuthError(err) {
 }
 
 function doLogin() {
-alert("LOGIN_BUTTON_CLICKED");
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
@@ -2559,35 +2556,6 @@ function showFeedFormModal(existing) {
   });
 }
 
-// ========== HELPER FUNCTIONS ==========
-function formatRelativeTime(timestamp) {
-  if (!timestamp) return '—';
-  let time = timestamp;
-  if (timestamp.toMillis) time = timestamp.toMillis();
-  else if (timestamp.seconds) time = timestamp.seconds * 1000;
-  
-  const now = Date.now();
-  const diff = now - time;
-  
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return 'Just now';
-  
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return minutes + ' mins ago';
-  
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return hours + ' hours ago';
-  
-  const days = Math.floor(hours / 24);
-  if (days < 30) return days + ' days ago';
-  
-  const months = Math.floor(days / 30);
-  if (months < 12) return months + ' months ago';
-  
-  const years = Math.floor(months / 12);
-  return years + ' years ago';
-}
-
 // ========== TRIAL USERS ==========
 let allTrialUsers = [];
 let currentTrialFilter = 'all';
@@ -2609,121 +2577,15 @@ async function loadTrialUsers() {
       allTrialUsers.push(data);
     });
     
+    console.log('Loaded', allTrialUsers.length, 'trial users');
     if (countEl) countEl.textContent = allTrialUsers.length;
+    
     renderTrialUsers();
   } catch(e) {
     console.error('Load trial users failed:', e);
     listEl.innerHTML = '<div class="empty-state"><div class="icon">Error</div><p>' + escapeHtml(e.message) + '</p></div>';
   }
 }
-
-function renderTrialUsers() {
-  const listEl = document.getElementById('trialUsersList');
-  if (!listEl) return;
-  
-  let filtered = allTrialUsers.slice();
-  
-  if (currentTrialFilter === 'google') {
-    filtered = filtered.filter(u => u.authMethod === 'google');
-  } else if (currentTrialFilter === 'phone') {
-    filtered = filtered.filter(u => u.authMethod === 'phone');
-  } else if (currentTrialFilter === 'guest') {
-    filtered = filtered.filter(u => u.type === 'guest' || !u.authMethod);
-  } else if (currentTrialFilter === 'converted') {
-    filtered = filtered.filter(u => u.converted === true);
-  }
-
-  if (currentSearchQuery) {
-    filtered = filtered.filter(u => {
-      const device = (u.deviceId || '').toLowerCase();
-      const email = (u.email || '').toLowerCase();
-      const phone = (u.phone || '').toLowerCase();
-      const name = (u.farmerName || u.ownerName || u.displayName || '').toLowerCase();
-      
-      return device.includes(currentSearchQuery) || 
-             email.includes(currentSearchQuery) ||
-             phone.includes(currentSearchQuery) ||
-             name.includes(currentSearchQuery);
-    });
-  }
-  
-  if (filtered.length === 0) {
-    listEl.innerHTML = '<div class="empty-state"><div class="icon">No users</div><p>No trial users found</p></div>';
-    return;
-  }
-  
-  filtered.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
-  
-  listEl.innerHTML = filtered.map(u => {
-    const type = u.authMethod || 'guest';
-    let typeIcon = '👤';
-    let typeLabel = 'Guest';
-    if (type === 'google') { typeIcon = '🔵'; typeLabel = 'Google'; }
-    else if (type === 'phone') { typeIcon = '📱'; typeLabel = 'Phone'; }
-    
-    const isAuthUser = (type === 'google' || type === 'phone');
-    const name = u.farmerName || u.ownerName || u.displayName || 'নাম নেই';
-    const contact = u.email || u.phone || '';
-    const device = u.deviceId || '—';
-    const firstSeen = formatRelativeTime(u.firstSeen);
-    const lastSeen = formatRelativeTime(u.lastSeen);
-    const converted = u.converted === true;
-    
-    const statusBadge = converted 
-      ? '<span class="lic-badge badge-active">✅ CONVERTED</span>'
-      : '<span class="lic-badge badge-expiring">⏳ TRIAL</span>';
-    
-    let actions = '';
-    if (isAuthUser) {
-      if (u.phone) {
-        const phoneClean = u.phone.replace(/\D/g, '');
-        actions += '<button onclick="window.open(\'https://wa.me/' + phoneClean + '\', \'_blank\')" style="flex:1;min-width:90px;padding:9px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>';
-      }
-      if (u.email) {
-        actions += '<button onclick="window.location.href=\'mailto:' + escapeHtml(u.email) + '\'" style="flex:1;min-width:90px;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📧 Email</button>';
-      }
-      actions += '<button onclick="openGiveLicenseModal(\'' + u.id + '\')" style="flex:1;min-width:130px;padding:9px;background:#FF6F00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🎫 Give License</button>';
-      if (!converted) {
-        actions += '<button onclick="markTrialConverted(\'' + u.id + '\')" style="flex:1;min-width:90px;padding:9px;background:#2E7D32;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✅ Converted</button>';
-      }
-    } else {
-      actions += '<div style="flex:1;padding:10px;background:#FFF3E0;border-left:3px solid #FF6F00;border-radius:8px;font-size:11px;color:#555;line-height:1.5;">🔒 License দিতে হলে User কে <strong>Google Login</strong> করতে বলুন</div>';
-    }
-    
-    return '<div class="lic-card">' +
-      '<div class="l-code">' + typeIcon + ' ' + escapeHtml(name) + '</div>' +
-      '<div class="l-device">' + typeLabel + (contact ? ' · ' + escapeHtml(contact) : '') + '</div>' +
-      '<div class="l-device">📱 ' + escapeHtml(device) + '</div>' +
-      '<div class="l-row"><span class="l-label">Status</span><span class="l-value">' + statusBadge + '</span></div>' +
-      '<div class="l-row"><span class="l-label">First seen</span><span class="l-value">' + firstSeen + '</span></div>' +
-      '<div class="l-row"><span class="l-label">Last seen</span><span class="l-value">' + lastSeen + '</span></div>' +
-      (actions ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">' + actions + '</div>' : '') +
-    '</div>';
-  }).join('');
-}
-
-function filterTrialUsers(filter) {
-  currentTrialFilter = filter;
-  const map = { all: 'tfAll', google: 'tfGoogle', phone: 'tfPhone', guest: 'tfGuest', converted: 'tfConverted' };
-  Object.keys(map).forEach(k => {
-    const btn = document.getElementById(map[k]);
-    if (!btn) return;
-    if (k === filter) {
-      btn.style.background = '#2E7D32'; btn.style.color = '#fff'; btn.style.borderColor = '#2E7D32';
-    } else {
-      btn.style.background = '#fff'; btn.style.color = '#666'; btn.style.borderColor = '#E0E0E0';
-    }
-  });
-  renderTrialUsers();
-}
-
-function searchTrialUsers(query) {
-  currentSearchQuery = query.toLowerCase().trim();
-  renderTrialUsers();
-}
-
-// ========== LICENSES (RESTORED) ==========
-let allLicenses = [];
 
 async function loadLicenses() {
   const listEl = document.getElementById('licenseList');
@@ -2741,7 +2603,10 @@ async function loadLicenses() {
       allLicenses.push(data);
     });
     
+    console.log('Loaded', allLicenses.length, 'licenses');
+    
     if (countEl) countEl.textContent = allLicenses.length;
+    
     renderLicenses();
   } catch(e) {
     console.error('Load licenses failed:', e);
@@ -2749,23 +2614,309 @@ async function loadLicenses() {
   }
 }
 
+function getLicenseStatus(lic) {
+  if (lic.active === false) return 'revoked';
+  if (!lic.expiry) return 'active';
+  
+  const expDate = new Date(lic.expiry + 'T23:59:59');
+  const now = new Date();
+  const daysLeft = Math.ceil((expDate - now) / 86400000);
+  
+  if (daysLeft < 0) return 'expired';
+  if (daysLeft <= 7) return 'expiring';
+  return 'active';
+}
+
+function getDaysLeft(lic) {
+  if (!lic.expiry) return 0;
+  const expDate = new Date(lic.expiry + 'T23:59:59');
+  const now = new Date();
+  return Math.ceil((expDate - now) / 86400000);
+}
+
 function renderLicenses() {
   const listEl = document.getElementById('licenseList');
   if (!listEl) return;
   
-  if (!allLicenses || allLicenses.length === 0) {
-    listEl.innerHTML = '<div class="empty-state"><div class="icon">No licenses</div><p>No active licenses found</p></div>';
+  let filtered = allLicenses;
+  if (currentLicenseFilter === 'active') {
+    filtered = allLicenses.filter(l => {
+      const st = getLicenseStatus(l);
+      return st === 'active' || st === 'expiring';
+    });
+  } else if (currentLicenseFilter === 'expired') {
+    filtered = allLicenses.filter(l => getLicenseStatus(l) === 'expired');
+  }
+  
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">No licenses</div><p>No licenses found</p></div>';
     return;
   }
   
-  listEl.innerHTML = allLicenses.map(lic => {
+  const accountLicenses = filtered.filter(l => l.uid);
+  const legacyLicenses = filtered.filter(l => !l.uid);
+  
+  function getDisplayCode(lic) {
+    if (lic.licenseCode) return lic.licenseCode;
+    if (lic.uid && lic.uid.length >= 8) {
+      return 'DM-' + lic.uid.substring(0, 8).toUpperCase();
+    }
+    return lic.id || '—';
+  }
+  
+  function renderCard(lic) {
+    const status = getLicenseStatus(lic);
+    const daysLeft = getDaysLeft(lic);
+    const device = lic.deviceId || '—';
+    const createdBy = lic.createdBy || lic.issuedBy || '—';
+    const farmerName = lic.farmerName || lic.ownerName || '—';
+    const ownerPhone = lic.phone || '—';
+    const expiry = lic.expiry || '—';
+    const displayCode = getDisplayCode(lic);
+    const isAccount = !!lic.uid;
+    
+    let statusBadge = '';
+    let cardClass = '';
+    let daysText = '';
+    
+    if (status === 'revoked') {
+      statusBadge = '<span class="lic-badge badge-expired">REVOKED</span>';
+      cardClass = 'expired';
+      daysText = 'Revoked';
+    } else if (status === 'expired') {
+      statusBadge = '<span class="lic-badge badge-expired">EXPIRED</span>';
+      cardClass = 'expired';
+      daysText = Math.abs(daysLeft) + ' days ago';
+    } else if (status === 'expiring') {
+      statusBadge = '<span class="lic-badge badge-expiring">EXPIRING</span>';
+      cardClass = 'expiring';
+      daysText = daysLeft + ' days';
+    } else {
+      statusBadge = '<span class="lic-badge badge-active">ACTIVE</span>';
+      daysText = daysLeft + ' days';
+    }
+    
+    const showRevoke = status !== 'revoked';
+    const showRestore = status === 'revoked';
+    
+    const copyBtn = isAccount ? 
+      '<button onclick="copyLicenseCode(\'' + displayCode + '\')" style="padding:4px 10px;background:#E8F5E9;color:#2E7D32;border:1px solid #2E7D32;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:8px;">📋 Copy</button>' : '';
+    
+    return '<div class="lic-card ' + cardClass + '">' +
+      (isAccount ? 
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:8px 10px;background:#FFF8E1;border-left:3px solid #FF6F00;border-radius:6px;">' +
+          '<div>' +
+            '<div style="font-size:9px;color:#888;font-weight:700;letter-spacing:0.5px;">🎫 LICENSE CODE</div>' +
+            '<div style="font-size:14px;color:#E65100;font-weight:800;font-family:Courier New,monospace;letter-spacing:1px;">' + escapeHtml(displayCode) + '</div>' +
+          '</div>' +
+          copyBtn +
+        '</div>' : 
+        '<div class="l-code">' + escapeHtml(displayCode) + '</div>') +
+      (farmerName !== '—' ? '<div class="l-device" style="font-weight:700;color:#2E7D32;">👤 ' + escapeHtml(farmerName) + '</div>' : '') +
+      (lic.email ? '<div class="l-device">📧 ' + escapeHtml(lic.email) + '</div>' : '') +
+      '<div class="l-device">Device: ' + escapeHtml(device) + '</div>' +
+      (ownerPhone !== '—' ? '<div class="l-device">📞 ' + escapeHtml(ownerPhone) + '</div>' : '') +
+      '<div class="l-row">' +
+        '<span class="l-label">Status</span>' +
+        '<span class="l-value">' + statusBadge + '</span>' +
+      '</div>' +
+      '<div class="l-row">' +
+        '<span class="l-label">Expiry</span>' +
+        '<span class="l-value">' + escapeHtml(expiry) + '</span>' +
+      '</div>' +
+      '<div class="l-row">' +
+        '<span class="l-label">Days</span>' +
+        '<span class="l-value">' + daysText + '</span>' +
+      '</div>' +
+      '<div class="l-row">' +
+        '<span class="l-label">Created By</span>' +
+        '<span class="l-value" style="font-size:11px;">' + escapeHtml(createdBy) + '</span>' +
+      '</div>' +
+      '<div class="lic-actions">' +
+        '<button class="lic-btn-extend" onclick="extendLicense(\'' + lic.id + '\')">+ Extend</button>' +
+        (showRevoke ? '<button class="lic-btn-revoke" onclick="revokeLicense(\'' + lic.id + '\')">Revoke</button>' : '') +
+        (showRestore ? '<button class="lic-btn-restore" onclick="restoreLicense(\'' + lic.id + '\')">Restore</button>' : '') +
+      '</div>' +
+    '</div>';
+  }
+  
+  let html = '';
+  
+  if (accountLicenses.length > 0) {
+    html += '<div style="margin:0 0 12px;padding:8px 12px;background:#E8F5E9;border-left:4px solid #2E7D32;border-radius:6px;font-size:13px;font-weight:700;color:#2E7D32;">🆕 Account Licenses (' + accountLicenses.length + ')</div>';
+    html += accountLicenses.map(renderCard).join('');
+  }
+  
+  if (legacyLicenses.length > 0) {
+    html += '<div style="margin:20px 0 12px;padding:8px 12px;background:#FFF3E0;border-left:4px solid #EF6C00;border-radius:6px;font-size:13px;font-weight:700;color:#E65100;">📜 Legacy Licenses — Device-based (' + legacyLicenses.length + ')</div>';
+    html += legacyLicenses.map(renderCard).join('');
+  }
+  
+  listEl.innerHTML = html;
+}
+
+// ========== COPY LICENSE CODE ==========
+function copyLicenseCode(code) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function() {
+        toast('📋 Code কপি হয়েছে: ' + code);
+      }).catch(function() {
+        fallbackCopy(code);
+      });
+    } else {
+      fallbackCopy(code);
+    }
+  } catch(e) {
+    fallbackCopy(code);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    toast('📋 Code কপি হয়েছে: ' + text);
+  } catch(e) {
+    alert('Code: ' + text);
+  }
+  document.body.removeChild(ta);
+}
+
+
+function formatRelativeTime(ts) {
+  if (!ts) return '—';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'এইমাত্র';
+  if (mins < 60) return mins + ' মিনিট আগে';
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + ' ঘণ্টা আগে';
+  const days = Math.floor(hours / 24);
+  if (days < 30) return days + ' দিন আগে';
+  const months = Math.floor(days / 30);
+  return months + ' মাস আগে';
+}
+
+function renderTrialUsers() {
+  const listEl = document.getElementById('trialUsersList');
+  if (!listEl) return;
+  
+  let filtered = allTrialUsers.slice();
+  
+  // নতুন সার্চ ফিল্টার লজিক
+if (currentSearchQuery) {
+  filtered = filtered.filter(u => {
+    const device = (u.deviceId || '').toLowerCase();
+    const email = (u.email || '').toLowerCase();
+    const phone = (u.phone || '').toLowerCase();
+    const name = (u.farmerName || u.ownerName || u.displayName || '').toLowerCase();
+    
+    return device.includes(currentSearchQuery) || 
+           email.includes(currentSearchQuery) ||
+           phone.includes(currentSearchQuery) ||
+           name.includes(currentSearchQuery);
+  });
+}
+  
+  if (currentTrialFilter === 'google') {
+    filtered = filtered.filter(u => u.authMethod === 'google');
+  } else if (currentTrialFilter === 'phone') {
+    filtered = filtered.filter(u => u.authMethod === 'phone');
+  } else if (currentTrialFilter === 'guest') {
+    filtered = filtered.filter(u => u.type === 'guest' || !u.authMethod);
+  } else if (currentTrialFilter === 'converted') {
+    filtered = filtered.filter(u => u.converted === true);
+  }
+  
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">No users</div><p>No trial users found</p></div>';
+    return;
+  }
+  
+  filtered.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+  
+  listEl.innerHTML = filtered.map(u => {
+    const type = u.authMethod || 'guest';
+    let typeIcon = '👤';
+    let typeLabel = 'Guest';
+    if (type === 'google') { typeIcon = '🔵'; typeLabel = 'Google'; }
+    else if (type === 'phone') { typeIcon = '📱'; typeLabel = 'Phone'; }
+    
+    const isAuthUser = (type === 'google' || type === 'phone');
+    
+    const name = u.farmerName || u.ownerName || u.displayName || 'নাম নেই';
+    const contact = u.email || u.phone || '';
+    const device = u.deviceId || '—';
+    const firstSeen = formatRelativeTime(u.firstSeen);
+    const lastSeen = formatRelativeTime(u.lastSeen);
+    const converted = u.converted === true;
+    
+    const statusBadge = converted 
+      ? '<span class="lic-badge badge-active">✅ CONVERTED</span>'
+      : '<span class="lic-badge badge-expiring">⏳ TRIAL</span>';
+    
+    let actions = '';
+    
+    if (isAuthUser) {
+      // Auth user — WhatsApp + Email + Give License + Converted
+      if (u.phone) {
+        const phoneClean = u.phone.replace(/\D/g, '');
+        actions += '<button onclick="window.open(\'https://wa.me/' + phoneClean + '\', \'_blank\')" style="flex:1;min-width:90px;padding:9px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>';
+      }
+      if (u.email) {
+        actions += '<button onclick="window.location.href=\'mailto:' + escapeHtml(u.email) + '\'" style="flex:1;min-width:90px;padding:9px;background:#1976D2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📧 Email</button>';
+      }
+      actions += '<button onclick="openGiveLicenseModal(\'' + u.id + '\')" style="flex:1;min-width:130px;padding:9px;background:#FF6F00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🎫 Give License</button>';
+      if (!converted) {
+        actions += '<button onclick="markTrialConverted(\'' + u.id + '\')" style="flex:1;min-width:90px;padding:9px;background:#2E7D32;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✅ Converted</button>';
+      }
+    } else {
+      // Guest user — শুধু message
+      actions += '<div style="flex:1;padding:10px;background:#FFF3E0;border-left:3px solid #FF6F00;border-radius:8px;font-size:11px;color:#555;line-height:1.5;">🔒 License দিতে হলে User কে <strong>Google Login</strong> করতে বলুন</div>';
+    }
+    
     return '<div class="lic-card">' +
-      '<div class="l-code">🔑 ' + escapeHtml(lic.code || lic.id) + '</div>' +
-      '<div class="l-device">📱 ' + escapeHtml(lic.deviceId || '—') + '</div>' +
-      '<div class="l-row"><span class="l-label">Expiry</span><span class="l-value">' + escapeHtml(lic.expiry || '—') + '</span></div>' +
+      '<div class="l-code">' + typeIcon + ' ' + escapeHtml(name) + '</div>' +
+      '<div class="l-device">' + typeLabel + (contact ? ' · ' + escapeHtml(contact) : '') + '</div>' +
+      '<div class="l-device">📱 ' + escapeHtml(device) + '</div>' +
+      '<div class="l-row"><span class="l-label">Status</span><span class="l-value">' + statusBadge + '</span></div>' +
+      '<div class="l-row"><span class="l-label">First seen</span><span class="l-value">' + firstSeen + '</span></div>' +
+      '<div class="l-row"><span class="l-label">Last seen</span><span class="l-value">' + lastSeen + '</span></div>' +
+      (actions ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">' + actions + '</div>' : '') +
     '</div>';
   }).join('');
 }
+
+function searchTrialUsers(query) {
+  currentSearchQuery = query.toLowerCase().trim();
+  renderTrialUsers();
+}
+
+function filterTrialUsers(filter) {
+  currentTrialFilter = filter;
+  const map = { all: 'tfAll', google: 'tfGoogle', phone: 'tfPhone', guest: 'tfGuest', converted: 'tfConverted' };
+  Object.keys(map).forEach(k => {
+    const btn = document.getElementById(map[k]);
+    if (!btn) return;
+    if (k === filter) {
+      btn.style.background = '#2E7D32';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#2E7D32';
+    } else {
+      btn.style.background = '#fff';
+      btn.style.color = '#666';
+      btn.style.borderColor = '#E0E0E0';
+    }
+  });
+  renderTrialUsers();
+}
+
 // ========== GIVE LICENSE ==========
 function openGiveLicenseModal(userId) {
   const user = allTrialUsers.find(u => u.id === userId);
