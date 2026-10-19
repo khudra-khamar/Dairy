@@ -11427,10 +11427,21 @@ function checkLicenseWarning() {
   if (!DB.license.expiry) return;
   const exp = new Date(DB.license.expiry + 'T00:00:00');
   const daysLeft = Math.ceil((exp - new Date()) / 86400000);
+  
   if (daysLeft > 0 && daysLeft <= 7) {
-    setTimeout(() => {
-      toast(`⚠️ License expires in ${daysLeft} days`);
-    }, 1500);
+    // আজকের তারিখ বের করা (যেমন: 2026-10-19)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastShown = localStorage.getItem('dm_lastLicenseWarning');
+    
+    // যদি আজকে মেসেজ না দেখানো হয়ে থাকে
+    if (lastShown !== todayStr) {
+      setTimeout(() => {
+        toast(`⚠️ License expires in ${daysLeft} days`);
+      }, 1500);
+      
+      // আজকের তারিখ সেভ করে রাখা, যাতে আজ আর না আসে
+      localStorage.setItem('dm_lastLicenseWarning', todayStr);
+    }
   }
 }
 
