@@ -2786,17 +2786,15 @@ function updateHeaderSubtitle() {
 
 // ========== PUSH NOTIFICATION ==========
 
-// ---- Enable Notifications ----
+// --- Enable Notifications ---
 async function enableNotifications() {
   const btn = document.getElementById('notifBtn');
   
-  // Firebase Messaging ready?
   if (!window._messaging) {
-    if (typeof toast === 'function') toast('⚠️ Firebase loading — একটু পরে try করুন');
+    if (typeof toast === 'function') toast('⚠️ Firebase ready হয়নি।');
     return;
   }
   
-  // Notification supported?
   if (!('Notification' in window)) {
     showAlert('❌ Not Supported', 'আপনার browser Notification support করে না।');
     return;
@@ -2805,16 +2803,13 @@ async function enableNotifications() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Requesting...'; }
   
   try {
-    // Step 1: Permission
     const permission = await Notification.requestPermission();
     
     if (permission !== 'granted') {
       showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।');
-      if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
       return;
     }
     
-    // Step 2: FCM Token
     if (btn) btn.textContent = '⏳ Getting token...';
     
     if (!window._fcmSWReg) {
@@ -2822,40 +2817,57 @@ async function enableNotifications() {
     }
     
     const tokenOptions = { vapidKey: VAPID_KEY };
-    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+    if (window._fcmSWReg) {
+      tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+    }
     
     const token = await window._messaging.getToken(tokenOptions);
     console.log('✅ FCM Token:', token);
     
-    if (!token) {
-      throw new Error('Token পাওয়া যায়নি');
-    }
+    if (!token) throw new Error('Token পাওয়া যায়নি');
     
-    // Step 3: Save to Firestore (fcmTokens + alertSchedule)
     if (btn) btn.textContent = '⏳ Saving...';
-    await saveFCMToken(token);
     
-    // Step 4: Local save
-    DB.fcmToken = token;
-    DB.notifEnabled = true;
-    saveDB();
+    // Timeout set করা হলো (১৫ সেকেন্ড)
+    const savePromise = saveFCMToken(token);
+    const saveTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase-এ সেভ করতে দেরি হচ্ছে। ইন্টারনেট চেক করুন।')), 15000));
     
-    if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
-    updateNotificationUI();
+    const saved = await Promise.race([savePromise, saveTimeout]);
+    
+    if (saved) {
+      DB.fcmToken = token;
+      DB.notifEnabled = true;
+      saveDB();
+      if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
+    } else {
+      throw new Error("Firebase-এ টোকেন সেভ হয়নি।");
+    }
     
   } catch(e) {
     console.error('❌ enableNotifications error:', e);
     showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
-    if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
+  } finally {
+    // বাটন আগের অবস্থায় ফিরবে
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '🔔 Enable Notifications';
+    }
+    if (typeof updateNotificationUI === 'function') {
+      updateNotificationUI();
+    }
   }
 }
 
 // ---- Save FCM Token ----
+// ---- Save FCM Token ----
 async function saveFCMToken(token) {
   try {
-    if (!window._db || !DB.deviceId) return false;
+    if (!window._db || !DB.deviceId) {
+      console.warn("DB বা deviceId নেই");
+      return false;
+    }
     
-    // 1. fcmTokens collection
+    console.log("⏳ Saving to fcmTokens...");
     await window._db.collection('fcmTokens').doc(DB.deviceId).set({
       token: token,
       deviceId: DB.deviceId,
@@ -2863,59 +2875,78 @@ async function saveFCMToken(token) {
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
       lang: DB.settings.lang || 'bn',
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: Date.now(), // serverTimestamp বাদ দেওয়া হলো
       active: true
     }, { merge: true });
     
-    // 2. alertSchedule collection (Apps Script এখান থেকে পড়ে)
+    console.log("⏳ Saving to alertSchedule...");
     await window._db.collection('alertSchedule').doc(DB.deviceId).set({
       fcmToken: token,
       deviceId: DB.deviceId,
       appVersion: '3.0'
     }, { merge: true });
     
-    console.log('✅ FCM Token saved to both collections');
+    console.log('✅ FCM Token saved!');
     return true;
   } catch(e) {
     console.error('❌ Save token error:', e);
+    alert("Save Error:\n" + e.message); 
     return false;
   }
 }
 
-// ---- Disable Notifications ----
+// --- Disable Notifications ---
 function disableNotifications() {
-  smartConfirm(t('notif_disable_confirm') || 'Disable Notifications?', function() {
-    _doDisableNotifications();
+  showConfirm({
+    title: 'Disable Notifications?',
+    message: 'নোটিফিকেশন বন্ধ করলে আর কোনো অ্যালার্ট পাবেন না।',
+    icon: '🔕',
+    onConfirm: async function() {
+      const disableBtn = document.getElementById('notifDisableBtn') || document.getElementById('notifBtn');
+      
+      if (disableBtn) {
+        disableBtn.disabled = true;
+        disableBtn.textContent = '⏳ Saving...';
+      }
+      
+      try {
+        if (window._messaging) {
+          try { await window._messaging.deleteToken(); } catch(e) { console.warn(e); }
+        }
+        
+        // Firestore থেকে delete
+        if (window._db && DB.deviceId) {
+          try { await window._db.collection('fcmTokens').doc(DB.deviceId).delete(); } catch(e) { console.warn(e); }
+          try {
+            await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+              fcmToken: ""
+            }, { merge: true });
+          } catch(e) { console.warn(e); }
+        }
+        
+        DB.fcmToken = '';
+        DB.notifEnabled = false;
+        saveDB();
+        
+        if (typeof toast === 'function') toast('🔕 Notifications বন্ধ হয়েছে');
+        
+      } catch(e) {
+        console.error('disableNotifications error:', e);
+        if (typeof toast === 'function') toast('❌ Error');
+      } finally {
+        // কাজ শেষে বা এরর হলেও বাটন আগের অবস্থায় ফিরবে
+        if (disableBtn) {
+          disableBtn.disabled = false;
+          disableBtn.textContent = '🔕 Disable Notifications'; 
+        }
+        if (typeof updateNotificationUI === 'function') {
+          updateNotificationUI();
+        }
+      }
+    }
   });
 }
 
-async function _doDisableNotifications() {
-  try {
-    if (window._messaging) {
-      try { await window._messaging.deleteToken(); } catch(e) {}
-    }
-    
-    // Firestore থেকে delete
-    if (window._db && DB.deviceId) {
-      try { await window._db.collection('fcmTokens').doc(DB.deviceId).delete(); } catch(e) {}
-      try { 
-        await window._db.collection('alertSchedule').doc(DB.deviceId).set({
-          fcmToken: ''
-        }, { merge: true });
-      } catch(e) {}
-    }
-    
-    DB.fcmToken = '';
-    DB.notifEnabled = false;
-    saveDB();
-    
-    if (typeof toast === 'function') toast('🔕 Notifications বন্ধ হয়েছে');
-    updateNotificationUI();
-  } catch(e) {
-    console.error('disableNotifications error:', e);
-    if (typeof toast === 'function') toast('❌ Error');
-  }
-}
 
 // ---- Update Notification UI ----
 function updateNotificationUI() {
@@ -10713,11 +10744,41 @@ function askNewPin() {
 }
 
 function disablePin() {
-  showConfirm('Disable PIN?', 'PIN lock will be turned off', function() {
-    DB.security.pin = '';
-    saveDB();
-    toast('✅ PIN disabled');
-    loadSettings();
+  // showConfirm-এ অবজেক্ট পাস করতে হবে
+  showConfirm({
+    title: 'Disable PIN?',
+    message: 'PIN lock will be turned off',
+    icon: '🔓',
+    onConfirm: function() {
+      
+      if (!DB.security) DB.security = {};
+      DB.security.pin = '';
+      DB.security.pinEnabled = false;
+      DB.security.locked = false;
+      
+      saveDB(); // ডাটাবেসে সেভ করা
+      
+      // স্ক্রিনে সাথে সাথে OFF দেখানো
+      const pinStatusEl = document.getElementById('pinStatus');
+      if (pinStatusEl) {
+        pinStatusEl.textContent = '❌ OFF';
+        pinStatusEl.style.color = '#C62828';
+      }
+      
+      // যদি কোনো লক স্ক্রিন ওপেন থাকে, সেটি বন্ধ করা
+      const lockScreen = document.getElementById('lockScreen') || document.getElementById('lockOverlay');
+      if (lockScreen) {
+        lockScreen.style.display = 'none';
+      }
+      
+      // সেটিংস রিলোড করা
+      if (typeof loadSettings === 'function') {
+        loadSettings();
+      }
+      
+      // সুন্দর টোস্ট মেসেজ দেখানো
+      toast('✅ PIN disabled');
+    }
   });
 }
 
