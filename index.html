@@ -2862,12 +2862,18 @@ async function enableNotifications() {
 // ---- Save FCM Token ----
 async function saveFCMToken(token) {
   try {
-    if (!window._db || !DB.deviceId) {
-      console.warn("DB বা deviceId নেই");
+    if (!window._db) {
+      alert("Save Error: window._db নেই! Firebase লোড হয়নি।");
       return false;
     }
+    if (!DB.deviceId) {
+      alert("Save Error: DB.deviceId নেই!");
+      return false;
+    }
+
+    alert("Saving to fcmTokens...");
     
-    console.log("⏳ Saving to fcmTokens...");
+    // ১. fcmTokens কালেকশনে সেভ করা
     await window._db.collection('fcmTokens').doc(DB.deviceId).set({
       token: token,
       deviceId: DB.deviceId,
@@ -2875,22 +2881,25 @@ async function saveFCMToken(token) {
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
       lang: DB.settings.lang || 'bn',
-      updatedAt: Date.now(), // serverTimestamp বাদ দেওয়া হলো
+      updatedAt: Date.now(),
       active: true
     }, { merge: true });
     
-    console.log("⏳ Saving to alertSchedule...");
+    alert("✅ fcmTokens saved! Now saving to alertSchedule...");
+    
+    // ২. alertSchedule কালেকশনে সেভ করা
     await window._db.collection('alertSchedule').doc(DB.deviceId).set({
       fcmToken: token,
       deviceId: DB.deviceId,
       appVersion: '3.0'
     }, { merge: true });
     
-    console.log('✅ FCM Token saved!');
+    alert("✅ alertSchedule saved! All done.");
     return true;
+    
   } catch(e) {
     console.error('❌ Save token error:', e);
-    alert("Save Error:\n" + e.message); 
+    alert("Firebase Save Error:\n" + e.message); 
     return false;
   }
 }
