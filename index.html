@@ -2788,20 +2788,22 @@ function updateHeaderSubtitle() {
 
 // --- Enable Notifications ---
 async function enableNotifications() {
-  alert("Step 1: Function started");
   const btn = document.getElementById('notifBtn');
   
   if (!window._messaging) {
-    alert("❌ window._messaging নেই!");
+    if (typeof toast === 'function') toast('⚠️ Firebase ready হয়নি।');
+    return;
+  }
+  
+  if (!('Notification' in window)) {
+    showAlert('❌ Not Supported', 'আপনার browser Notification support করে না।');
     return;
   }
   
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Requesting...'; }
   
   try {
-    alert("Step 2: Requesting Permission");
     const permission = await Notification.requestPermission();
-    alert("Step 3: Permission is " + permission);
     
     if (permission !== 'granted') {
       showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।');
@@ -2811,30 +2813,26 @@ async function enableNotifications() {
     if (btn) btn.textContent = '⏳ Getting token...';
     
     if (!window._fcmSWReg) {
-      alert("Step 4: Waiting for Service Worker");
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
     
-    alert("Step 5: Getting Token from Firebase");
     const tokenOptions = { vapidKey: VAPID_KEY };
     if (window._fcmSWReg) {
       tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
     }
     
-    // getToken এর জন্য ৩০ সেকেন্ডের টাইমআউট
-    const tokenPromise = window._messaging.getToken(tokenOptions);
-    const tokenTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Token পেতে দেরি হচ্ছে (৩০ সেকেন্ড)। VAPID Key বা ইন্টারনেট চেক করুন।')), 30000));
-    
-    const token = await Promise.race([tokenPromise, tokenTimeout]);
-    alert("Step 6: Token = " + (token ? token.substring(0, 15) + "..." : "NULL"));
+    const token = await window._messaging.getToken(tokenOptions);
+    console.log('✅ FCM Token:', token);
     
     if (!token) throw new Error('Token পাওয়া যায়নি');
     
     if (btn) btn.textContent = '⏳ Saving...';
-    alert("Step 7: Saving to Firestore");
     
-    const saved = await saveFCMToken(token);
-    alert("Step 8: Save result = " + saved);
+    // টাইমআউট বসানো হলো (১৫ সেকেন্ড)
+    const savePromise = saveFCMToken(token);
+    const saveTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore-এ সেভ করতে দেরি হচ্ছে (১৫ সেকেন্ড)। ইন্টারনেট চেক করুন।')), 15000));
+    
+    const saved = await Promise.race([savePromise, saveTimeout]);
     
     if (saved) {
       DB.fcmToken = token;
@@ -2846,8 +2844,10 @@ async function enableNotifications() {
     }
     
   } catch(e) {
-    alert("❌ Error: " + e.message);
+    console.error('❌ enableNotifications error:', e);
+    showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
   } finally {
+    // বাটন আগের অবস্থায় ফিরবে, আটকে থাকবে না
     if (btn) {
       btn.disabled = false;
       btn.textContent = '🔔 Enable Notifications';
