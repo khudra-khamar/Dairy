@@ -2822,17 +2822,13 @@ async function enableNotifications() {
     }
     
     const token = await window._messaging.getToken(tokenOptions);
-    console.log('✅ FCM Token:', token);
     
     if (!token) throw new Error('Token পাওয়া যায়নি');
     
     if (btn) btn.textContent = '⏳ Saving...';
     
-    // টাইমআউট বসানো হলো (১৫ সেকেন্ড)
-    const savePromise = saveFCMToken(token);
-    const saveTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore-এ সেভ করতে দেরি হচ্ছে (১৫ সেকেন্ড)। ইন্টারনেট চেক করুন।')), 15000));
-    
-    const saved = await Promise.race([savePromise, saveTimeout]);
+    // কোনো Alert বা Timeout নেই, সরাসরি সেভ হবে
+    const saved = await saveFCMToken(token);
     
     if (saved) {
       DB.fcmToken = token;
@@ -2847,7 +2843,6 @@ async function enableNotifications() {
     console.error('❌ enableNotifications error:', e);
     showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
   } finally {
-    // বাটন আগের অবস্থায় ফিরবে, আটকে থাকবে না
     if (btn) {
       btn.disabled = false;
       btn.textContent = '🔔 Enable Notifications';
@@ -2855,6 +2850,39 @@ async function enableNotifications() {
     if (typeof updateNotificationUI === 'function') {
       updateNotificationUI();
     }
+  }
+}
+
+// ---- Save FCM Token (Clean version, no alerts) ----
+async function saveFCMToken(token) {
+  try {
+    if (!window._db || !DB.deviceId) {
+      console.warn("DB বা deviceId নেই");
+      return false;
+    }
+    
+    await window._db.collection('fcmTokens').doc(DB.deviceId).set({
+      token: token,
+      deviceId: DB.deviceId,
+      farmName: DB.settings.farmName || '',
+      ownerName: DB.settings.ownerName || '',
+      phone: DB.settings.phone || '',
+      lang: DB.settings.lang || 'bn',
+      updatedAt: Date.now(),
+      active: true
+    }, { merge: true });
+    
+    await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+      fcmToken: token,
+      deviceId: DB.deviceId,
+      appVersion: '3.0'
+    }, { merge: true });
+    
+    console.log('✅ FCM Token saved to Firestore safely!');
+    return true;
+  } catch(e) {
+    console.error('❌ Save token error:', e);
+    return false;
   }
 }
 
@@ -9719,6 +9747,28 @@ function generateDeviceId() {
 // ========== FCM VAPID KEY ==========
 const VAPID_KEY = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
 
+// অ্যাপ ওপেন হলেই ব্যাকগ্রাউন্ডে টোকেন অটো-আপডেট হবে
+if (typeof firebase !== 'undefined' && firebase.messaging) {
+  try {
+    const msg = firebase.messaging();
+    msg.onTokenRefresh(function() {
+      console.log('🔄 FCM Token refreshed automatically');
+      msg.getToken({ vapidKey: VAPID_KEY }).then(function(newToken) {
+        if (newToken && typeof saveFCMToken === 'function') {
+          saveFCMToken(newToken); 
+          if (typeof DB !== 'undefined') {
+            DB.fcmToken = newToken;
+            if (typeof saveDB === 'function') saveDB();
+          }
+        }
+      }).catch(function(err) {
+        console.warn('Token refresh error:', err);
+      });
+    });
+  } catch(e) {
+    console.warn("Token refresh setup failed:", e);
+  }
+}
 const TRIAL_DAYS = 7;
 const GRACE_DAYS = 7;
 
