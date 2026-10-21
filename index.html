@@ -2821,7 +2821,6 @@ async function enableNotifications() {
       tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
     }
     
-    // টোকেন জেনারেশনে ১৫ সেকেন্ডের টাইমআউট
     const tokenPromise = window._messaging.getToken(tokenOptions);
     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('টোকেন পেতে দেরি হচ্ছে। ইন্টারনেট চেক করুন।')), 15000));
     
@@ -2830,12 +2829,12 @@ async function enableNotifications() {
     
     if (!token) throw new Error('Token পাওয়া যায়নি');
     
-    // লোকাল স্টোরেজে ডেটা সেভ করে UI সাথে সাথে ON করে দেওয়া
+    // লোকাল ডেটাবেস এবং localStorage-এ সেভ
     DB.fcmToken = token;
     DB.notifEnabled = true;
+    localStorage.setItem('dm_notifEnabled', 'true'); // নতুন লাইন
     if (typeof saveDB === 'function') saveDB();
     
-    // ফায়ারবেসে ব্যাকগ্রাউন্ডে ডেটা পাঠানো (অপেক্ষা না করে)
     saveFCMToken(token); 
     
     if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
@@ -2908,7 +2907,6 @@ function disableNotifications() {
           try { await window._messaging.deleteToken(); } catch(e) { console.warn(e); }
         }
         
-        // Firestore থেকে delete
         if (window._db && DB.deviceId) {
           try { await window._db.collection('fcmTokens').doc(DB.deviceId).delete(); } catch(e) { console.warn(e); }
           try {
@@ -2920,6 +2918,7 @@ function disableNotifications() {
         
         DB.fcmToken = '';
         DB.notifEnabled = false;
+        localStorage.removeItem('dm_notifEnabled'); // নতুন লাইন
         saveDB();
         
         if (typeof toast === 'function') toast('🔕 Notifications বন্ধ হয়েছে');
@@ -2928,7 +2927,6 @@ function disableNotifications() {
         console.error('disableNotifications error:', e);
         if (typeof toast === 'function') toast('❌ Error');
       } finally {
-        // কাজ শেষে বা এরর হলেও বাটন আগের অবস্থায় ফিরবে
         if (disableBtn) {
           disableBtn.disabled = false;
           disableBtn.textContent = '🔕 Disable Notifications'; 
@@ -2952,9 +2950,12 @@ function updateNotificationUI() {
   if (!statusEl) return;
   
   const permissionGranted = ('Notification' in window) && Notification.permission === 'granted';
-  const localEnabled = DB.notifEnabled === true;
   
-  // ✅ Local flag + permission → ON
+  // localStorage থেকে চেক করা (নতুন লাইন)
+  const localEnabled = DB.notifEnabled === true || localStorage.getItem('dm_notifEnabled') === 'true';
+  if (localEnabled) DB.notifEnabled = true; // সিঙ্ক করে রাখা
+
+  // ✅ Local flag + permission -> ON
   if (localEnabled && permissionGranted) {
     _showNotifON(statusEl, btn, disableBtn, desc);
     // Background-এ Firestore verify
@@ -2962,13 +2963,14 @@ function updateNotificationUI() {
     return;
   }
   
-  // ⚠️ Local flag নেই কিন্তু permission আছে → Firestore check
+  // ⚠️ Local flag নেই কিন্তু permission আছে -> Firestore check
   if (permissionGranted && window._db && DB.deviceId) {
     window._db.collection('fcmTokens').doc(DB.deviceId).get()
       .then(function(doc) {
         if (doc.exists && doc.data().token) {
           DB.fcmToken = doc.data().token;
           DB.notifEnabled = true;
+          localStorage.setItem('dm_notifEnabled', 'true'); // নতুন লাইন
           if (typeof saveDB === 'function') saveDB();
           _showNotifON(statusEl, btn, disableBtn, desc);
           console.log('✅ Notification state restored from Firestore');
