@@ -2784,7 +2784,7 @@ function updateHeaderSubtitle() {
   el.textContent = countText + ' · ' + activeText;
 }
 
-// ========== PUSH NOTIFICATION ===========
+// ========== PUSH NOTIFICATION ==========
 
 // --- Enable Notifications ---
 async function enableNotifications() {
@@ -2802,16 +2802,6 @@ async function enableNotifications() {
   
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Requesting...'; }
   
-  // ২০ সেকেন্ড পর বাটন জোরপূর্বক রিসেট করার টাইমার
-  const forceResetTimer = setTimeout(() => {
-    if (btn && btn.textContent.includes('Saving')) {
-      btn.disabled = false;
-      btn.textContent = '🔔 Enable Notifications';
-      if (typeof updateNotificationUI === 'function') updateNotificationUI();
-      showAlert('❌ Timeout', 'সার্ভারের সাথে কানেক্ট করা যাচ্ছে না। ইন্টারনেট চেক করে আবার চেষ্টা করুন।');
-    }
-  }, 20000);
-
   try {
     const permission = await Notification.requestPermission();
     
@@ -2823,7 +2813,7 @@ async function enableNotifications() {
     if (btn) btn.textContent = '⏳ Getting token...';
     
     if (!window._fcmSWReg) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
     const tokenOptions = { vapidKey: VAPID_KEY };
@@ -2831,29 +2821,29 @@ async function enableNotifications() {
       tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
     }
     
-    const token = await window._messaging.getToken(tokenOptions);
+    // টোকেন জেনারেশনে ১৫ সেকেন্ডের টাইমআউট
+    const tokenPromise = window._messaging.getToken(tokenOptions);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('টোকেন পেতে দেরি হচ্ছে। ইন্টারনেট চেক করুন।')), 15000));
+    
+    const token = await Promise.race([tokenPromise, timeoutPromise]);
     console.log('✅ FCM Token:', token);
     
     if (!token) throw new Error('Token পাওয়া যায়নি');
     
-    if (btn) btn.textContent = '⏳ Saving...';
+    // লোকাল স্টোরেজে ডেটা সেভ করে UI সাথে সাথে ON করে দেওয়া
+    DB.fcmToken = token;
+    DB.notifEnabled = true;
+    if (typeof saveDB === 'function') saveDB();
     
-    const saved = await saveFCMToken(token);
+    // ফায়ারবেসে ব্যাকগ্রাউন্ডে ডেটা পাঠানো (অপেক্ষা না করে)
+    saveFCMToken(token); 
     
-    if (saved) {
-      DB.fcmToken = token;
-      DB.notifEnabled = true;
-      saveDB();
-      if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
-    } else {
-      throw new Error("Firebase-এ টোকেন সেভ হয়নি।");
-    }
+    if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
     
   } catch(e) {
     console.error('❌ enableNotifications error:', e);
     showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
   } finally {
-    clearTimeout(forceResetTimer);
     if (btn) {
       btn.disabled = false;
       btn.textContent = '🔔 Enable Notifications';
@@ -2864,15 +2854,16 @@ async function enableNotifications() {
   }
 }
 
-// ---- Save FCM Token (Clean version, no alerts) ----
-async function saveFCMToken(token) {
+// ---- Save FCM Token (Background Non-Blocking) ----
+function saveFCMToken(token) {
   try {
     if (!window._db || !DB.deviceId) {
       console.warn("DB বা deviceId নেই");
       return false;
     }
     
-    await window._db.collection('fcmTokens').doc(DB.deviceId).set({
+    // await ব্যবহার করা হচ্ছে না, যাতে UI আটকে না থাকে
+    window._db.collection('fcmTokens').doc(DB.deviceId).set({
       token: token,
       deviceId: DB.deviceId,
       farmName: DB.settings.farmName || '',
@@ -2881,22 +2872,21 @@ async function saveFCMToken(token) {
       lang: DB.settings.lang || 'bn',
       updatedAt: Date.now(),
       active: true
-    }, { merge: true });
-    
-    await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+    }, { merge: true }).catch(e => console.warn("Firestore Save Error:", e));
+
+    window._db.collection('alertSchedule').doc(DB.deviceId).set({
       fcmToken: token,
       deviceId: DB.deviceId,
       appVersion: '3.0'
-    }, { merge: true });
+    }, { merge: true }).catch(e => console.warn("AlertSchedule Save Error:", e));
     
-    console.log('✅ FCM Token saved to Firestore safely!');
-    return true;
+    console.log('✅ FCM Token save triggered in background!');
+    return true; // সরাসরি true রিটার্ন করবে, ফায়ারবেসের জন্য অপেক্ষা করবে না
   } catch(e) {
     console.error('❌ Save token error:', e);
     return false;
   }
 }
-
 
 
 // --- Disable Notifications ---
