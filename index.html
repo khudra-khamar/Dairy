@@ -2786,15 +2786,17 @@ function updateHeaderSubtitle() {
 
 // ========== PUSH NOTIFICATION ==========
 
-// --- Enable Notifications ---
+// ---- Enable Notifications ----
 async function enableNotifications() {
   const btn = document.getElementById('notifBtn');
   
+  // Firebase Messaging ready?
   if (!window._messaging) {
-    if (typeof toast === 'function') toast('⚠️ Firebase ready হয়নি।');
+    if (typeof toast === 'function') toast('⚠️ Firebase loading — একটু পরে try করুন');
     return;
   }
   
+  // Notification supported?
   if (!('Notification' in window)) {
     showAlert('❌ Not Supported', 'আপনার browser Notification support করে না।');
     return;
@@ -2803,13 +2805,16 @@ async function enableNotifications() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Requesting...'; }
   
   try {
+    // Step 1: Permission
     const permission = await Notification.requestPermission();
     
     if (permission !== 'granted') {
       showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।');
+      if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
       return;
     }
     
+    // Step 2: FCM Token
     if (btn) btn.textContent = '⏳ Getting token...';
     
     if (!window._fcmSWReg) {
@@ -2817,50 +2822,40 @@ async function enableNotifications() {
     }
     
     const tokenOptions = { vapidKey: VAPID_KEY };
-    if (window._fcmSWReg) {
-      tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-    }
+    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
     
     const token = await window._messaging.getToken(tokenOptions);
+    console.log('✅ FCM Token:', token);
     
-    if (!token) throw new Error('Token পাওয়া যায়নি');
-    
-    if (btn) btn.textContent = '⏳ Saving...';
-    
-    // কোনো Alert বা Timeout নেই, সরাসরি সেভ হবে
-    const saved = await saveFCMToken(token);
-    
-    if (saved) {
-      DB.fcmToken = token;
-      DB.notifEnabled = true;
-      saveDB();
-      if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
-    } else {
-      throw new Error("Firebase-এ টোকেন সেভ হয়নি।");
+    if (!token) {
+      throw new Error('Token পাওয়া যায়নি');
     }
+    
+    // Step 3: Save to Firestore (fcmTokens + alertSchedule)
+    if (btn) btn.textContent = '⏳ Saving...';
+    await saveFCMToken(token);
+    
+    // Step 4: Local save
+    DB.fcmToken = token;
+    DB.notifEnabled = true;
+    saveDB();
+    
+    if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
+    updateNotificationUI();
     
   } catch(e) {
     console.error('❌ enableNotifications error:', e);
     showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = '🔔 Enable Notifications';
-    }
-    if (typeof updateNotificationUI === 'function') {
-      updateNotificationUI();
-    }
+    if (btn) { btn.disabled = false; btn.textContent = '🔔 Enable Notifications'; }
   }
 }
 
-// ---- Save FCM Token (Clean version, no alerts) ----
+// ---- Save FCM Token ----
 async function saveFCMToken(token) {
   try {
-    if (!window._db || !DB.deviceId) {
-      console.warn("DB বা deviceId নেই");
-      return false;
-    }
+    if (!window._db || !DB.deviceId) return false;
     
+    // 1. fcmTokens collection
     await window._db.collection('fcmTokens').doc(DB.deviceId).set({
       token: token,
       deviceId: DB.deviceId,
@@ -2868,17 +2863,18 @@ async function saveFCMToken(token) {
       ownerName: DB.settings.ownerName || '',
       phone: DB.settings.phone || '',
       lang: DB.settings.lang || 'bn',
-      updatedAt: Date.now(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       active: true
     }, { merge: true });
     
+    // 2. alertSchedule collection (Apps Script এখান থেকে পড়ে)
     await window._db.collection('alertSchedule').doc(DB.deviceId).set({
       fcmToken: token,
       deviceId: DB.deviceId,
       appVersion: '3.0'
     }, { merge: true });
     
-    console.log('✅ FCM Token saved to Firestore safely!');
+    console.log('✅ FCM Token saved to both collections');
     return true;
   } catch(e) {
     console.error('❌ Save token error:', e);
@@ -2886,104 +2882,40 @@ async function saveFCMToken(token) {
   }
 }
 
-// ---- Save FCM Token ----
-// ---- Save FCM Token ----
-async function saveFCMToken(token) {
-  try {
-    if (!window._db) {
-      alert("Save Error: window._db নেই! Firebase লোড হয়নি।");
-      return false;
-    }
-    if (!DB.deviceId) {
-      alert("Save Error: DB.deviceId নেই!");
-      return false;
-    }
-
-    alert("Saving to fcmTokens...");
-    
-    // ১. fcmTokens কালেকশনে সেভ করা
-    await window._db.collection('fcmTokens').doc(DB.deviceId).set({
-      token: token,
-      deviceId: DB.deviceId,
-      farmName: DB.settings.farmName || '',
-      ownerName: DB.settings.ownerName || '',
-      phone: DB.settings.phone || '',
-      lang: DB.settings.lang || 'bn',
-      updatedAt: Date.now(),
-      active: true
-    }, { merge: true });
-    
-    alert("✅ fcmTokens saved! Now saving to alertSchedule...");
-    
-    // ২. alertSchedule কালেকশনে সেভ করা
-    await window._db.collection('alertSchedule').doc(DB.deviceId).set({
-      fcmToken: token,
-      deviceId: DB.deviceId,
-      appVersion: '3.0'
-    }, { merge: true });
-    
-    alert("✅ alertSchedule saved! All done.");
-    return true;
-    
-  } catch(e) {
-    console.error('❌ Save token error:', e);
-    alert("Firebase Save Error:\n" + e.message); 
-    return false;
-  }
-}
-
-// --- Disable Notifications ---
+// ---- Disable Notifications ----
 function disableNotifications() {
-  showConfirm({
-    title: 'Disable Notifications?',
-    message: 'নোটিফিকেশন বন্ধ করলে আর কোনো অ্যালার্ট পাবেন না।',
-    icon: '🔕',
-    onConfirm: async function() {
-      const disableBtn = document.getElementById('notifDisableBtn') || document.getElementById('notifBtn');
-      
-      if (disableBtn) {
-        disableBtn.disabled = true;
-        disableBtn.textContent = '⏳ Saving...';
-      }
-      
-      try {
-        if (window._messaging) {
-          try { await window._messaging.deleteToken(); } catch(e) { console.warn(e); }
-        }
-        
-        // Firestore থেকে delete
-        if (window._db && DB.deviceId) {
-          try { await window._db.collection('fcmTokens').doc(DB.deviceId).delete(); } catch(e) { console.warn(e); }
-          try {
-            await window._db.collection('alertSchedule').doc(DB.deviceId).set({
-              fcmToken: ""
-            }, { merge: true });
-          } catch(e) { console.warn(e); }
-        }
-        
-        DB.fcmToken = '';
-        DB.notifEnabled = false;
-        saveDB();
-        
-        if (typeof toast === 'function') toast('🔕 Notifications বন্ধ হয়েছে');
-        
-      } catch(e) {
-        console.error('disableNotifications error:', e);
-        if (typeof toast === 'function') toast('❌ Error');
-      } finally {
-        // কাজ শেষে বা এরর হলেও বাটন আগের অবস্থায় ফিরবে
-        if (disableBtn) {
-          disableBtn.disabled = false;
-          disableBtn.textContent = '🔕 Disable Notifications'; 
-        }
-        if (typeof updateNotificationUI === 'function') {
-          updateNotificationUI();
-        }
-      }
-    }
+  smartConfirm(t('notif_disable_confirm') || 'Disable Notifications?', function() {
+    _doDisableNotifications();
   });
 }
 
+async function _doDisableNotifications() {
+  try {
+    if (window._messaging) {
+      try { await window._messaging.deleteToken(); } catch(e) {}
+    }
+    
+    // Firestore থেকে delete
+    if (window._db && DB.deviceId) {
+      try { await window._db.collection('fcmTokens').doc(DB.deviceId).delete(); } catch(e) {}
+      try { 
+        await window._db.collection('alertSchedule').doc(DB.deviceId).set({
+          fcmToken: ''
+        }, { merge: true });
+      } catch(e) {}
+    }
+    
+    DB.fcmToken = '';
+    DB.notifEnabled = false;
+    saveDB();
+    
+    if (typeof toast === 'function') toast('🔕 Notifications বন্ধ হয়েছে');
+    updateNotificationUI();
+  } catch(e) {
+    console.error('disableNotifications error:', e);
+    if (typeof toast === 'function') toast('❌ Error');
+  }
+}
 
 // ---- Update Notification UI ----
 function updateNotificationUI() {
@@ -9747,28 +9679,6 @@ function generateDeviceId() {
 // ========== FCM VAPID KEY ==========
 const VAPID_KEY = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
 
-// অ্যাপ ওপেন হলেই ব্যাকগ্রাউন্ডে টোকেন অটো-আপডেট হবে
-if (typeof firebase !== 'undefined' && firebase.messaging) {
-  try {
-    const msg = firebase.messaging();
-    msg.onTokenRefresh(function() {
-      console.log('🔄 FCM Token refreshed automatically');
-      msg.getToken({ vapidKey: VAPID_KEY }).then(function(newToken) {
-        if (newToken && typeof saveFCMToken === 'function') {
-          saveFCMToken(newToken); 
-          if (typeof DB !== 'undefined') {
-            DB.fcmToken = newToken;
-            if (typeof saveDB === 'function') saveDB();
-          }
-        }
-      }).catch(function(err) {
-        console.warn('Token refresh error:', err);
-      });
-    });
-  } catch(e) {
-    console.warn("Token refresh setup failed:", e);
-  }
-}
 const TRIAL_DAYS = 7;
 const GRACE_DAYS = 7;
 
@@ -10096,71 +10006,64 @@ async function saveGuestTrialUser() {
 async function saveUserAfterLogin(user, method) {
   try {
     if (!window._db) return;
-    if (!user || !user.uid) return;
     
     const uid = user.uid;
     const now = Date.now();
     
-    // ===== 1. Save to users collection =====
-    try {
-      const userRef = window._db.collection('users').doc(uid);
-      const userSnap = await userRef.get();
-      
-      const userData = {
-        uid: uid,
-        authMethod: method,
-        email: user.email || '',
-        phone: user.phoneNumber || '',
-        displayName: user.displayName || '',
-        photoURL: user.photoURL || '',
+    const userRef = window._db.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+    
+    const userData = {
+      uid: uid,
+      authMethod: method,
+      email: user.email || '',
+      phone: user.phoneNumber || '',
+      displayName: user.displayName || '',
+      photoURL: user.photoURL || '',
+      deviceId: DB.deviceId || '',
+      lastSeen: now
+    };
+    
+    if (!userSnap.exists) {
+      userData.firstSeen = now;
+      userData.farmerName = DB.settings.farmName || '';
+      userData.ownerName = DB.settings.ownerName || user.displayName || '';
+      userData.appVersion = '2026.09';
+      await userRef.set(userData);
+      console.log('✅ New user doc created:', uid);
+    } else {
+      await userRef.update({
+        lastSeen: now,
         deviceId: DB.deviceId || '',
-        lastSeen: now
-      };
-      
-      if (!userSnap.exists) {
-        userData.firstSeen = now;
-        userData.farmerName = DB.settings ? (DB.settings.farmName || '') : '';
-        userData.ownerName = DB.settings ? (DB.settings.ownerName || user.displayName || '') : (user.displayName || '');
-        userData.appVersion = '2026.09';
-        await userRef.set(userData);
-        console.log('✅ users created:', uid);
-      } else {
-        await userRef.update(userData);
-        console.log('✅ users updated:', uid);
-      }
-    } catch(e) {
-      console.warn('users save failed:', e);
+        authMethod: method
+      });
+      console.log('✅ Existing user updated:', uid);
     }
     
-    // ===== 2. Save to trialUsers collection =====
-    try {
-      const trialRef = window._db.collection('trialUsers').doc(uid);
-      const trialSnap = await trialRef.get();
-      
-      const trialData = {
+    const trialRef = window._db.collection('trialUsers').doc(uid);
+    const trialSnap = await trialRef.get();
+    
+    if (!trialSnap.exists) {
+      await trialRef.set({
         type: 'auth',
         uid: uid,
         authMethod: method,
         deviceId: DB.deviceId || '',
         email: user.email || '',
         phone: user.phoneNumber || '',
+        farmerName: DB.settings.farmName || '',
+        ownerName: user.displayName || DB.settings.ownerName || '',
+        firstSeen: now,
         lastSeen: now,
-        appVersion: '2026.09'
-      };
-      
-      if (!trialSnap.exists) {
-        trialData.farmerName = DB.settings ? (DB.settings.farmName || '') : '';
-        trialData.ownerName = user.displayName || (DB.settings ? DB.settings.ownerName : '') || '';
-        trialData.firstSeen = now;
-        trialData.converted = false;
-        await trialRef.set(trialData);
-        console.log('✅ trialUsers created:', uid);
-      } else {
-        await trialRef.update(trialData);
-        console.log('✅ trialUsers updated:', uid);
-      }
-    } catch(e) {
-      console.warn('trialUsers save failed:', e);
+        appVersion: '2026.09',
+        converted: false
+      });
+      console.log('✅ Trial user doc created');
+    } else {
+      await trialRef.update({
+        lastSeen: now,
+        deviceId: DB.deviceId || ''
+      });
     }
     
   } catch(e) {
@@ -10803,41 +10706,11 @@ function askNewPin() {
 }
 
 function disablePin() {
-  // showConfirm-এ অবজেক্ট পাস করতে হবে
-  showConfirm({
-    title: 'Disable PIN?',
-    message: 'PIN lock will be turned off',
-    icon: '🔓',
-    onConfirm: function() {
-      
-      if (!DB.security) DB.security = {};
-      DB.security.pin = '';
-      DB.security.pinEnabled = false;
-      DB.security.locked = false;
-      
-      saveDB(); // ডাটাবেসে সেভ করা
-      
-      // স্ক্রিনে সাথে সাথে OFF দেখানো
-      const pinStatusEl = document.getElementById('pinStatus');
-      if (pinStatusEl) {
-        pinStatusEl.textContent = '❌ OFF';
-        pinStatusEl.style.color = '#C62828';
-      }
-      
-      // যদি কোনো লক স্ক্রিন ওপেন থাকে, সেটি বন্ধ করা
-      const lockScreen = document.getElementById('lockScreen') || document.getElementById('lockOverlay');
-      if (lockScreen) {
-        lockScreen.style.display = 'none';
-      }
-      
-      // সেটিংস রিলোড করা
-      if (typeof loadSettings === 'function') {
-        loadSettings();
-      }
-      
-      // সুন্দর টোস্ট মেসেজ দেখানো
-      toast('✅ PIN disabled');
-    }
+  showConfirm('Disable PIN?', 'PIN lock will be turned off', function() {
+    DB.security.pin = '';
+    saveDB();
+    toast('✅ PIN disabled');
+    loadSettings();
   });
 }
 
@@ -11427,21 +11300,10 @@ function checkLicenseWarning() {
   if (!DB.license.expiry) return;
   const exp = new Date(DB.license.expiry + 'T00:00:00');
   const daysLeft = Math.ceil((exp - new Date()) / 86400000);
-  
   if (daysLeft > 0 && daysLeft <= 7) {
-    // আজকের তারিখ বের করা (যেমন: 2026-10-19)
-    const todayStr = new Date().toISOString().split('T')[0];
-    const lastShown = localStorage.getItem('dm_lastLicenseWarning');
-    
-    // যদি আজকে মেসেজ না দেখানো হয়ে থাকে
-    if (lastShown !== todayStr) {
-      setTimeout(() => {
-        toast(`⚠️ License expires in ${daysLeft} days`);
-      }, 1500);
-      
-      // আজকের তারিখ সেভ করে রাখা, যাতে আজ আর না আসে
-      localStorage.setItem('dm_lastLicenseWarning', todayStr);
-    }
+    setTimeout(() => {
+      toast(`⚠️ License expires in ${daysLeft} days`);
+    }, 1500);
   }
 }
 
@@ -11643,7 +11505,7 @@ function smartConfirm(message, callback) {
   } else if (msg.indexOf('notification') !== -1 || msg.indexOf('নোটিফিকেশন') !== -1 || msg.indexOf('বন্ধ') !== -1) {
     icon = '🔕';
     color = '#EF6C00';
-    confirmText = t('cfm_yes') || '✅ Yes';
+    confirmText = t('cfm_no') || '✅ Yes';
   } else if (msg.indexOf('call') !== -1 || msg.indexOf('কল') !== -1 || msg.indexOf('ফোন') !== -1) {
     icon = '📞';
     color = '#1976D2';
@@ -11685,6 +11547,7 @@ history.pushState(null, '', location.href); // Single push - fixed to prevent ex
 // ========== WAIT FOR AUTH + CHECK LICENSE (Fast) ==========
 function waitForAuthThenCheckLicense() {
   // ===== Step 1: Local Data দিয়ে সাথে সাথে License Screen দেখাই =====
+  // Firebase Auth-এর জন্য অপেক্ষা না করি
   setTimeout(function() {
     if (typeof checkLicenseOnLoad === 'function') {
       try { checkLicenseOnLoad(); } catch(e) { console.warn(e); }
@@ -11692,103 +11555,50 @@ function waitForAuthThenCheckLicense() {
   }, 300);
   
   // ===== Step 2: Background-এ Auth ready হলে আবার check =====
-  let attempts = 0;
-  const maxAttempts = 25; // 5 সেকেন্ড
-  
-  function bgCheck() {
-    attempts++;
+  if (!window._auth) {
+    // Auth এখনো load হয়নি — 3 সেকেন্ড পর্যন্ত অপেক্ষা করি (background-এ)
+    let attempts = 0;
+    const maxAttempts = 15; // 3 সেকেন্ড
     
-    if (window._auth && window._fbReady) {
-      console.log('✅ Firebase ready (background)');
+    function bgCheck() {
+      attempts++;
       
-      const unsub = window._auth.onAuthStateChanged(function(user) {
-        unsub();
-        console.log('✅ Auth state:', user ? user.email : 'guest');
-        
-        // Google/Phone Login হলে Trial Users ডকুমেন্ট আপডেট করা
-if (user && window._db && DB.deviceId) {
-    let authType = 'google';
-    if (user.providerData && user.providerData.length > 0) {
-        authType = user.providerData[0].providerId.includes('phone') ? 'phone' : 'google';
-    }
-    window._db.collection('trialUsers').doc(DB.deviceId).set({
-        deviceId: DB.deviceId,
-        email: user.email || '',
-        displayName: user.displayName || '',
-        uid: user.uid,
-        type: authType,
-        authMethod: authType,
-        lastSeen: Date.now()
-    }, { merge: true }).then(() => {
-        console.log('✅ Trial user updated with Auth info');
-    }).catch(err => {
-        console.error('❌ Trial user update failed:', err);
-    });
-}
-        
-        // ===== UID License Check (Background) =====
-        if (user && user.uid && window._db) {
-          window._db.collection('licenses').doc(user.uid).get()
-            .then(function(doc) {
-              if (doc.exists) {
-                const data = doc.data();
-                if (data.active !== false && data.expiry) {
-                  const expDate = new Date(data.expiry + 'T23:59:59');
-                  if (expDate > new Date()) {
-                    DB.license = {
-                      code: data.licenseCode || 'UID-' + user.uid.substring(0, 8).toUpperCase(),
-                      expiry: data.expiry,
-                      trial: false,
-                      uid: user.uid
-                    };
-                    if (typeof saveDB === 'function') saveDB();
-                    console.log('✅ UID license verified (background)');
-                  }
-                }
-              }
-            })
-            .catch(function(e) { console.warn('UID check failed:', e); });
-        }
-        
-        // ===== Notification UI Refresh (Firebase ready হলে) =====
-        setTimeout(function() {
-          try {
-            if (typeof updateNotificationUI === 'function') {
-              updateNotificationUI();
-              console.log('✅ Notification UI refreshed');
-            }
-          } catch(e) { console.warn('Notif UI failed:', e); }
-        }, 800);
-        
-        // ===== Alert Sync (Background) =====
-        setTimeout(function() {
-          try {
-            if (typeof syncAlertsToFirestore === 'function') {
-              syncAlertsToFirestore();
-            }
-          } catch(e) {}
-        }, 1500);
-        
-        // ===== License Warning (Background) =====
-        setTimeout(function() {
-          try {
-            if (typeof checkLicenseWarning === 'function') {
-              checkLicenseWarning();
-            }
-          } catch(e) {}
-        }, 2500);
-      });
-      return;
+      if (window._auth) {
+        // Auth ready — UID license check
+        const unsub = window._auth.onAuthStateChanged(function(user) {
+          unsub();
+          console.log('✅ Auth ready (background):', user ? user.email : 'Not logged in');
+          
+          // যদি Login করা থাকে, UID license আবার check করি
+          if (user && typeof checkLicenseOnLoad === 'function') {
+            setTimeout(function() {
+              try { checkLicenseOnLoad(); } catch(e) {}
+            }, 500);
+          }
+        });
+        return;
+      }
+      
+      if (attempts < maxAttempts) {
+        setTimeout(bgCheck, 200);
+      } else {
+        console.log('⚠️ Auth background timeout — app continues with local data');
+      }
     }
     
-    if (attempts < maxAttempts) {
-      setTimeout(bgCheck, 200);
-    } else {
-      console.log('⚠️ Firebase background timeout');
-    }
+    bgCheck();
+  } else {
+    // Auth আগেই ready
+    const unsub = window._auth.onAuthStateChanged(function(user) {
+      unsub();
+      console.log('✅ Auth already ready:', user ? user.email : 'Not logged in');
+      if (user && typeof checkLicenseOnLoad === 'function') {
+        setTimeout(function() {
+          try { checkLicenseOnLoad(); } catch(e) {}
+        }, 500);
+      }
+    });
   }
-  
-  bgCheck();
 }
 
 // ========== INIT ==========
