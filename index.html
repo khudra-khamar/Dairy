@@ -2941,7 +2941,7 @@ function disableNotifications() {
 
 
 // ---- Update Notification UI ----
-function updateNotificationUI() {
+async function updateNotificationUI() {
   const statusEl = document.getElementById('notifStatus');
   const btn = document.getElementById('notifBtn');
   const disableBtn = document.getElementById('notifDisableBtn');
@@ -2951,41 +2951,39 @@ function updateNotificationUI() {
   
   const permissionGranted = ('Notification' in window) && Notification.permission === 'granted';
   
-  // localStorage থেকে চেক করা (নতুন লাইন)
-  const localEnabled = DB.notifEnabled === true || localStorage.getItem('dm_notifEnabled') === 'true';
-  if (localEnabled) DB.notifEnabled = true; // সিঙ্ক করে রাখা
-
-  // ✅ Local flag + permission -> ON
-  if (localEnabled && permissionGranted) {
+  // localStorage থেকে চেক করা (দ্রুত লোড হওয়ার জন্য)
+  let localEnabled = false;
+  try {
+    localEnabled = localStorage.getItem('dm_notifEnabled') === 'true';
+  } catch(e) {}
+  
+  if (permissionGranted && (DB.notifEnabled === true || localEnabled)) {
     _showNotifON(statusEl, btn, disableBtn, desc);
-    // Background-এ Firestore verify
-    _verifyNotifFromFirestore(statusEl, btn, disableBtn, desc);
     return;
   }
   
-  // ⚠️ Local flag নেই কিন্তু permission আছে -> Firestore check
-  if (permissionGranted && window._db && DB.deviceId) {
-    window._db.collection('fcmTokens').doc(DB.deviceId).get()
-      .then(function(doc) {
-        if (doc.exists && doc.data().token) {
-          DB.fcmToken = doc.data().token;
-          DB.notifEnabled = true;
-          localStorage.setItem('dm_notifEnabled', 'true'); // নতুন লাইন
-          if (typeof saveDB === 'function') saveDB();
-          _showNotifON(statusEl, btn, disableBtn, desc);
-          console.log('✅ Notification state restored from Firestore');
-        } else {
-          _showNotifOFFPermissionGiven(statusEl, btn, disableBtn, desc);
-        }
-      })
-      .catch(function(e) {
-        console.warn('Firestore check failed:', e);
-        _showNotifOFFPermissionGiven(statusEl, btn, disableBtn, desc);
-      });
-    return;
+  // যদি লোকালি না থাকে, তবে সরাসরি Firebase-কে জিজ্ঞেস করি টোকেন আছে কি না
+  if (permissionGranted && window._messaging) {
+    try {
+      const tokenOptions = { vapidKey: VAPID_KEY };
+      if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+      
+      // সরাসরি টোকেন চেক
+      const currentToken = await window._messaging.getToken(tokenOptions);
+      
+      if (currentToken) {
+        DB.fcmToken = currentToken;
+        DB.notifEnabled = true;
+        try { localStorage.setItem('dm_notifEnabled', 'true'); } catch(e) {}
+        _showNotifON(statusEl, btn, disableBtn, desc);
+        return;
+      }
+    } catch(e) {
+      console.warn("Token check failed on UI load:", e);
+    }
   }
   
-  // ❌ Permission নেই
+  // যদি টোকেন না থাকে, তবে OFF দেখাব
   if (permissionGranted) {
     _showNotifOFFPermissionGiven(statusEl, btn, disableBtn, desc);
   } else {
