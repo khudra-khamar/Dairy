@@ -21,26 +21,28 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log('[FCM-SW] Background message received:', payload);
   
-  // Firebase v8 স্বয়ংক্রিয়ভাবে নোটিফিকেশন দেখায় যদি payload.notification থাকে।
-  // তাই আমরা ম্যানুয়ালি আর নোটিফিকেশন দেখাবো না, অন্যথায় ডুপ্লিকেট হতে পারে।
+  // সার্ভার থেকে যা আসবে, ঠিক সেটাই দেখাবে
+  let title = '🐄 Dairy Manager';
+  let body = 'New alert!';
+  
   if (payload.notification) {
-    console.log('[FCM-SW] Firebase SDK handled the notification automatically.');
-    return;
+    title = payload.notification.title || title;
+    body = payload.notification.body || body;
+  } else if (payload.data) {
+    title = payload.data.title || title;
+    body = payload.data.body || payload.data.message || body;
   }
 
-  // যদি শুধু data থাকে (notification ছাড়া), তখন আমরা ম্যানুয়ালি দেখাবো
-  const notificationTitle = payload.data?.title || '🐄 Dairy Manager';
   const notificationOptions = {
-    body: payload.data?.body || 'New alert!',
+    body: body,
     icon: './icon-192.png',
     badge: './icon-192.png',
-    tag: payload.data?.tag || 'dairy-alert',
-    data: payload.data || {},
     vibrate: [200, 100, 200],
-    requireInteraction: true
+    data: payload.data || {}
   };
   
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  // ম্যানুয়ালি নোটিফিকেশন দেখানো হচ্ছে
+  return self.registration.showNotification(title, notificationOptions);
 });
 
 // Notification click — open app
@@ -48,7 +50,7 @@ self.addEventListener('notificationclick', function(event) {
   console.log('[FCM-SW] Notification clicked:', event);
   event.notification.close();
   
-  const urlToOpen = event.notification.data?.url || '/Dairy/';
+  const urlToOpen = '/Dairy/';
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
@@ -65,4 +67,4 @@ self.addEventListener('notificationclick', function(event) {
   );
 });
 
-console.log('[FCM-SW] Firebase Messaging Service Worker loaded successfully');
+console.log('[FCM-SW] Firebase Messaging Service Worker loaded successfully (v2)');
