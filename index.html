@@ -2786,91 +2786,53 @@ function updateHeaderSubtitle() {
 
 // ========== PUSH NOTIFICATION ==========
 
-// --- Enable Notifications (DEBUG MODE) ---
+// --- Enable Notifications ---
 async function enableNotifications() {
-  alert("Step 1: Function Started");
-  const btn = document.getElementById('notifBtn');
-  
   if (!window._messaging) {
-    alert("❌ Error: window._messaging নেই! Firebase লোড হয়নি।");
+    if (typeof toast === 'function') toast('⚠️ Firebase ready হয়নি।');
     return;
   }
   
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Requesting...'; }
-  
   try {
-    alert("Step 2: Requesting Permission");
     const permission = await Notification.requestPermission();
-    alert("Step 3: Permission is " + permission);
-    
     if (permission !== 'granted') {
-      showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।');
+      if (typeof showAlert === 'function') showAlert('❌ Permission Denied', 'Permission দিলে সময়মতো Alert পাবেন।');
       return;
     }
     
-    if (btn) btn.textContent = '⏳ Getting token...';
-    
     if (!window._fcmSWReg) {
-      alert("Step 4: Service worker নেই, ২ সেকেন্ড অপেক্ষা করছি...");
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    try {
-      alert("Step 5: Deleting old token...");
-      await window._messaging.deleteToken();
-    } catch(e) {
-      alert("Step 5b: deleteToken failed: " + e.message);
-    }
-    
-    alert("Step 6: Getting NEW token...");
     const tokenOptions = { vapidKey: VAPID_KEY };
-    if (window._fcmSWReg) {
-      tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-    }
+    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
     
     const token = await window._messaging.getToken(tokenOptions);
-    alert("Step 7: Token Received = " + (token ? token.substring(0, 10) + "..." : "NULL"));
-    
     if (!token) throw new Error('Token পাওয়া যায়নি');
     
-    if (btn) btn.textContent = '⏳ Saving...';
+    DB.fcmToken = token;
+    DB.notifEnabled = true;
+    localStorage.setItem('dm_notifEnabled', 'true');
+    if (typeof saveDB === 'function') saveDB();
     
-    alert("Step 8: Saving to Firestore...");
-    const saved = await saveFCMToken(token);
-    alert("Step 9: Save result = " + saved);
-    
-    if (saved) {
-      DB.fcmToken = token;
-      DB.notifEnabled = true;
-      localStorage.setItem('dm_notifEnabled', 'true');
-      saveDB();
-      if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
-    } else {
-      throw new Error("Firebase-এ টোকেন সেভ করা যায়নি। ইন্টারনেট চেক করুন।");
+    if (typeof saveFCMToken === 'function') {
+      saveFCMToken(token); 
     }
+    
+    if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
     
   } catch(e) {
-    alert("❌ Final Error: " + e.message);
+    if (typeof showAlert === 'function') showAlert('❌ Error', e.message || 'চালু করা যায়নি।');
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = '🔔 Enable Notifications';
-    }
-    if (typeof updateNotificationUI === 'function') {
-      updateNotificationUI();
-    }
+    if (typeof updateNotificationUI === 'function') updateNotificationUI();
   }
 }
 
-// ---- Save FCM Token (Force Save) ----
+// ---- Save FCM Token (Clean version) ----
 async function saveFCMToken(token) {
   try {
-    if (!window._db || !DB.deviceId) {
-      console.warn("DB বা deviceId নেই");
-      return false;
-    }
+    if (!window._db || !DB.deviceId) return false;
     
-    // fcmTokens কালেকশনে সেভ
     await window._db.collection('fcmTokens').doc(DB.deviceId).set({
       token: token,
       deviceId: DB.deviceId,
@@ -2882,14 +2844,13 @@ async function saveFCMToken(token) {
       active: true
     }, { merge: true });
 
-    // alertSchedule কালেকশনে সেভ
     await window._db.collection('alertSchedule').doc(DB.deviceId).set({
       fcmToken: token,
       deviceId: DB.deviceId,
       appVersion: '3.0'
     }, { merge: true });
     
-    console.log('✅ FCM Token 100% saved to Firestore!');
+    console.log('✅ FCM Token saved to Firestore safely!');
     return true;
   } catch(e) {
     console.error('❌ Save token error:', e);
@@ -2897,61 +2858,36 @@ async function saveFCMToken(token) {
   }
 }
 
-
 // --- Disable Notifications ---
 function disableNotifications() {
-  showConfirm({
-    title: 'Disable Notifications?',
-    message: 'নোটিফিকেশন বন্ধ করলে আর কোনো অ্যালার্ট পাবেন না।',
-    icon: '🔕',
-    onConfirm: async function() {
-      const disableBtn = document.getElementById('notifDisableBtn') || document.getElementById('notifBtn');
-      
-      if (disableBtn) {
-        disableBtn.disabled = true;
-        disableBtn.textContent = '⏳ Saving...';
-      }
-      
-      try {
-        if (window._messaging) {
-          try { await window._messaging.deleteToken(); } catch(e) { console.warn(e); }
-        }
-        
-        if (window._db && DB.deviceId) {
-          try { await window._db.collection('fcmTokens').doc(DB.deviceId).delete(); } catch(e) { console.warn(e); }
-          try {
-            await window._db.collection('alertSchedule').doc(DB.deviceId).set({
-              fcmToken: ""
-            }, { merge: true });
-          } catch(e) { console.warn(e); }
-        }
-        
-        DB.fcmToken = '';
-        DB.notifEnabled = false;
-        localStorage.removeItem('dm_notifEnabled'); // নতুন লাইন
-        saveDB();
-        
-        if (typeof toast === 'function') toast('🔕 Notifications বন্ধ হয়েছে');
-        
-      } catch(e) {
-        console.error('disableNotifications error:', e);
-        if (typeof toast === 'function') toast('❌ Error');
-      } finally {
-        if (disableBtn) {
-          disableBtn.disabled = false;
-          disableBtn.textContent = '🔕 Disable Notifications'; 
-        }
-        if (typeof updateNotificationUI === 'function') {
-          updateNotificationUI();
-        }
-      }
+  if (confirm('Disable Notifications? আপনি কি নিশ্চিত?')) {
+    
+    if (window._messaging) {
+      window._messaging.deleteToken().catch(e => console.warn(e));
     }
-  });
+    
+    if (window._db && DB.deviceId) {
+      window._db.collection('fcmTokens').doc(DB.deviceId).delete().catch(e => console.warn(e));
+      window._db.collection('alertSchedule').doc(DB.deviceId).set({
+        fcmToken: ""
+      }, { merge: true }).catch(e => console.warn(e));
+    }
+    
+    DB.fcmToken = '';
+    DB.notifEnabled = false;
+    try { localStorage.removeItem('dm_notifEnabled'); } catch(e) {}
+    if (typeof saveDB === 'function') saveDB();
+    
+    if (typeof updateNotificationUI === 'function') updateNotificationUI();
+    if (typeof toast === 'function') toast('🔕 Notifications বন্ধ হয়েছে');
+  }
 }
+
+// --- Update Notification UI ---
 
 
 // ---- Update Notification UI ----
-async function updateNotificationUI() {
+function updateNotificationUI() {
   const statusEl = document.getElementById('notifStatus');
   const btn = document.getElementById('notifBtn');
   const disableBtn = document.getElementById('notifDisableBtn');
@@ -2960,41 +2896,13 @@ async function updateNotificationUI() {
   if (!statusEl) return;
   
   const permissionGranted = ('Notification' in window) && Notification.permission === 'granted';
-  
-  // localStorage থেকে চেক করা (দ্রুত লোড হওয়ার জন্য)
   let localEnabled = false;
-  try {
-    localEnabled = localStorage.getItem('dm_notifEnabled') === 'true';
-  } catch(e) {}
+  try { localEnabled = localStorage.getItem('dm_notifEnabled') === 'true'; } catch(e) {}
   
+  // শুধুমাত্র তখনই ON দেখাবে যদি লোকাল স্টোরেজে সেভ থাকে
   if (permissionGranted && (DB.notifEnabled === true || localEnabled)) {
     _showNotifON(statusEl, btn, disableBtn, desc);
-    return;
-  }
-  
-  // যদি লোকালি না থাকে, তবে সরাসরি Firebase-কে জিজ্ঞেস করি টোকেন আছে কি না
-  if (permissionGranted && window._messaging) {
-    try {
-      const tokenOptions = { vapidKey: VAPID_KEY };
-      if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-      
-      // সরাসরি টোকেন চেক
-      const currentToken = await window._messaging.getToken(tokenOptions);
-      
-      if (currentToken) {
-        DB.fcmToken = currentToken;
-        DB.notifEnabled = true;
-        try { localStorage.setItem('dm_notifEnabled', 'true'); } catch(e) {}
-        _showNotifON(statusEl, btn, disableBtn, desc);
-        return;
-      }
-    } catch(e) {
-      console.warn("Token check failed on UI load:", e);
-    }
-  }
-  
-  // যদি টোকেন না থাকে, তবে OFF দেখাব
-  if (permissionGranted) {
+  } else if (permissionGranted) {
     _showNotifOFFPermissionGiven(statusEl, btn, disableBtn, desc);
   } else {
     _showNotifOFF(statusEl, btn, disableBtn, desc);
