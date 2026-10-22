@@ -2786,24 +2786,22 @@ function updateHeaderSubtitle() {
 
 // ========== PUSH NOTIFICATION ==========
 
-// --- Enable Notifications (Force New Token) ---
+// --- Enable Notifications (DEBUG MODE) ---
 async function enableNotifications() {
+  alert("Step 1: Function Started");
   const btn = document.getElementById('notifBtn');
   
   if (!window._messaging) {
-    if (typeof toast === 'function') toast('⚠️ Firebase ready হয়নি।');
-    return;
-  }
-  
-  if (!('Notification' in window)) {
-    showAlert('❌ Not Supported', 'আপনার browser Notification support করে না।');
+    alert("❌ Error: window._messaging নেই! Firebase লোড হয়নি।");
     return;
   }
   
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Requesting...'; }
   
   try {
+    alert("Step 2: Requesting Permission");
     const permission = await Notification.requestPermission();
+    alert("Step 3: Permission is " + permission);
     
     if (permission !== 'granted') {
       showAlert('❌ Permission Denied', 'Notification permission দিলে সময়মতো Alert পাবেন।');
@@ -2813,32 +2811,33 @@ async function enableNotifications() {
     if (btn) btn.textContent = '⏳ Getting token...';
     
     if (!window._fcmSWReg) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert("Step 4: Service worker নেই, ২ সেকেন্ড অপেক্ষা করছি...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
-    // ✅ জোরপূর্বক আগের মৃত টোকেনটি ডিলিট করা
     try {
+      alert("Step 5: Deleting old token...");
       await window._messaging.deleteToken();
-      console.log('🗑️ Old token deleted');
     } catch(e) {
-      console.warn('No old token to delete');
+      alert("Step 5b: deleteToken failed: " + e.message);
     }
     
+    alert("Step 6: Getting NEW token...");
     const tokenOptions = { vapidKey: VAPID_KEY };
     if (window._fcmSWReg) {
       tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
     }
     
-    // ✅ নতুন টোকেন জেনারেট করা
     const token = await window._messaging.getToken(tokenOptions);
-    console.log('✅ New FCM Token:', token);
+    alert("Step 7: Token Received = " + (token ? token.substring(0, 10) + "..." : "NULL"));
     
     if (!token) throw new Error('Token পাওয়া যায়নি');
     
     if (btn) btn.textContent = '⏳ Saving...';
     
-    // ✅ ফায়ারবেসে সেভ হওয়া পর্যন্ত অপেক্ষা করা
+    alert("Step 8: Saving to Firestore...");
     const saved = await saveFCMToken(token);
+    alert("Step 9: Save result = " + saved);
     
     if (saved) {
       DB.fcmToken = token;
@@ -2851,8 +2850,7 @@ async function enableNotifications() {
     }
     
   } catch(e) {
-    console.error('❌ enableNotifications error:', e);
-    showAlert('❌ Error', e.message || 'Notification চালু করা যায়নি।');
+    alert("❌ Final Error: " + e.message);
   } finally {
     if (btn) {
       btn.disabled = false;
