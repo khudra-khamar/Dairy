@@ -9995,9 +9995,8 @@ return;
 
 async function saveGuestTrialUser() {
   try {
-    if (!window._db) { toast('❌ DB ready না'); return; }
-    if (!DB.deviceId) { toast('❌ Device ID নেই'); return; }
-    toast('🔄 Guest save শুরু...');
+  if (!window._db) return;
+  if (!DB.deviceId) return;
     
     const deviceId = DB.deviceId;
     const now = Date.now();
@@ -10005,6 +10004,7 @@ async function saveGuestTrialUser() {
     const snap = await ref.get();
     
     if (!snap.exists) {
+      toast('🔄 Guest save শুরু...');
       // প্রথমবার — নতুন guest doc
       await ref.set({
         type: 'guest',
