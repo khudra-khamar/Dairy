@@ -2706,8 +2706,24 @@ function saveDB() {
   } catch(e) {
     console.log('localStorage save skipped:', e.message);
   }
-  // Save to IndexedDB (debounced)
+ 
+    // Save to IndexedDB (debounced)
   scheduleSave();
+  // Auto sync to Firestore - Fix for DEV-F7E4MA9W
+  try{
+    if(window._db && DB.deviceId){
+      var dId = DB.deviceId;
+      window._db.collection('devices').doc(dId).set({deviceId:dId,totalCows:(DB.cows||[]).length,lastSync:firebase.firestore.FieldValue.serverTimestamp(),appVersion:"3.0",setupDone:true},{merge:true});
+      (DB.cows||[]).forEach(function(cow){
+        if(!cow.id) return;
+        var copy={}; for(var k in cow){ if(k!=='photo') copy[k]=cow[k]; }
+        copy.deviceId=dId;
+        copy.updatedAt=firebase.firestore.FieldValue.serverTimestamp();
+        window._db.collection('devices').doc(dId).collection('cows').doc(cow.id).set(copy,{merge:true});
+      });
+    }
+    if(typeof syncAlertsToFirestore==='function'){ syncAlertsToFirestore(); }
+  }catch(e){ console.warn('Firestore sync skipped',e); }
 }
 
 
