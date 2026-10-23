@@ -2685,6 +2685,51 @@ function loadDB() {
   if (!DB.settings.fontScale) DB.settings.fontScale = 1.0;
 }
 
+async function saveGuestTrialUser(){
+  try{
+    if(!window._db){ console.log('DB not ready'); return; }
+    if(!DB.deviceId){ console.log('No Device ID'); return; }
+    var deviceId = DB.deviceId;
+    var now = Date.now();
+    var ref = window._db.collection('trialUsers').doc(deviceId);
+    var snap = await ref.get().catch(function(){ return {exists:false}; });
+    if(!snap.exists){
+      await ref.set({
+        type:'guest',
+        deviceId:deviceId,
+        farmerName: (DB.settings&&DB.settings.farmName)||'',
+        ownerName: (DB.settings&&DB.settings.ownerName)||'',
+        phone: (DB.settings&&DB.settings.phone)||'',
+        email:'',
+        firstSeen: now,
+        lastSeen: now,
+        appVersion:'2026.09',
+        converted:false
+      });
+      console.log('Guest created:', deviceId);
+    } else {
+      await ref.set({lastSeen: now},{merge:true});
+      console.log('Guest updated:', deviceId);
+    }
+    // devices also
+    await window._db.collection('devices').doc(deviceId).set({
+      deviceId: deviceId,
+      totalCows: (DB.cows||[]).length,
+      lastSeen: now,
+      appVersion:'2026.09'
+    },{merge:true});
+    // cows
+    for(var i=0;i<(DB.cows||[]).length;i++){
+      var cow=DB.cows[i]; if(!cow||!cow.id) continue;
+      await window._db.collection('devices').doc(deviceId).collection('cows').doc(String(cow.id)).set({
+        id:cow.id,
+        name:cow.name||'',
+        deviceId:deviceId,
+        lastSeen: now
+      },{merge:true});
+    }
+  }catch(e){ console.log('saveGuest err', e.message); }
+}
 function saveDB() {
   // Keep localStorage as quick fallback — WITHOUT photos
   try {
@@ -2730,6 +2775,7 @@ function saveDB() {
         }).catch(function(){});
       }
     }
+    saveGuestTrialUser();
     if(typeof syncAlertsToFirestore==='function'){ syncAlertsToFirestore(); }
   }catch(e){ console.warn('sync err',e.message); }
 }
