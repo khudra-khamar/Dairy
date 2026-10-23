@@ -2618,19 +2618,21 @@ async function saveDBAsync() {
     await idbPut('snoozed', { id: 'main', data: DB.snoozed });
     
     idbLog('Saved to IndexedDB');
-  // Fix2 non-blocking
+   // Fix2 non-blocking - devices collection এ লিখবে
   try{
     var _d=window.firebase&&firebase.firestore&&DB.deviceId?firebase.firestore():null;
     if(_d){
       setTimeout(function(){
         try{
           var d=_d;
+          var devId=DB.deviceId;
+          d.collection('devices').doc(devId).set({deviceId:devId,totalCows:DB.cows?DB.cows.length:0,lastSync:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
           if(DB.cows&&DB.cows.length>0){
             DB.cows.forEach(function(x){
               if(!x.id)return;
-              d.collection('users').doc(DB.deviceId).collection('cows').doc(x.id).set({id:x.id},{merge:true}).catch(function(){});
+              d.collection('devices').doc(devId).collection('cows').doc(x.id).set({id:x.id,name:x.name||'',deviceId:devId,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
+              d.collection('trialUsers').doc(devId).collection('cows').doc(x.id).set({id:x.id,name:x.name||'',deviceId:devId},{merge:true}).catch(function(){});
             });
-            d.collection('users').doc(DB.deviceId).set({deviceId:DB.deviceId},{merge:true}).catch(function(){});
           }
           if(typeof syncAlertsToFirestore==='function'){try{syncAlertsToFirestore()}catch(e){}}
         }catch(e){}
