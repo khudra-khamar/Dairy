@@ -2707,23 +2707,30 @@ function saveDB() {
     console.log('localStorage save skipped:', e.message);
   }
  
-    // Save to IndexedDB (debounced)
+  // Save to IndexedDB (debounced)
   scheduleSave();
-  // Auto sync to Firestore - Fix for DEV-F7E4MA9W
+  // Auto sync to Firestore - Fixed version
   try{
-    if(window._db && DB.deviceId){
-      var dId = DB.deviceId;
-      window._db.collection('devices').doc(dId).set({deviceId:dId,totalCows:(DB.cows||[]).length,lastSync:firebase.firestore.FieldValue.serverTimestamp(),appVersion:"3.0",setupDone:true},{merge:true});
+    var dId = DB.deviceId || localStorage.getItem('deviceId');
+    if(dId && typeof firebase!=='undefined'){
+      var fs = firebase.firestore();
+      fs.collection('devices').doc(dId).set({deviceId:dId,totalCows:(DB.cows||[]).length,lastSync:firebase.firestore.FieldValue.serverTimestamp(),appVersion:"3.0",setupDone:true},{merge:true});
       (DB.cows||[]).forEach(function(cow){
-        if(!cow.id) return;
-        var copy={}; for(var k in cow){ if(k!=='photo') copy[k]=cow[k]; }
+        if(!cow || !cow.id) return;
+        var copy={}; for(var k in cow){ if(k!=='photo' && k!=='image') copy[k]=cow[k]; }
         copy.deviceId=dId;
         copy.updatedAt=firebase.firestore.FieldValue.serverTimestamp();
-        window._db.collection('devices').doc(dId).collection('cows').doc(cow.id).set(copy,{merge:true});
+        fs.collection('devices').doc(dId).collection('cows').doc(cow.id).set(copy,{merge:true});
       });
+      // FCM token also
+      if(firebase.messaging){
+        firebase.messaging().getToken().then(function(t){
+          if(t) fs.collection('fcmTokens').doc(dId).set({deviceId:dId,token:t,active:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        }).catch(function(){});
+      }
     }
     if(typeof syncAlertsToFirestore==='function'){ syncAlertsToFirestore(); }
-  }catch(e){ console.warn('Firestore sync skipped',e); }
+  }catch(e){ console.warn('sync err',e.message); }
 }
 
 
@@ -7899,7 +7906,7 @@ function calcCalving() {
   document.getElementById('calcNote').innerHTML = `<b>${t('calc_formula')}</b><br>
     ${type === 'buffalo' ? t('calc_formula_buffalo') : t('calc_formula_cow')}<br>
     ${t('calc_formula_dry')}<br><br>
-    <span style="color:#2E7D32;font-weight:600;">📊 ${t('pregnancy_progress')}: ${bn(r.progress)}%</span>`;
+    <span style="color:#2E7D32;font-weight:600;">?? ${t('pregnancy_progress')}: ${bn(r.progress)}%</span>`;
   document.getElementById('calcResults').style.display = 'block';
 }
 
