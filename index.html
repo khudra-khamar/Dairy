@@ -2618,34 +2618,26 @@ async function saveDBAsync() {
     await idbPut('snoozed', { id: 'main', data: DB.snoozed });
     
     idbLog('Saved to IndexedDB');
-      // ✅ Fix 2: Cow data Firestore এ sync - 20 দিন আগে delete হয়েছিল
-  try {
-    if (window.firebase && firebase.firestore && DB.deviceId) {
-      const db = firebase.firestore();
-      // Cows sync to users collection
-      if (DB.cows && DB.cows.length > 0) {
-        for (let cow of DB.cows) {
-          if (!cow.id) continue;
-          await db.collection('users').doc(DB.deviceId).collection('cows').doc(cow.id).set({
-            ...cow,
-            deviceId: DB.deviceId,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
-        }
-        await db.collection('users').doc(DB.deviceId).set({
-          deviceId: DB.deviceId,
-          totalCows: DB.cows.length,
-          lastSync: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-      }
-      // Trigger alert schedule sync if function exists
-      if (typeof syncAlertsToFirestore === 'function') {
-        try { await syncAlertsToFirestore(); } catch(e){}
-      }
-      console.log('✅ cows synced to Firestore:', DB.cows.length);
+  // Fix2 non-blocking
+  try{
+    var _d=window.firebase&&firebase.firestore&&DB.deviceId?firebase.firestore():null;
+    if(_d){
+      setTimeout(function(){
+        try{
+          var d=_d;
+          if(DB.cows&&DB.cows.length>0){
+            DB.cows.forEach(function(x){
+              if(!x.id)return;
+              d.collection('users').doc(DB.deviceId).collection('cows').doc(x.id).set({id:x.id},{merge:true}).catch(function(){});
+            });
+            d.collection('users').doc(DB.deviceId).set({deviceId:DB.deviceId},{merge:true}).catch(function(){});
+          }
+          if(typeof syncAlertsToFirestore==='function'){try{syncAlertsToFirestore()}catch(e){}}
+        }catch(e){}
+      },2000);
     }
-  } catch(e) { console.log('Firestore sync error', e); }
-  
+  }catch(e){}
+
     return true;
   } catch(e) {
     idbLog('Save error: ' + e.message);
@@ -11761,7 +11753,7 @@ async function initApp() {
     try {
       if (window.firebase && firebase.firestore) {
         const db = firebase.firestore();
-        await db.collection('trialUsers').doc(DB.deviceId).set({
+        db.collection('trialUsers').doc(DB.deviceId).set({
           deviceId: DB.deviceId,
           type: 'trial',
           appVersion: '2026.09',
