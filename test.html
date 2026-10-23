@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html><body>
+<h2>Test Firestore - DEV-GA85B9YP</h2>
+<button onclick="test()" style="padding:20px;background:green;color:white;">Click to Save Trial User</button>
+<p id="log"></p>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
+  authDomain:"dairy-manager-1.firebaseapp.com",
+  projectId:"dairy-manager-1"
+});
+var db=firebase.firestore();
+function test(){
+  var dId=localStorage.getItem('deviceId') || 'DEV-GA85B9YP';
+  document.getElementById('log').innerText='Trying '+dId+'...';
+  db.collection('trialUsers').doc(dId).set({
+    deviceId:dId,
+    type:'guest',
+    appVersion:'2026.09',
+    lastSeen: Date.now(),
+    test:true
+  },{merge:true}).then(function(){
+    document.getElementById('log').innerText='SUCCESS: '+dId+' saved! Check Firebase now';
+    alert('SUCCESS');
+  }).catch(function(e){
+    document.getElementById('log').innerText='FAILED: '+e.message;
+    alert('FAILED: '+e.message);
+  });
+}
+</script>
+</body></html>
