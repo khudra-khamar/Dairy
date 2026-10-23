@@ -2618,6 +2618,34 @@ async function saveDBAsync() {
     await idbPut('snoozed', { id: 'main', data: DB.snoozed });
     
     idbLog('Saved to IndexedDB');
+      // ✅ Fix 2: Cow data Firestore এ sync - 20 দিন আগে delete হয়েছিল
+  try {
+    if (window.firebase && firebase.firestore && DB.deviceId) {
+      const db = firebase.firestore();
+      // Cows sync to users collection
+      if (DB.cows && DB.cows.length > 0) {
+        for (let cow of DB.cows) {
+          if (!cow.id) continue;
+          await db.collection('users').doc(DB.deviceId).collection('cows').doc(cow.id).set({
+            ...cow,
+            deviceId: DB.deviceId,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+        await db.collection('users').doc(DB.deviceId).set({
+          deviceId: DB.deviceId,
+          totalCows: DB.cows.length,
+          lastSync: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+      // Trigger alert schedule sync if function exists
+      if (typeof syncAlertsToFirestore === 'function') {
+        try { await syncAlertsToFirestore(); } catch(e){}
+      }
+      console.log('✅ cows synced to Firestore:', DB.cows.length);
+    }
+  } catch(e) { console.log('Firestore sync error', e); }
+  
     return true;
   } catch(e) {
     idbLog('Save error: ' + e.message);
@@ -11618,6 +11646,8 @@ if (user && window._db && DB.deviceId) {
                     };
                     if (typeof saveDB === 'function') saveDB();
                     console.log('✅ UID license verified (background)');
+                    if (typeof saveDBAsync === 'function') { try { saveDBAsync(); } catch(e){} }
+                    if (typeof syncAlertsToFirestore === 'function') { try { setTimeout(function(){ syncAlertsToFirestore(); }, 1500); } catch(e){} }
                   }
                 }
               }
@@ -11727,6 +11757,23 @@ async function initApp() {
       DB.deviceId = generateDeviceId();
       await saveDBAsync();
     }
+        // ✅ Fix 1: TrialUsers create - 20 দিন আগে delete হয়েছিল
+    try {
+      if (window.firebase && firebase.firestore) {
+        const db = firebase.firestore();
+        await db.collection('trialUsers').doc(DB.deviceId).set({
+          deviceId: DB.deviceId,
+          type: 'trial',
+          appVersion: '2026.09',
+          firstSeen: firebase.firestore.FieldValue.serverTimestamp(),
+          lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+          converted: false,
+          active: true
+        }, { merge: true });
+        console.log('✅ trialUsers created:', DB.deviceId);
+      }
+    } catch(e) { console.log('trialUsers error', e); }
+    
     
     const dShow = document.getElementById('deviceIdShow');
     if (dShow) dShow.textContent = DB.deviceId;
@@ -11756,7 +11803,7 @@ async function initApp() {
       var attempts=0;
       function trySync(){
         attempts++;
-        if (window._db && window._fbReady) {
+        if (DB && DB.deviceId && window.firebase && firebase.firestore) {
           try {
             if (typeof syncAlertsToFirestore === 'function') {
               syncAlertsToFirestore();
