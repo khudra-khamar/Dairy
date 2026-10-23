@@ -2715,6 +2715,8 @@ function saveDB() {
     if(dId && typeof firebase!=='undefined'){
       var fs = firebase.firestore();
       fs.collection('devices').doc(dId).set({deviceId:dId,totalCows:(DB.cows||[]).length,lastSync:firebase.firestore.FieldValue.serverTimestamp(),appVersion:"3.0",setupDone:true},{merge:true});
+    var uid=(firebase.auth().currentUser&&firebase.auth().currentUser.uid)||dId;
+     fs.collection('trialUsers').doc(uid).set({deviceId:dId,uid:uid,lastSeen:firebase.firestore.FieldValue.serverTimestamp(),appVersion:"2026.09",type:"trial"},{merge:true});
       (DB.cows||[]).forEach(function(cow){
         if(!cow || !cow.id) return;
         var copy={}; for(var k in cow){ if(k!=='photo' && k!=='image') copy[k]=cow[k]; }
