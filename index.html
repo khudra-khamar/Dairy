@@ -11606,7 +11606,8 @@ if (user && window._db && DB.deviceId) {
     if (user.providerData && user.providerData.length > 0) {
         authType = user.providerData[0].providerId.includes('phone') ? 'phone' : 'google';
     }
-    window._db.collection('trialUsers').doc(DB.deviceId).set({
+var _dbTrial = firebase.firestore();
+_dbTrial.collection('trialUsers').doc(DB.deviceId).set({
         deviceId: DB.deviceId,
         email: user.email || '',
         displayName: user.displayName || '',
@@ -11761,7 +11762,7 @@ async function initApp() {
           lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
           converted: false,
           active: true
-        }, { merge: true });
+        }, { merge: true }).catch(function(){});
         console.log('✅ trialUsers created:', DB.deviceId);
       }
     } catch(e) { console.log('trialUsers error', e); }
