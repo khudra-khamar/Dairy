@@ -2790,7 +2790,13 @@ function fallbackCopy(text) {
 
 
 function formatRelativeTime(ts) {
-  if (!ts) return '—';
+  if (!ts) return '--';
+  // Firestore Timestamp Object হলে
+  if (ts && typeof ts.toMillis === 'function') ts = ts.toMillis();
+  else if (ts && ts.seconds) ts = ts.seconds * 1000;
+  // Second (10 digit) হলে Millisecond এ Convert
+  else if (ts < 10000000000) ts = ts * 1000;
+  
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'এইমাত্র';
