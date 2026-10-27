@@ -112,7 +112,9 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 .info-item { background:#fff; padding:12px; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
 .info-item .lbl { font-size:11px; color:#888; margin-bottom:3px; }
 .info-item .val { font-size:14px; font-weight:700; color:#1B5E20; }
-.action-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.action-btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.action-btns button { padding:8px 10px !important; font-size:13px !important; border-radius:8px; }
+.btn-yellow { background:#FFC107; color:#000; }
 .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 22px; border-radius:25px; font-size:13px; z-index:9999; opacity:0; transition:0.3s; pointer-events:none; max-width:90%; text-align:center; }
 .toast.show { opacity:1; }
 /* SERVICE CARD */
@@ -5766,13 +5768,14 @@ function openCowProfile(id) {
     ${renderCowMilkSection(c.id)}
     ${insemHtml}
     ${c.note ? `<div class="summary-box"><h3>${t('note')}</h3><p style="font-size:13px;color:#555;">${c.note}</p></div>` : ''}
-    <div class="action-btns">
+        <div class="action-btns">
       <button class="btn-primary" onclick="editCow('${c.id}')">${t('edit')}</button>
       <button class="btn-secondary" onclick="openMedicine('${c.id}')">${t('medicine_btn')}</button>
-    </div>
-    ${(c.type === 'cow' || c.type === 'buffalo') ? `<button class="btn-blue" onclick="markCalvingDone('${c.id}')" style="margin-top:8px;">🍼 Calved</button>` : ''}
-    <button class="btn-orange" onclick="openSellForm('${c.id}')" style="margin-top:8px;">💰 Sell Animal</button>
-    <button class="btn-danger" onclick="deleteCow('${c.id}')">${t('delete')}</button>`;
+      ${(c.type === 'cow' || c.type === 'buffalo') ? `<button class="btn-blue" onclick="markCalvingDone('${c.id}')">🍼 Calved</button>` : ''}
+      <button class="btn-yellow" onclick="markDryDone('${c.id}')">🍼 Dry Done</button>
+      <button class="btn-orange" onclick="openSellForm('${c.id}')">💰 Sell</button>
+      <button class="btn-danger" onclick="deleteCow('${c.id}')">${t('delete')}</button>
+    </div>`;
   showPage('cow-profile');
 }
 function editCow(id) {
@@ -5932,42 +5935,63 @@ function cancelCalfEntry() {
   openCowProfile(cow.id);
 }
 
-function markCalvingDone(id) {
-  const c = DB.cows.find(x => x.id === id);
-  if (!c) return;
-  if (!confirm('🍼 Cow has calved? New lactation cycle will start.')) return;
-    // Lactation increment
-  const currentNum = parseInt((c.lactation || '0th').replace(/\D/g, '')) || 0;
-  const nextNum = currentNum + 1;
-  const suffix = nextNum === 1 ? 'st' : nextNum === 2 ? 'nd' : nextNum === 3 ? 'rd' : 'th';
-  c.lactation = nextNum + suffix;
-  
-  // Save calving history
-  if (!c.calvingHistory) c.calvingHistory = [];
-  c.calvingHistory.push({
-    date: today(),
-    lactation: c.lactation,
-    bullNo: c.bullNo || '',
-    semen: c.semen || '',
-    aiDate: c.insemDate || ''
-  });
-  
-  c.lastCalving = today();
-  c.inseminated = 'no';
-  c.pdDone = false;
-  c.pregMarked = false;
-  c.pregDate = '';
-  c.dryDone = false;
-  c.heatDone = false;
-  c.calving = null;
-  if (!c.calves) c.calves = [];
-  
-  saveDB();
-  toast('✅ New lactation cycle — ' + c.lactation);
-  
-  // Open Calf Entry
-  openCalfEntry(id);
+function showDatePicker(title, defaultDate, callback) {
+  var old = document.getElementById('datePickerModal');
+  if(old) old.remove();
+  var modal = document.createElement('div');
+  modal.id='datePickerModal';
+  modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = '<div style="background:#fff;padding:20px;border-radius:12px;width:90%;max-width:320px;"><h3 style="margin:0 0 12px 0;font-size:16px;">' + title + '</h3><input type="date" id="datePickerInput" value="' + defaultDate + '" style="width:100%;padding:12px;font-size:16px;border:1px solid #2E7D32;border-radius:8px;"><div style="display:flex;gap:10px;margin-top:16px;"><button onclick="document.getElementById(\'datePickerModal\').remove()" style="flex:1;padding:10px;background:#eee;border:none;border-radius:8px;">Cancel</button><button id="datePickerOk" style="flex:1;padding:10px;background:#2E7D32;color:#fff;border:none;border-radius:8px;">OK</button></div></div>';
+  document.body.appendChild(modal);
+  document.getElementById('datePickerOk').onclick = function() {
+    var val = document.getElementById('datePickerInput').value;
+    modal.remove();
+    if(val) callback(val);
+  };
+  setTimeout(function(){ var inp=document.getElementById('datePickerInput'); if(inp && inp.showPicker) inp.showPicker(); },100);
 }
+
+function markCalvingDone(id) {
+  var c = DB.cows.find(function(x){return x.id === id});
+  if (!c) return;
+  var todayStr = today();
+  showDatePicker('Calving Date? - dd/mm/yy', todayStr, function(inputDate) {
+  if (!inputDate) return;
+  if (!confirm('Cow has calved? New lactation will start. Date: ' + inputDate)) return;
+  var currentNum = parseInt((c.lactation || '0th').replace(/\D/g, '')) || 0;
+  var nextNum = currentNum + 1;
+  var suffix = nextNum === 1 ? 'st' : nextNum === 2 ? 'nd' : nextNum === 3 ? 'rd' : 'th';
+  c.lactation = nextNum + suffix;
+  if (!c.calvingHistory) c.calvingHistory = [];
+  c.calvingHistory.push({ date: inputDate, lactation: c.lactation, bullNo: c.bullNo || "", semen: c.semen || "", aiDate: c.insemDate || "" });
+  c.lastCalving = inputDate;
+  c.inseminated = 'no'; c.pdDone = false; c.pregMarked = false; c.pregDate = ""; c.dryDone = false; c.heatDone = false; c.calving = null;
+  if (!c.calves) c.calves = [];
+  saveDB();
+  var d = new Date(inputDate);
+  var disp = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2);
+  toast('New lactation - ' + c.lactation + ' (' + disp + ')');
+  openCalfEntry(id);
+  });
+}
+
+function markDryDone(id) {
+  var c = DB.cows.find(function(x){return x.id === id});
+  if (!c) return;
+  var todayStr = today();
+  showDatePicker('Dry Done Date? - dd/mm/yy', todayStr, function(inputDate) {
+  if (!inputDate) return;
+  c.dryDate = inputDate;
+  c.dryDone = true;
+  saveDB();
+  var d = new Date(inputDate);
+  var disp = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2);
+  toast('Dry Done: ' + disp + ' - ' + c.name);
+  openCowProfile(id);
+  });
+}
+
+
 function openMedicineFromProfile() {
   const cid = document.getElementById('cowEditId')?.value;
   if (cid) openMedicine(cid);
