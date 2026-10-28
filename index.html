@@ -5638,54 +5638,100 @@ function renderCowMilkSection(cowId) {
 }
 
 function addMilkForCow(cowId) {
-  const cow = DB.cows.find(c => c.id === cowId);
+  const cow = DB.cows.find(function(c){ return c.id === cowId; });
   if (!cow) return;
-  showDatePicker('Date', today(), function(newDate) {
-    if (!newDate) { toast('❌ Invalid date'); return; }
-    window._addMilkDate = newDate;
-
-    const timeHtml = `
-      <div style="text-align:left;">
-        <div class="form-group"><label>Time</label>
-          <select id="amTime">
-            <option value="morning">🌅 Morning</option>
-            <option value="evening">🌆 Evening</option>
-            <option value="both">🌅🌆 Morning & Evening</option>
-          </select>
-        </div>
-      </div>`;
-
-    document.getElementById('modalTitle').textContent = 'Time';
-    document.getElementById('modalMsg').innerHTML = timeHtml;
-    document.getElementById('modalInput').style.display = 'none';
-    document.getElementById('modalCancel').style.display = '';
-    document.getElementById('modalOk').textContent = 'Next';
-    modalInputMode = false;
-    modalCallback = function() {
-      const selectedTime = document.getElementById('amTime').value;
-      showPrompt('Quantity (L)', '', function(newQty) {
-        const qty = Number(newQty);
-        if (!qty || qty <= 0) { toast('❌ Invalid'); return; }
-        showPrompt('Price (Rs/L)', DB.settings.price || 40, function(newPrice) {
-          const price = Number(newPrice);
-          if (!price || price <= 0) { toast('❌ Invalid'); return; }
-          DB.milk.push({
-            id: uid(),
-            cowId: cowId,
-            date: window._addMilkDate || today(),
-            time: selectedTime,
-            qty: qty,
-            price: price
-          });
-          saveDB();
-          toast('✅ Milk entry added');
-          openCowProfile(cowId);
-        });
-      });
-    };
-    document.getElementById('modalOverlay').classList.add('show');
-  });
+  var old = document.getElementById('addMilkModal');
+  if(old) old.remove();
+  var modal = document.createElement('div');
+  modal.id = 'addMilkModal';
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.width = '100%';
+  modal.style.height = '100%';
+  modal.style.background = 'rgba(0,0,0,0.5)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '10000';
+  var box = document.createElement('div');
+  box.style.background = '#fff';
+  box.style.width = '95%';
+  box.style.maxWidth = '450px';
+  box.style.padding = '20px';
+  box.style.borderRadius = '15px';
+  var h3 = document.createElement('h3');
+  h3.textContent = 'Add Milk - ' + cow.name;
+  h3.style.margin = '0 0 15px 0';
+  box.appendChild(h3);
+  var dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.id = 'amDate';
+  dateInput.value = today();
+  dateInput.style.width = '100%';
+  dateInput.style.padding = '14px';
+  dateInput.style.marginBottom = '10px';
+  box.appendChild(dateInput);
+  var timeSelect = document.createElement('select');
+  timeSelect.id = 'amTime';
+  timeSelect.style.width = '100%';
+  timeSelect.style.padding = '14px';
+  timeSelect.style.marginBottom = '10px';
+  var o1 = document.createElement('option'); o1.value='morning'; o1.textContent='Morning'; timeSelect.appendChild(o1);
+  var o2 = document.createElement('option'); o2.value='evening'; o2.textContent='Evening'; timeSelect.appendChild(o2);
+  var o3 = document.createElement('option'); o3.value='both'; o3.textContent='Morning & Evening'; timeSelect.appendChild(o3);
+  box.appendChild(timeSelect);
+  var qtyInput = document.createElement('input');
+  qtyInput.type = 'number';
+  qtyInput.id = 'amQty';
+  qtyInput.placeholder = 'Quantity L';
+  qtyInput.style.width = '100%';
+  qtyInput.style.padding = '14px';
+  qtyInput.style.marginBottom = '10px';
+  box.appendChild(qtyInput);
+  var btnRow = document.createElement('div');
+  btnRow.style.display = 'flex';
+  btnRow.style.gap = '10px';
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.flex = '1';
+  cancelBtn.style.padding = '14px';
+  cancelBtn.onclick = function(){ modal.remove(); };
+  var saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.style.flex = '1';
+  saveBtn.style.padding = '14px';
+  saveBtn.style.background = '#2E7D32';
+  saveBtn.style.color = '#fff';
+  saveBtn.onclick = function(){ saveAddMilk(cowId); };
+  btnRow.appendChild(cancelBtn);
+  btnRow.appendChild(saveBtn);
+  box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
 }
+
+function saveAddMilk(cowId) {
+  var dateEl = document.getElementById('amDate');
+  var timeEl = document.getElementById('amTime');
+  var qtyEl = document.getElementById('amQty');
+  if(!dateEl || !timeEl || !qtyEl) return;
+  var date = dateEl.value;
+  var time = timeEl.value;
+  var qty = qtyEl.value;
+  if (!date) { toast('Invalid date'); return; }
+  var q = Number(qty);
+  if (!q || q <= 0) { toast('Invalid quantity'); return; }
+  if (!DB.milk) DB.milk = [];
+  DB.milk.push({id: 'milk_' + Date.now(), cowId: cowId, date: date, time: time, quantity: q, qty: q});
+  saveDB();
+  var m = document.getElementById('addMilkModal');
+  if(m) m.remove();
+  toast('Milk added - ' + q + ' L');
+  openCowProfile(cowId);
+}
+
+   
 
 function openCowProfile(id) {
   const c = DB.cows.find(x => x.id === id);
@@ -5768,16 +5814,78 @@ function openCowProfile(id) {
     ${renderCowMilkSection(c.id)}
     ${insemHtml}
     ${c.note ? `<div class="summary-box"><h3>${t('note')}</h3><p style="font-size:13px;color:#555;">${c.note}</p></div>` : ''}
-        <div class="action-btns">
-      <button class="btn-primary" onclick="editCow('${c.id}')">${t('edit')}</button>
-      <button class="btn-secondary" onclick="openMedicine('${c.id}')">${t('medicine_btn')}</button>
-      ${(c.type === 'cow' || c.type === 'buffalo') ? `<button class="btn-blue" onclick="markCalvingDone('${c.id}')">🍼 Calved</button>` : ''}
-      <button class="btn-yellow" onclick="markDryDone('${c.id}')">🍼 Dry Done</button>
-      <button class="btn-orange" onclick="openSellForm('${c.id}')">💰 Sell</button>
-      <button class="btn-danger" onclick="deleteCow('${c.id}')">${t('delete')}</button>
-    </div>`;
+       <div class="action-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+  <button class="btn-primary" style="padding:10px;font-size:13px;" onclick="editCow('${c.id}')">✏️ Edit</button>
+  <button class="btn-secondary" style="padding:10px;font-size:13px;" onclick="openMedicine('${c.id}')">💊 Medicine</button>
+  ${(c.type === 'cow' || c.type === 'buffalo') ? `<button class="btn-blue" style="padding:10px;font-size:13px;" onclick="markCalvingDone('${c.id}')">🍼 Calved</button>` : ``}
+  <button class="btn-yellow" style="padding:10px;font-size:13px;background:#FFC107;color:#000;border:none;border-radius:8px;" onclick="markDryDone('${c.id}')">🍼 Dry Done</button>
+  <button class="btn-purple" style="padding:10px;font-size:13px;background:#9C27B0;color:#fff;border:none;border-radius:8px;" onclick="openCowHistory('${c.id}')">📜 Cow History</button>
+  <button class="btn-orange" style="padding:10px;font-size:13px;" onclick="openSellForm('${c.id}')">💰 Sell</button>
+  <button class="btn-danger" style="padding:10px;font-size:13px;" onclick="deleteCow('${c.id}')">🗑️ Delete</button>
+  </div>`;
   showPage('cow-profile');
 }
+
+function renderAIHistorySection(c) {
+  var html = '<div class="summary-box" style="border-left:4px solid #2196F3;margin-top:12px;"><h3>🧬 AI / Conception History - ' + c.name + '</h3>';
+  if (!c.calvingHistory || c.calvingHistory.length === 0) {
+    var curAI = c.insemDate ? c.insemDate + ' - Bull ' + (c.bullNo||'') : 'Not inseminated';
+    html += '<p style="font-size:12px;color:#555;">No calving history yet.<br>Current AI: ' + curAI + '</p>';
+  } else {
+    html += '<div style="max-height:200px;overflow-y:auto;"><table style="width:100%;font-size:11px;border-collapse:collapse;"><tr style="background:#E3F2FD;"><th style="padding:6px;border:1px solid #ddd;">Lactation</th><th style="padding:6px;border:1px solid #ddd;">AI Date</th><th style="padding:6px;border:1px solid #ddd;">Conceived After</th><th style="padding:6px;border:1px solid #ddd;">Bull</th></tr>';
+    for (var i=0; i<c.calvingHistory.length; i++) {
+      var h = c.calvingHistory[i];
+      var aiCount = h.aiAttempts || 1;
+      var aiDateRaw = h.aiDate || h.insemDate || '';
+      var aiDateDisp = '';
+      if (!aiDateRaw || aiDateRaw === h.date) {
+        try{ var cd=new Date(h.date); cd.setDate(cd.getDate()-283); var dd=String(cd.getDate()).padStart(2,'0'); var mm=String(cd.getMonth()+1).padStart(2,'0'); var yy=String(cd.getFullYear()).slice(-2); aiDateDisp = dd+'/'+mm+'/'+yy+' (Calc)'; }catch(e){ aiDateDisp = h.date; }
+      } else {
+        try{ var dt=new Date(aiDateRaw); if(!isNaN(dt)){ aiDateDisp = String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+String(dt.getFullYear()).slice(-2); } else { aiDateDisp = aiDateRaw; } }catch(e){ aiDateDisp = aiDateRaw; }
+      }
+      html += '<tr><td style="padding:6px;border:1px solid #ddd;">' + (h.lactation||(i+1)+'th') + '</td><td style="padding:6px;border:1px solid #ddd;">' + aiDateDisp + '</td><td style="padding:6px;border:1px solid #ddd;">' + aiCount + ' বার AI</td><td style="padding:6px;border:1px solid #ddd;">' + (h.bullNo||'-') + ' / ' + (h.semen||'') + '</td></tr>';
+    }
+    if (c.inseminated === 'yes' && c.insemDate) {
+      html += '<tr style="background:#FFF9C4;"><td style="padding:6px;border:1px solid #ddd;">Current</td><td style="padding:6px;border:1px solid #ddd;">' + c.insemDate + '</td><td style="padding:6px;border:1px solid #ddd;">Trying...</td><td style="padding:6px;border:1px solid #ddd;">' + (c.bullNo||'') + '</td></tr>';
+    }
+    html += '</table></div>';
+    var totalAI = c.calvingHistory.reduce(function(s,h){return s+(h.aiAttempts||1)},0);
+    html += '<div style="margin-top:8px;font-size:11px;color:#666;">Total: ' + c.calvingHistory.length + ' বার বাচ্চা দিয়েছে | গড় ' + (totalAI/c.calvingHistory.length).toFixed(1) + ' বার AI per conception</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function openCowHistory(id) {
+  var c = DB.cows.find(function(x){return x.id===id});
+  if(!c) return;
+  var existing = document.getElementById('cow-history');
+  if(existing) existing.remove();
+  var allMilk = DB.milk ? DB.milk.filter(function(m){return m.cowId===c.id}) : [];
+var lifetime = 0; for(var i=0;i<allMilk.length;i++){ var mv = allMilk[i].quantity || allMilk[i].qty || allMilk[i].liters || allMilk[i].milk || allMilk[i].total || 0; if(!mv) mv = (parseFloat(allMilk[i].morning||0)+parseFloat(allMilk[i].evening||0)); lifetime+=parseFloat(mv)||0; }
+  
+  var page = document.createElement('div');
+  page.id='cow-history';
+  page.className='page';
+  page.style.display='block';
+  page.style.position='fixed';
+  page.style.top='0';
+  page.style.left='0';
+  page.style.width='100%';
+  page.style.height='100%';
+  page.style.background='#fff';
+  page.style.zIndex='9999';
+  page.style.overflowY='auto';
+  page.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:12px;background:#2E7D32;color:#fff;position:sticky;top:0;z-index:10;"><button onclick="document.getElementById(\'cow-history\').remove(); showPage(\'cow-profile\');" style="background:none;border:none;color:#fff;font-size:22px;">←</button><h2 style="margin:0;font-size:16px;">📜 Cow History - '+c.name+'</h2></div><div id="cowHistoryBody" style="padding:12px;">'
+    + '<div style="background:#E8F5E9;padding:10px;border-radius:8px;margin-bottom:12px;"><h3 style="margin:0;">🐄 '+c.name+' ('+ (c.tag||'') +') - '+(c.lactation||'')+'</h3><p style="margin:4px 0 0 0;font-size:12px;color:#555;">Tag: '+(c.tag||'-')+' | Breed: '+(c.breed||'-')+' | Last Calving: '+(c.lastCalving||'-')+'</p><p style="margin:4px 0 0 0;font-size:12px;color:#2E7D32;font-weight:bold;">Lifetime Milk: '+lifetime.toFixed(1)+' L from '+allMilk.length+' entries</p></div>'
+    + (typeof renderCalvingHistorySection==='function' ? renderCalvingHistorySection(c) : '')
+    + (typeof renderOldMilkHistorySection==='function' ? renderOldMilkHistorySection(c) : '')
+    + renderAIHistorySection(c)
+    + '</div>';
+  document.body.appendChild(page);
+  window.scrollTo(0,0);
+}
+
 function editCow(id) {
   const c = DB.cows.find(x => x.id === id);
   if (!c) return;
@@ -5939,58 +6047,194 @@ function showDatePicker(title, defaultDate, callback) {
   var old = document.getElementById('datePickerModal');
   if(old) old.remove();
   var modal = document.createElement('div');
-  modal.id='datePickerModal';
-  modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-  modal.innerHTML = '<div style="background:#fff;padding:20px;border-radius:12px;width:90%;max-width:320px;"><h3 style="margin:0 0 12px 0;font-size:16px;">' + title + '</h3><input type="date" id="datePickerInput" value="' + defaultDate + '" style="width:100%;padding:12px;font-size:16px;border:1px solid #2E7D32;border-radius:8px;"><div style="display:flex;gap:10px;margin-top:16px;"><button onclick="document.getElementById(\'datePickerModal\').remove()" style="flex:1;padding:10px;background:#eee;border:none;border-radius:8px;">Cancel</button><button id="datePickerOk" style="flex:1;padding:10px;background:#2E7D32;color:#fff;border:none;border-radius:8px;">OK</button></div></div>';
+  modal.id = 'datePickerModal';
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.width = '100%';
+  modal.style.height = '100%';
+  modal.style.background = 'rgba(0,0,0,0.5)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '10000';
+  var box = document.createElement('div');
+  box.style.background = '#fff';
+  box.style.width = '95%';
+  box.style.maxWidth = '450px';
+  box.style.padding = '20px';
+  box.style.borderRadius = '15px';
+  var h3 = document.createElement('h3');
+  h3.textContent = title;
+  h3.style.margin = '0 0 15px 0';
+  box.appendChild(h3);
+  var dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.id = 'datePickerInput';
+  dateInput.value = defaultDate || today();
+  dateInput.style.width = '100%';
+  dateInput.style.padding = '14px';
+  dateInput.style.fontSize = '16px';
+  dateInput.style.border = '2px solid #2E7D32';
+  dateInput.style.borderRadius = '10px';
+  dateInput.style.marginBottom = '15px';
+  box.appendChild(dateInput);
+  var btnRow = document.createElement('div');
+  btnRow.style.display = 'flex';
+  btnRow.style.gap = '10px';
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.flex = '1';
+  cancelBtn.style.padding = '14px';
+  cancelBtn.style.background = '#ddd';
+  cancelBtn.style.border = 'none';
+  cancelBtn.style.borderRadius = '10px';
+  cancelBtn.onclick = function(){ modal.remove(); };
+  var okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.style.flex = '1';
+  okBtn.style.padding = '14px';
+  okBtn.style.background = '#2E7D32';
+  okBtn.style.color = '#fff';
+  okBtn.style.border = 'none';
+  okBtn.style.borderRadius = '10px';
+  okBtn.onclick = function(){ var v = dateInput.value; modal.remove(); if(v && callback) callback(v); };
+  btnRow.appendChild(cancelBtn);
+  btnRow.appendChild(okBtn);
+  box.appendChild(btnRow);
+  modal.appendChild(box);
   document.body.appendChild(modal);
-  document.getElementById('datePickerOk').onclick = function() {
-    var val = document.getElementById('datePickerInput').value;
-    modal.remove();
-    if(val) callback(val);
-  };
-  setTimeout(function(){ var inp=document.getElementById('datePickerInput'); if(inp && inp.showPicker) inp.showPicker(); },100);
 }
 
 function markCalvingDone(id) {
-  var c = DB.cows.find(function(x){return x.id === id});
-  if (!c) return;
-  var todayStr = today();
-  showDatePicker('Calving Date? - dd/mm/yy', todayStr, function(inputDate) {
-  if (!inputDate) return;
-  if (!confirm('Cow has calved? New lactation will start. Date: ' + inputDate)) return;
-  var currentNum = parseInt((c.lactation || '0th').replace(/\D/g, '')) || 0;
-  var nextNum = currentNum + 1;
-  var suffix = nextNum === 1 ? 'st' : nextNum === 2 ? 'nd' : nextNum === 3 ? 'rd' : 'th';
-  c.lactation = nextNum + suffix;
-  if (!c.calvingHistory) c.calvingHistory = [];
-  c.calvingHistory.push({ date: inputDate, lactation: c.lactation, bullNo: c.bullNo || "", semen: c.semen || "", aiDate: c.insemDate || "" });
-  c.lastCalving = inputDate;
-  c.inseminated = 'no'; c.pdDone = false; c.pregMarked = false; c.pregDate = ""; c.dryDone = false; c.heatDone = false; c.calving = null;
-  if (!c.calves) c.calves = [];
-  saveDB();
-  var d = new Date(inputDate);
-  var disp = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2);
-  toast('New lactation - ' + c.lactation + ' (' + disp + ')');
-  openCalfEntry(id);
+  const c = DB.cows.find(function(x){ return x.id === id; });
+  if(!c) return;
+  showDatePicker('Calving Date', today(), function(inputDate){
+    if(!inputDate) return;
+    var suffix = '';
+    var nextNum = 1;
+    if(c.calvingHistory && c.calvingHistory.length>0){
+      var lastLac = c.calvingHistory[c.calvingHistory.length-1].lactation || '';
+      var num = parseInt(lastLac) || c.calvingHistory.length;
+      nextNum = num + 1;
+    } else if(c.lactation){
+      var num = parseInt(c.lactation) || 1;
+      nextNum = num + 1;
+    }
+    suffix = nextNum === 1 ? 'st' : nextNum === 2 ? 'nd' : nextNum === 3 ? 'rd' : 'th';
+    c.lactation = nextNum + suffix;
+    if (!c.calvingHistory) c.calvingHistory = [];
+    c.calvingHistory.push({date: inputDate, aiDate: (c.insemDate || ''), lactation: c.lactation, bullNo: c.bullNo || '', semen: c.semen || '', aiAttempts: c.aiAttempts || 1});
+    c.lastCalving = inputDate;
+    c.inseminated = 'no';
+    c.pdDone = false;
+    c.pregMarked = false;
+    c.pregDate = '';
+    c.dryDone = false;
+    c.heatDone = false;
+    c.calving = null;
+    if (!c.calves) c.calves = [];
+    saveDB();
+    var d = new Date(inputDate);
+    var disp = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2);
+    toast('New lactation - ' + c.lactation + ' (' + disp + ')');
+    openCalfEntry(id);
   });
 }
 
 function markDryDone(id) {
-  var c = DB.cows.find(function(x){return x.id === id});
-  if (!c) return;
-  var todayStr = today();
-  showDatePicker('Dry Done Date? - dd/mm/yy', todayStr, function(inputDate) {
-  if (!inputDate) return;
-  c.dryDate = inputDate;
-  c.dryDone = true;
-  saveDB();
-  var d = new Date(inputDate);
-  var disp = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2);
-  toast('Dry Done: ' + disp + ' - ' + c.name);
-  openCowProfile(id);
+  const c = DB.cows.find(function(x){ return x.id === id; });
+  if(!c) return;
+  showDatePicker('Dry Date', today(), function(inputDate){
+    if(!inputDate) return;
+    c.dryDate = inputDate;
+    c.dryDone = true;
+    c.status = 'dry';
+    saveDB();
+    var d = new Date(inputDate);
+    var disp = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2);
+    toast('Dry period started - ' + disp);
+    openCowProfile(id);
   });
 }
 
+function renderCalvingHistorySection(c) {
+  if (!c.calvingHistory || c.calvingHistory.length === 0) return '';
+  var html = '<div class="summary-box" style="margin-top:12px;border-left:4px solid #FF9800;"><h3 style="margin:0 0 10px 0;">📜 Calving History - ' + c.name + '</h3>';
+  html += '<div style="max-height:200px;overflow-y:auto;"><table style="width:100%;font-size:12px;border-collapse:collapse;"><tr style="background:#FFF3E0;"><th style="padding:6px;border:1px solid #ddd;">Date</th><th style="padding:6px;border:1px solid #ddd;">Lactation</th><th style="padding:6px;border:1px solid #ddd;">Bull No</th><th style="padding:6px;border:1px solid #ddd;">Semen</th></tr>';
+  for (var i = c.calvingHistory.length - 1; i >=0; i--) {
+    var h = c.calvingHistory[i];
+    var d = h.date || '';
+    try { var dt = new Date(d); var disp = String(dt.getDate()).padStart(2,'0') + '/' + String(dt.getMonth()+1).padStart(2,'0') + '/' + String(dt.getFullYear()).slice(-2); if(disp.indexOf('NaN')===-1) d=disp; } catch(e){}
+    html += '<tr><td style="padding:6px;border:1px solid #ddd;">' + d + '</td><td style="padding:6px;border:1px solid #ddd;">' + (h.lactation || '-') + '</td><td style="padding:6px;border:1px solid #ddd;">' + (h.bullNo || '-') + '</td><td style="padding:6px;border:1px solid #ddd;">' + (h.semen || '-') + '</td></tr>';
+  }
+  html += '</table></div></div>';
+  return html;
+}
+
+function renderOldMilkHistorySection(c) {
+ if (!DB.milk || DB.milk.length === 0) return "";
+ var cowMilk = DB.milk.filter(function(m){ return m.cowId == c.id; });
+ var history = c.calvingHistory || [];
+ // Sort ascending Old -> New for 1,2,3..10 separate
+ history.sort(function(a,b){ return new Date(a.date) - new Date(b.date); });
+ function getLit(m){ var v = m.quantity || m.qty || m.liters || m.milk || m.total || 0; return parseFloat(v)||0; }
+ cowMilk.sort(function(a,b){ return new Date(a.date) - new Date(b.date); });
+
+ if (history.length <= 1) {
+   var curLac = c.lactation || (history.length>0 ? history[0].lactation : 1);
+   var nextNum = parseInt(curLac) ? (parseInt(curLac)+1) : 2;
+   return '<div class="summary-box" style="border-left:4px solid #4caf50;padding:10px;">No old milk history yet - Current is '+curLac+'th lactation - Old will show after next calving ('+nextNum+'th)</div>';
+ }
+
+ var html = '<div class="summary-box" style="border-left:4px solid #4caf50;padding:10px;"><div style="font-weight:bold;color:#2e7d32;margin-bottom:8px;">🥛 Old Milk History - '+c.name+'</div><div style="max-height:300px;overflow-y:auto;"><table style="width:100%;border-collapse:collapse;"><tr style="background:#e8f5e9;"><th style="padding:6px;border:1px solid #ccc;">Lactation</th><th style="padding:6px;border:1px solid #ccc;">Period</th><th style="padding:6px;border:1px solid #ccc;">Total Milk</th><th style="padding:6px;border:1px solid #ccc;">Days</th></tr>';
+ var grandOld = 0;
+
+ // 1. BEFORE FIRST SAVED CALVING - 1st to (first-1)th - Never Lost! For Kalu 33 L
+ var firstDate = new Date(history[0].date);
+ var beforeFirst = [];
+ for (var j=0;j<cowMilk.length;j++){ if (new Date(cowMilk[j].date) < firstDate) beforeFirst.push(cowMilk[j]); }
+ if (beforeFirst.length>0){
+   var tot=0; for(var k=0;k<beforeFirst.length;k++) tot+=getLit(beforeFirst[k]);
+   grandOld+=tot;
+   var firstLacNum = parseInt(history[0].lactation) || 6;
+   var label = firstLacNum>1 ? 'Before '+firstLacNum+'th (1st-'+(firstLacNum-1)+'th)' : 'Before 1st';
+   html += '<tr><td style="padding:6px;border:1px solid #ccc;">'+label+'</td><td style="padding:6px;border:1px solid #ccc;">Older</td><td style="padding:6px;border:1px solid #ccc;color:#2e7d32;font-weight:bold;">'+tot.toFixed(1)+' L</td><td style="padding:6px;border:1px solid #ccc;">'+beforeFirst.length+' entries</td></tr>';
+ }
+
+ // 2. EACH LACTATION SEPARATE 1,2,3..10 - Never Mix!
+ for (var i=0; i<history.length-1; i++) {
+   var start = new Date(history[i].date);
+   var end = new Date(history[i+1].date);
+   var total = 0; var cnt=0;
+   for (var j=0;j<cowMilk.length;j++){
+     var md = new Date(cowMilk[j].date);
+     if (md >= start && md < end) { total+=getLit(cowMilk[j]); cnt++; }
+   }
+   if (total>0 || cnt>0){
+     grandOld+=total;
+     var sDisp = String(start.getDate()).padStart(2,'0')+'/'+String(start.getMonth()+1).padStart(2,'0')+'/'+String(start.getFullYear()).slice(-2);
+     var eDisp = String(end.getDate()).padStart(2,'0')+'/'+String(end.getMonth()+1).padStart(2,'0')+'/'+String(end.getFullYear()).slice(-2);
+    html += '<tr><td style="padding:6px;border:1px solid #ccc;">'+history[i].lactation+'</td><td style="padding:6px;border:1px solid #ccc;">'+sDisp+' - '+eDisp+'</td><td style="padding:6px;border:1px solid #ccc;color:#2e7d32;font-weight:bold;">'+total.toFixed(1)+' L</td><td style="padding:6px;border:1px solid #ccc;">'+cnt+' entries</td></tr>';
+   }
+ }
+ html += '<tr style="background:#f1f8e9;font-weight:bold;"><td colspan="2" style="padding:6px;border:1px solid #ccc;">Total Old (Lifetime - Current)</td><td style="padding:6px;border:1px solid #ccc;color:#2e7d32;">'+grandOld.toFixed(1)+' L</td><td style="padding:6px;border:1px solid #ccc;">'+(cowMilk.length - (DB.milk.filter(function(m){return m.cowId==c.id && new Date(m.date)>=new Date(history[history.length-1].date);}).length))+' entries</td></tr>';
+ html += '</table></div></div>';
+ return html;
+}
+
+function renderCurrentMilkSection(c) {
+  if (!DB.milk) return '';
+  var cowMilk = DB.milk.filter(function(m){ return m.cowId === c.id; });
+  if (cowMilk.length === 0) return '';
+  function getLit(m){ var v = m.quantity || m.qty || m.liters || m.milk || m.total || 0; return parseFloat(v)||0; }
+  var total = 0; for(var j=0;j<cowMilk.length;j++) total+=getLit(cowMilk[j]);
+  var d = new Date(c.lastCalving || (c.calvingHistory && c.calvingHistory.length>0 ? c.calvingHistory[c.calvingHistory.length-1].date : new Date()));
+  var dDisp = isNaN(d) ? '-' : String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getFullYear()).slice(-2);
+  var html = '<div class="summary-box" style="border-left:4px solid #2196F3;margin-top:12px;"><h3>🥛 Current Milk - ' + c.name + ' (4th Running)</h3>';
+  html += '<p style="font-size:13px;">Period: '+dDisp+' - Running | Total: <b style="color:#2E7D32;">'+total.toFixed(1)+' L</b> from '+cowMilk.length+' entries (Information Milk Only)</p></div>';
+  return html;
+}
 
 function openMedicineFromProfile() {
   const cid = document.getElementById('cowEditId')?.value;
@@ -6020,10 +6264,14 @@ function showMilkForm() {
   document.getElementById('milkPrice').value = DB.settings.price || 40;
   document.getElementById('milkForm').style.display = 'block';
   document.getElementById('totalMilkForm').style.display = 'none';
+  window.currentMilkTab = 'info';
+  renderMilk();
 }
 
 function hideMilkForm() {
   document.getElementById('milkForm').style.display = 'none';
+  window.currentMilkTab = 'both';
+  renderMilk();
 }
 
 function saveMilk() {
@@ -6051,10 +6299,14 @@ function showTotalMilkForm() {
   document.getElementById('tmPrice').value = DB.settings.price || 40;
   document.getElementById('totalMilkForm').style.display = 'block';
   document.getElementById('milkForm').style.display = 'none';
+  window.currentMilkTab = 'total';
+  renderMilk();
 }
 
 function hideTotalMilkForm() {
   document.getElementById('totalMilkForm').style.display = 'none';
+  window.currentMilkTab = 'both';
+  renderMilk();
 }
 
 function saveTotalMilk() {
@@ -6155,31 +6407,51 @@ function deleteMilk(id) {
 function renderMilk() {
   const list = document.getElementById('milkList');
   if (!list) return;
-  const sorted = [...DB.milk].filter(m => m.cowId === 'TOTAL').sort((a, b) => b.date.localeCompare(a.date));
-  if (sorted.length === 0) {
+  
+  // 1. Information Milk = cowId আছে এবং TOTAL না
+  var infoMilk = [...DB.milk].filter(function(m){ return m.cowId && m.cowId !== 'TOTAL'; }).sort((a,b)=> b.date.localeCompare(a.date));
+  // 2. Total Milk (Day) = cowId = TOTAL - Finance
+  var totalMilk = [...DB.milk].filter(function(m){ return m.cowId === 'TOTAL'; }).sort((a,b)=> b.date.localeCompare(a.date));
+var tab = window.currentMilkTab || 'both';
+if (tab === 'info') { totalMilk = []; }
+else if (tab === 'total') { infoMilk = []; }
+
+  if (infoMilk.length === 0 && totalMilk.length === 0) {
     list.innerHTML = `<div class="empty"><div class="icon">🥛</div><p>${t('no_milk')}</p></div>`;
     return;
   }
-  list.innerHTML = sorted.slice(0, 100).map(m => {
-    const isTotal = m.cowId === 'TOTAL';
-    const cow = isTotal ? null : DB.cows.find(c => c.id === m.cowId);
-    let timeLabel = t('both');
-    if (m.time === 'morning') timeLabel = t('morning');
-    else if (m.time === 'evening') timeLabel = t('evening');
-    const name = isTotal ? '🥛 TOTAL' : `🐮 ${cow ? cow.name : '?'}`;
-    const borderColor = isTotal ? '#1976D2' : '#2E7D32';
-    return `<div class="entry-item" style="border-left:4px solid ${borderColor};">
-      <div class="entry-left">
-        <h5>${name} • ${timeLabel}</h5>
-        <p>${formatDate(m.date)} • ${bn(m.qty)} ${t('liter')} × ${bn(m.price)} ${t('taka')}</p>
-      </div>
-      <div class="entry-right">
-        <div class="amount income">${bn(m.qty * m.price)}${t('taka')}</div>
+
+  var html = '';
+
+  // --- Information Milk Section ---
+  if (infoMilk.length > 0) {
+    html += `<div style="background:#e8f5e9;padding:8px 12px;margin:10px 0 5px 0;border-radius:8px;font-weight:bold;color:#2e7d32;">🐮 Information Milk (Single Cow) - ${infoMilk.length} entries - Cow History এ যাবে</div>`;
+    html += infoMilk.slice(0,100).map(function(m){
+      var cow = DB.cows.find(function(c){ return c.id === m.cowId; });
+      var timeLabel = t('both'); if(m.time==='morning') timeLabel=t('morning'); else if(m.time==='evening') timeLabel=t('evening');
+      var name = '🐮 ' + (cow ? cow.name : '?');
+      return `<div class="entry-item" style="border-left:4px solid #2E7D32;">
+        <div class="entry-left"><h5>${name} • ${timeLabel}</h5><p>${formatDate(m.date)} • ${bn(m.qty)} ${t('liter')}</p></div>
+        <div class="entry-right"><div class="amount" style="color:#2E7D32;">${bn(m.qty)} L</div>
         <button style="background:none;border:none;color:#1976D2;font-size:18px;cursor:pointer;margin-right:4px;" onclick="editMilk('${m.id}')">✏️</button>
-        <button style="background:none;border:none;color:#C62828;font-size:18px;cursor:pointer;" onclick="deleteMilk('${m.id}')">🗑️</button>
-      </div>
-    </div>`;
-  }).join('');
+        <button style="background:none;border:none;color:#C62828;font-size:18px;cursor:pointer;" onclick="deleteMilk('${m.id}')">🗑️</button></div></div>`;
+    }).join('');
+  }
+
+  // --- Total Milk Section ---
+  if (totalMilk.length > 0) {
+    html += `<div style="background:#e3f2fd;padding:8px 12px;margin:15px 0 5px 0;border-radius:8px;font-weight:bold;color:#1565c0;">🥛 Total Milk (Day) - ${totalMilk.length} entries - Finance এ যাবে</div>`;
+    html += totalMilk.slice(0,100).map(function(m){
+      var timeLabel = t('both'); if(m.time==='morning') timeLabel=t('morning'); else if(m.time==='evening') timeLabel=t('evening');
+      return `<div class="entry-item" style="border-left:4px solid #1976D2;">
+        <div class="entry-left"><h5>🥛 TOTAL • ${timeLabel}</h5><p>${formatDate(m.date)} • ${bn(m.qty)} ${t('liter')} × ${bn(m.price)} ${t('taka')}</p></div>
+        <div class="entry-right"><div class="amount income">${bn(m.qty * m.price)}${t('taka')}</div>
+        <button style="background:none;border:none;color:#1976D2;font-size:18px;cursor:pointer;margin-right:4px;" onclick="editMilk('${m.id}')">✏️</button>
+        <button style="background:none;border:none;color:#C62828;font-size:18px;cursor:pointer;" onclick="deleteMilk('${m.id}')">🗑️</button></div></div>`;
+    }).join('');
+  }
+
+  list.innerHTML = html;
 }
 // ========== MILK RANGE ==========
 function toggleMilkRange() {
@@ -7795,19 +8067,6 @@ function showConfirm(title, msg, callback) {
   document.getElementById('modalOverlay').classList.add('show');
 }
 
-function showDatePicker(title, defaultValue, callback) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalMsg').innerHTML = '';
-  const inp = document.getElementById('modalInput');
-  inp.style.display = 'block';
-  inp.type = 'date';
-  inp.value = defaultValue || '';
-  document.getElementById('modalCancel').style.display = '';
-  document.getElementById('modalOk').textContent = 'OK';
-  modalInputMode = true;
-  modalCallback = callback || null;
-  document.getElementById('modalOverlay').classList.add('show');
-}
 
 function showPrompt(title, defaultValue, callback) {
   document.getElementById('modalTitle').textContent = title;
@@ -8157,7 +8416,7 @@ async function sharePdf() {
 
 function sharePdfWhatsApp() {
   if (!pdfData) { toast('❌ No report'); return; }
-  const msg = `🐄 *${pdfData.farmName}*\n📅 ${formatDate(pdfData.from)} → ${formatDate(pdfData.to)}\n\n🥛 Total Milk: ${pdfData.totalMilk.toFixed(1)} L\n💰 Total Income: ${pdfData.totalIncome.toFixed(0)} Rs\n📊 Avg Daily: ${pdfData.avg.toFixed(1)} L\n\n_Dairy Manager Report_`;
+  const msg = `🐄 *${pdfData.farmName}*\n📅 ${formatDate(pdfData.from)} → ${formatDate(pdfData.to)}\n\n🥛 Total Milk: ${pdfData.totalMilk.toFixed(1)} L\n?? Total Income: ${pdfData.totalIncome.toFixed(0)} Rs\n📊 Avg Daily: ${pdfData.avg.toFixed(1)} L\n\n_Dairy Manager Report_`;
   const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
   window.open(url, '_blank');
   toast('📤 Opening WhatsApp');
@@ -11776,22 +12035,28 @@ async function initApp() {
     const hasIDBData = await loadDBAsync();
     // fetchAlertSettings moved to background - don't block UI
     
-    // Step 3: If IDB has no data, try localStorage (migration)
-    if (!hasIDBData || DB.cows.length === 0) {
-      const localData = localStorage.getItem('dairyDBv3');
-      if (localData) {
-        try {
-          const parsed = JSON.parse(localData);
+   // Step 3: IndexedDB ONLY - No localStorage overwrite - Safe Migration
+  if (!hasIDBData || DB.cows.length === 0) {
+    const localData = localStorage.getItem('dairyDBv3');
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        // SAFE CHECK: Only migrate if localStorage has MORE cows than IDB and not empty
+        if (parsed.cows && parsed.cows.length > 0 && parsed.cows.length > DB.cows.length) {
           DB = Object.assign(DB, parsed);
-          idbLog('Migrated from localStorage');
+          idbLog('Migrated from localStorage - ' + parsed.cows.length + ' cows');
           await saveDBAsync();
-        } catch(e) {
-          idbLog('Migration error: ' + e.message);
+        } else {
+          idbLog('Skip migration - localStorage empty or IDB has more data - Keeping IDB');
         }
-      } else {
-        loadDB();
+      } catch(e) {
+        idbLog('Migration error: ' + e.message);
       }
+    } else {
+      // No localStorage data, try old loadDB as fallback
+      try { loadDB(); } catch(e) {}
     }
+  }
     
     // Step 4: Normalize DB structure
     if (!DB.cows) DB.cows = [];
