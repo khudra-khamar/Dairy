@@ -12161,19 +12161,45 @@ if (splashErr) splashErr.remove();
     waitForAuthThenCheckLicense();
   }
 }
-// === AUTO FCM TOKEN REFRESH - V108 ===
+
+// === AUTO FCM TOKEN REFRESH - V109.1 - Full VAPID Key ===
 async function autoRefreshFCMToken() {
   try {
-    if (Notification.permission !== 'granted') return;
-    if (!window.messaging || (!window.db && !window._db)) return;
-    const db = window.db || window._db;
+    console.log('🔄 Refresh Clicked...');
+    const statusEl = document.getElementById('fcmStatus');
+    if(statusEl){ statusEl.textContent = '⏳ Getting Token...'; statusEl.style.color = 'blue'; }
+    
+    if (Notification.permission !== 'granted') {
+      alert('Notification Permission Not Granted - Please Allow');
+      if(statusEl){ statusEl.textContent = '⚠️ Permission Denied'; statusEl.style.color = 'orange'; }
+      return;
+    }
+    
+    const msg = window.messaging || (typeof firebase !== 'undefined' ? firebase.messaging() : null);
+    if (!msg) {
+      alert('Messaging not ready - Reload App');
+      return;
+    }
+    
+    // FULL VAPID KEY - No ...
     const vapidKey = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
-    const currentToken = await messaging.getToken({ vapidKey: vapidKey }).catch(()=>null);
-    if (!currentToken) return;
+    
+    const currentToken = await msg.getToken({ vapidKey: vapidKey });
+    if (!currentToken) {
+      alert('No Token Received - Check firebase-messaging-sw.js');
+      if(statusEl){ statusEl.textContent = '❌ No Token'; statusEl.style.color = 'red'; }
+      return;
+    }
+    
     const savedToken = localStorage.getItem('fcmToken');
-    const deviceId = (DB && DB.deviceId) || localStorage.getItem('deviceId') || localStorage.getItem('deviceId');
-    if (!deviceId) return;
+    const deviceId = (typeof DB !== 'undefined' && DB.deviceId) ? DB.deviceId : localStorage.getItem('deviceId');
+    if (!deviceId) {
+      alert('No Device ID');
+      return;
+    }
+    
     if (currentToken !== savedToken) {
+      const db = window.db || window._db || firebase.firestore();
       await db.collection('alertSchedule').doc(deviceId).set({
         fcmToken: currentToken,
         deviceId: deviceId,
@@ -12182,29 +12208,28 @@ async function autoRefreshFCMToken() {
         lastSync: Date.now(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
+      
       await db.collection('fcmTokens').doc(deviceId).set({
         fcmToken: currentToken,
         deviceId: deviceId,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
+      
       localStorage.setItem('fcmToken', currentToken);
       localStorage.setItem('lastTokenRefresh', new Date().toISOString());
-      console.log('✅ FCM Token Auto Refreshed - alertSchedule');
+      console.log('✅ FCM Token Auto Refreshed');
+      alert('✅ Token Refreshed: ' + currentToken.substring(0,20) + '...');
+    } else {
+      console.log('✅ Token Already Valid');
     }
+    updateFCMStatusUI();
   } catch (err) {
     console.error('Auto Refresh Error:', err);
+    alert('Refresh Error: ' + err.message);
+    const statusEl = document.getElementById('fcmStatus');
+    if(statusEl){ statusEl.textContent = '❌ Error: ' + err.message; statusEl.style.color = 'red'; }
   }
 }
-setTimeout(function() { try { autoRefreshFCMToken(); } catch(e) {} }, 3000);
-
-// Advance - App Foreground & Daily Check
-document.addEventListener('visibilitychange', function() {
-  if (!document.hidden) { 
-    setTimeout(function(){ try{ autoRefreshFCMToken(); }catch(e){} }, 1000);
-  }
-});
-// Daily heartbeat - 24 hour
-setInterval(function(){ try{ autoRefreshFCMToken(); }catch(e){} }, 24*60*60*1000);
 
 // === FCM STATUS UI UPDATE - V109.1 ===
 function updateFCMStatusUI() {
