@@ -12202,6 +12202,31 @@ if (splashErr) splashErr.remove();
     waitForAuthThenCheckLicense();
   }
 }
+// === AUTO FCM TOKEN REFRESH - V108 ===
+async function autoRefreshFCMToken() {
+  try {
+    if (Notification.permission !== 'granted') return;
+    if (!window.messaging || !window.db) return;
+    const vapidKey = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
+    const currentToken = await messaging.getToken({ vapidKey: vapidKey });
+    if (!currentToken) return;
+    const savedToken = localStorage.getItem('fcmToken');
+    const deviceId = DB.deviceId || localStorage.getItem('deviceId') || 'DEV-UNKNOWN';
+    if (currentToken !== savedToken) {
+      await db.collection('alertSchedules').doc(deviceId).set({
+        fcmToken: currentToken,
+        deviceId: deviceId,
+        lastTokenRefresh: new Date().toISOString(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      localStorage.setItem('fcmToken', currentToken);
+      console.log('✅ FCM Token Auto Refreshed');
+    }
+  } catch (err) {
+    console.error('Auto Refresh Error:', err);
+  }
+}
+setTimeout(function() { try { autoRefreshFCMToken(); } catch(e) {} }, 3000);
 
 // Start the app
 initApp();

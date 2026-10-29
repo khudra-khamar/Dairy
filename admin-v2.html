@@ -842,6 +842,11 @@ body { background:#F5F5F0; color:#333; line-height:1.5; }
     <button onclick="filterLicenses('expired')" id="filterExpired" style="flex:1;padding:10px;border:2px solid #E0E0E0;background:#fff;color:#666;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Expired</button>
   </div>
   
+<!-- নতুন সার্চ বক্স Licenses এর জন্য -->
+<div style="margin-bottom: 14px;">
+<input type="text" id="licenseSearchInput" oninput="searchLicenses(this.value)" placeholder="🔍 Search License / Device / Email / Code..." style="width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+</div>
+
   <div id="licenseList">
     <div class="loading">⏳ Loading licenses...</div>
   </div>
@@ -2903,7 +2908,26 @@ function searchTrialUsers(query) {
   currentSearchQuery = query.toLowerCase().trim();
   renderTrialUsers();
 }
-
+// === LICENSE SEARCH - V108 ===
+function searchLicenses(query) {
+  query = query.toLowerCase().trim();
+  if (!query) { 
+    if (typeof currentLicenseFilter !== 'undefined') {
+      filterLicenses(currentLicenseFilter);
+    } else {
+      renderLicenses(allLicenses); 
+    }
+    return; 
+  }
+  const filtered = allLicenses.filter(l => {
+    const id = (l.id || '').toLowerCase();
+    const deviceId = (l.deviceId || l.device_id || '').toLowerCase();
+    const email = (l.email || '').toLowerCase();
+    const code = (l.licenseCode || l.code || '').toLowerCase();
+    return id.includes(query) || deviceId.includes(query) || email.includes(query) || code.includes(query);
+  });
+  renderLicenses(filtered);
+}
 function filterTrialUsers(filter) {
   currentTrialFilter = filter;
   const map = { all: 'tfAll', google: 'tfGoogle', phone: 'tfPhone', guest: 'tfGuest', converted: 'tfConverted' };
