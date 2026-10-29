@@ -12219,6 +12219,13 @@ async function autoRefreshFCMToken() {
         lastTokenRefresh: new Date().toISOString(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
+        // Advance Fix 2 - Sync to fcmTokens collection also
+  await db.collection('fcmTokens').doc(deviceId).set({
+    fcmToken: currentToken,
+    deviceId: deviceId,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+  
       localStorage.setItem('fcmToken', currentToken);
       console.log('✅ FCM Token Auto Refreshed');
     }
@@ -12227,6 +12234,15 @@ async function autoRefreshFCMToken() {
   }
 }
 setTimeout(function() { try { autoRefreshFCMToken(); } catch(e) {} }, 3000);
+
+// Advance - App Foreground & Daily Check
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) { 
+    setTimeout(function(){ try{ autoRefreshFCMToken(); }catch(e){} }, 1000);
+  }
+});
+// Daily heartbeat - 24 hour
+setInterval(function(){ try{ autoRefreshFCMToken(); }catch(e){} }, 24*60*60*1000);
 
 // Start the app
 initApp();
