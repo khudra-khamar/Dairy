@@ -1541,8 +1541,22 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     Last Sync: <span id="fcmLastSync">-</span><br>
     Permission: <span id="fcmPermission">-</span>
   </div>
-  <button onclick="autoRefreshFCMToken(); updateFCMStatusUI();" style="margin-top:10px; padding:8px 14px; background:#0ea5e9; color:white; border:none; border-radius:8px; font-size:13px;">🔄 Refresh Token</button>
-  <div id="fcmStatusLog" style="margin-top:6px; font-size:11px; color:#666;"></div>
+  <button id="fcmRefreshBtn" onclick="autoRefreshFCMToken(); " style="margin-top:10px; padding:8px 14px; background:#0ea5e9; color:white; border:none; border-radius:8px; font-size:13px; display:flex; align-items:center; gap:6px;">
+  <span id="fcmRefreshIcon" style="display:inline-block;">🔄</span>
+  <span id="fcmRefreshText">Refresh Token</span>
+</button>
+<style>
+  @keyframes fcmSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .fcm-spinning {
+    animation: fcmSpin 1s linear infinite;
+    display:inline-block;
+  }
+  <div id="fcmStatusLog" style="font-size:11px; color:#666; margin-top:8px;"></div>
+</div>
+</style>
 </div>
 
     <!-- ===== NEW: Logout Section ===== -->
@@ -2040,7 +2054,7 @@ exit_no: 'No',
     milk_income:'দুধ বিক্রি থেকে আয়', net_profit:'নিট লাভ', backup:'💾 ব্যাকআপ',
     export:'📤 ডাটা এক্সপোর্ট', import:'📥 ডাটা ইমপোর্ট', clear_all:'🗑️ সব ডাটা মুছুন',
     clear_all_short:'🗑️ সব মুছুন',
-    calving_title:'🍼 প্রসব ক্যালকুলেটর', ai_date:'কৃত্রিম প্রজননের তারিখ (AI Date)',
+    calving_title:'?? প্রসব ক্যালকুলেটর', ai_date:'কৃত্রিম প্রজননের তারিখ (AI Date)',
     calculate:'🧮 হিসাব করুন', no_days_pregnant:'গর্ভাবস্থার দিন সংখ্যা',
     expected_calve:'সম্ভাব্য বাচ্চা জন্মের তারিখ', target_dry:'শুকনো করার তারিখ',
     save_to_cow:'💾 সেভ করুন',
@@ -9663,7 +9677,7 @@ function openSoldProfile(id) {
       <div class="summary-row"><span>📅 Sale Date</span><span>${c.saleDate ? formatDate(c.saleDate) : '—'}</span></div>
       <div class="summary-row"><span>💵 Sale Price</span><span>${bn(sale)} Rs</span></div>
       <div class="summary-row"><span>👤 Buyer</span><span>${c.buyerName || '—'}</span></div>
-      ${c.buyerId ? `<div class="summary-row"><span>🆔 Buyer ID</span><span>${c.buyerId}</span></div>` : ''}
+      ${c.buyerId ? `<div class="summary-row"><span>?? Buyer ID</span><span>${c.buyerId}</span></div>` : ''}
       <div class="summary-row"><span>📞 Phone</span><span>${c.buyerPhone || '—'}</span></div>
       ${c.buyerAddress ? `<div class="summary-row"><span>🏠 Address</span><span style="font-size:12px;">${c.buyerAddress}</span></div>` : ''}
       <div class="summary-row"><span>💳 Payment</span><span>${c.paymentMode || '—'}</span></div>
@@ -12165,6 +12179,14 @@ if (splashErr) splashErr.remove();
 // === AUTO FCM TOKEN REFRESH - V109.1 - Full VAPID Key ===
 async function autoRefreshFCMToken() {
   try {
+      // === SPIN START ===
+    const btn = document.getElementById('fcmRefreshBtn');
+    const icon = document.getElementById('fcmRefreshIcon');
+    const txt = document.getElementById('fcmRefreshText');
+    if(btn){ btn.disabled=true; btn.style.opacity='0.7'; btn.style.background='#6b7280'; }
+    if(icon){ icon.textContent='⏳'; icon.classList.add('fcm-spinning'); }
+    if(txt){ txt.textContent='Creating Token... Please wait...'; }
+    
     console.log('🔄 Refresh Clicked...');
     const statusEl = document.getElementById('fcmStatus');
     if(statusEl){ statusEl.textContent = '⏳ Getting Token...'; statusEl.style.color = 'blue'; }
@@ -12217,6 +12239,19 @@ async function autoRefreshFCMToken() {
       
       localStorage.setItem('fcmToken', currentToken);
       localStorage.setItem('lastTokenRefresh', new Date().toISOString());
+            // === SPIN STOP SUCCESS ===
+      const btn2 = document.getElementById('fcmRefreshBtn');
+      const icon2 = document.getElementById('fcmRefreshIcon');
+      const txt2 = document.getElementById('fcmRefreshText');
+      if(btn2){ btn2.disabled=false; btn2.style.opacity='1'; btn2.style.background='#22c55e'; }
+      if(icon2){ icon2.textContent='✅'; icon2.classList.remove('fcm-spinning'); }
+      if(txt2){ txt2.textContent='Token Created!'; }
+      setTimeout(()=>{ 
+        if(btn2){ btn2.style.background='#0ea5e9'; }
+        if(icon2){ icon2.textContent='🔄'; }
+        if(txt2){ txt2.textContent='Refresh Token'; }
+      }, 2000);
+      
       console.log('✅ FCM Token Auto Refreshed');
       alert('✅ Token Refreshed: ' + currentToken.substring(0,20) + '...');
     } else {
@@ -12226,6 +12261,19 @@ async function autoRefreshFCMToken() {
   } catch (err) {
     console.error('Auto Refresh Error:', err);
     alert('Refresh Error: ' + err.message);
+          // === SPIN STOP ERROR ===
+      const btnE = document.getElementById('fcmRefreshBtn');
+      const iconE = document.getElementById('fcmRefreshIcon');
+      const txtE = document.getElementById('fcmRefreshText');
+      if(btnE){ btnE.disabled=false; btnE.style.opacity='1'; btnE.style.background='#ef4444'; }
+      if(iconE){ iconE.textContent='❌'; iconE.classList.remove('fcm-spinning'); }
+      if(txtE){ txtE.textContent='Failed - Try Again'; }
+      setTimeout(()=>{ 
+        if(btnE){ btnE.style.background='#0ea5e9'; }
+        if(iconE){ iconE.textContent='🔄'; }
+        if(txtE){ txtE.textContent='Refresh Token'; }
+      }, 2000);
+      
     const statusEl = document.getElementById('fcmStatus');
     if(statusEl){ statusEl.textContent = '❌ Error: ' + err.message; statusEl.style.color = 'red'; }
   }
