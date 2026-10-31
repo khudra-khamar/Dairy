@@ -295,6 +295,52 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   to { transform: rotate(360deg); }
 }
 </style>
+
+<!-- V109.3 White Screen Debug Overlay -->
+<div id="errOverlay" style="position:fixed;top:0;left:0;right:0;bottom:auto;background:#b91c1c;color:white;z-index:99999999;padding:12px;font-size:12px;display:none;white-space:pre-wrap;max-height:50vh;overflow:auto;"></div>
+<script>
+(function(){
+  function showErr(msg){
+    var el=document.getElementById('errOverlay');
+    if(el){ el.style.display='block'; el.textContent += '\n' + msg; }
+    var splash=document.getElementById('dmSplash');
+    if(splash) splash.style.display='none';
+  }
+  window.onerror = function(m, url, line, col, err){
+    showErr('❌ Error: ' + m + '\nLine: ' + line + ' Col: ' + col + '\nURL: ' + (url||'').split('/').pop());
+    return false;
+  };
+  window.addEventListener('unhandledrejection', function(e){
+    showErr('❌ Promise Reject: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+  });
+  // Force Hide Splash + Show Something after 4 sec - Even if Error
+  setTimeout(function(){
+    var s=document.getElementById('dmSplash');
+    if(s) s.style.display='none';
+    var setup=document.getElementById('setupScreen');
+    var main=document.getElementById('mainApp') || document.getElementById('appMain') || document.querySelector('.app-container');
+    if(setup && main){
+      // If white screen - force show setup
+      if(setup.style.display==='none' && main.style.display==='none'){
+        showErr('⚠️ Forcing Setup Screen Visible - White Screen Fix');
+        setup.style.display='flex';
+      }
+    }
+    // Show error overlay if still white
+    var bodyChildren = document.body.children;
+    var visible = 0;
+    for(var i=0;i<bodyChildren.length;i++){
+      if(bodyChildren[i].offsetHeight>0) visible++;
+    }
+    if(visible<=2){ // Only splash + error overlay visible
+      showErr('⚠️ White Screen Detected - No Visible Content - Forcing Main');
+      if(main){ main.style.display='block'; main.style.visibility='visible'; }
+    }
+  }, 4000);
+  console.log('✅ Debug Overlay Installed - V109.3');
+})();
+</script>
+
 <script>
 // V109.3 Emergency dmSplash Hide - Lifetime Fix
 setTimeout(function(){
