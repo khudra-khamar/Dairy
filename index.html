@@ -12168,6 +12168,10 @@ async function autoRefreshFCMToken(){
     console.log('🔄 Refresh Clicked...');
     const statusEl = document.getElementById('fcmStatusText');
     if(statusEl){ statusEl.textContent = '⏳ Getting Token...'; }
+  const rb = document.querySelector('button[onclick*="autoRefreshFCMToken"]'); 
+  const rbTxt = rb ? rb.querySelector('span') || rb : null;
+  if(rb){ rb.disabled = true; rb.style.opacity = '0.6'; rb.style.background = '#6b7280'; }
+  if(rbTxt && rbTxt.tagName==='SPAN'){ rbTxt.textContent = '⏳ Creating Token... Please wait...'; } else if(rb){ rb.textContent = '⏳ Creating Token... Please wait...'; }
     if (Notification.permission !== 'granted') {
       alert('Notification Permission Not Granted - Please Allow');
       if(statusEl){ statusEl.textContent = '⚠️ Permission Denied'; }
@@ -12222,8 +12226,13 @@ const currentToken = swReg ? await msg.getToken({ vapidKey: vapidKey, serviceWor
     localStorage.setItem('fcmLastSyncDisplay', nowISO);
     console.log('✅ FCM Token Auto Refreshed - Triple Backup - Like B5R8JXHU');
     alert('✅ Token Refreshed: ' + currentToken.substring(0,20) + '...');
-    updateFCMStatusUI();
-  } catch (err) {
+if(rb){ rb.style.background = '#22c55e'; rb.style.opacity = '1'; }
+if(rbTxt && rbTxt.tagName==='SPAN'){ rbTxt.textContent = '✅ Token Created!'; } else if(rb){ rb.textContent = '✅ Token Created!'; }
+setTimeout(()=>{
+  if(rb){ rb.disabled = false; rb.style.opacity = '1'; rb.style.background = '#0ea5e9'; if(rbTxt && rbTxt.tagName==='SPAN'){ rbTxt.textContent = '🔄 Refresh Token'; } else { rb.textContent = '🔄 Refresh Token'; } }
+  updateFCMStatusUI();
+}, 2500);
+} catch (err) {
     console.error('Auto Refresh Error:', err);
     alert('Refresh Error: ' + err.message);
     const statusEl = document.getElementById('fcmStatusText');
