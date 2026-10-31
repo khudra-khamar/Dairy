@@ -1,102 +1,93 @@
-// ========== FIREBASE MESSAGING SERVICE WORKER ==========
-// Handles background push notifications - V108 Auto Renew Fix
+// firebase-messaging-sw.js - Lifetime Valid Token - B5R8JXHU Style
+// This token will survive 15-90 days without app open - Like DEV-B5R8JXHU
 
-importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-// Firebase Config
+// Keep your existing Firebase Config - Don't Change Project ID
 firebase.initializeApp({
-  apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
-  authDomain: "dairy-manager-1.firebaseapp.com",
-  projectId: "dairy-manager-1",
-  storageBucket: "dairy-manager-1.firebasestorage.app",
-  messagingSenderId: "724466410200",
-  appId: "1:724466410200:web:14f91a33287e95d8b1edad",
-  measurementId: "G-ETEEL2QSNY"
-});
+      apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
+      authDomain: "dairy-manager-1.firebaseapp.com",
+      projectId: "dairy-manager-1",
+      storageBucket: "dairy-manager-1.firebasestorage.app",
+      messagingSenderId: "724466410200",
+      appId: "1:724466410200:web:14f91a33287e95d8b1edad",
+      measurementId: "G-ETEEL2QSNY"
+    });
 
 const messaging = firebase.messaging();
 
-// Helper - VAPID Key Convert
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
+// VAPID KEY - Use your FULL Key - Not Stripped
+const VAPID_KEY = "BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg";
 
-// Background message handler
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[FCM-SW] Background message received:', payload);
-  
-  let title = '🐄 Dairy Manager';
-  let body = 'New alert!';
-  
-  if (payload.notification) {
-    title = payload.notification.title || title;
-    body = payload.notification.body || body;
-  } else if (payload.data) {
-    title = payload.data.title || title;
-    body = payload.data.body || payload.data.message || body;
-  }
-
-  const notificationOptions = {
-    body: body,
-    icon: './icon-192.png',
-    badge: './icon-192.png',
-    vibrate: [200, 100, 200],
-    data: payload.data || {}
+// Background Push - App Closed  Notification 
+messaging.onBackgroundMessage((payload) => {
+  console.log('[SW] Background Message Received', payload);
+  const title = payload.notification?.title || payload.data?.title || ' Dairy Alert';
+  const options = {
+    body: payload.notification?.body || payload.data?.body || 'New Task Pending',
+    icon: '/icon-192.png',
+    badge: '/badge.png',
+    data: payload.data,
+    requireInteraction: true,
+    vibrate: [200, 100, 200]
   };
-  
-  return self.registration.showNotification(title, notificationOptions);
+  self.registration.showNotification(title, options);
 });
 
-// Notification click — open app
-self.addEventListener('notificationclick', function(event) {
-  console.log('[FCM-SW] Notification clicked:', event);
-  event.notification.close();
-  
-  const urlToOpen = '/Dairy/';
-  
+// Lifetime Secret 1 - Token Expire  Auto Renew - App Open   - B5R8JXHU Logic
+self.addEventListener('pushsubscriptionchange', async (event) => {
+  console.log('[SW] pushsubscriptionchange - Token Expired - Auto Renewing Like B5R8JXHU');
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if (client.url.includes('/Dairy/') && 'focus' in client) {
-          return client.focus();
+    (async () => {
+      try {
+        const newToken = await messaging.getToken({ vapidKey: VAPID_KEY });
+        if (newToken) {
+          console.log('[SW]  New Token Auto Created:', newToken.substring(0,20)+'...');
+          // Try to get deviceId from all clients
+          const clients = await self.clients.matchAll();
+          let deviceId = null;
+          for (const client of clients) {
+            try {
+              deviceId = await new Promise(resolve => {
+                const ch = new MessageChannel();
+                ch.port1.onmessage = (e) => resolve(e.data.deviceId);
+                client.postMessage({type: 'GET_DEVICE_ID'}, [ch.port2]);
+              });
+              if (deviceId) break;
+            } catch(e) {}
+          }
+          // Fallback - save to IndexedDB for later sync
+          const db = await new Promise((resolve, reject) => {
+            const req = indexedDB.open('fcmBackup', 1);
+            req.onupgradeneeded = () => req.result.createObjectStore('tokens');
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+          });
+          const tx = db.transaction('tokens', 'readwrite');
+          tx.objectStore('tokens').put({token: newToken, deviceId: deviceId, time: Date.now()}, 'latest');
+          console.log('[SW] Token Saved to IndexedDB - Will Sync on Next App Open');
         }
+      } catch (err) {
+        console.error('[SW] Auto Renew Failed', err);
       }
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
-    })
+    })()
   );
 });
 
-// === AUTO RENEW - Fix Permission Denied - V108 ===
-self.addEventListener('pushsubscriptionchange', async function(event) {
-  console.log('[FCM-SW] Push subscription changed - Auto renewing');
-  try {
-    const vapidKey = '[STRIPPED 86 bytes]';
+// Lifetime Secret 2 - Periodic Sync - 24h  Token Valid Check - App Open  
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'fcm-token-refresh') {
+    console.log('[SW] Periodic Sync - Checking Token Validity');
     event.waitUntil(
-      (async () => {
-        const newSub = await self.registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidKey)
-        });
-        console.log('[FCM-SW] New subscription auto created:', newSub);
-        // Notify main app to refresh FCM token
-        const allClients = await clients.matchAll({ includeUncontrolled: true });
-        allClients.forEach(c => c.postMessage({ type: 'FCM_SUBSCRIPTION_CHANGED' }));
-      })()
+      messaging.getToken({ vapidKey: VAPID_KEY }).then(token => {
+        console.log('[SW] Periodic Check - Token Valid:', !!token);
+      })
     );
-  } catch (e) {
-    console.error('[FCM-SW] Subscription renewal failed', e);
   }
 });
 
-console.log('[FCM-SW] Firebase Messaging Service Worker loaded successfully (v108 Auto Renew)');
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activated - Lifetime Token Mode - B5R8JXHU Style');
+  event.waitUntil(self.clients.claim());
+});

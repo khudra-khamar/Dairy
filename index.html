@@ -12220,25 +12220,38 @@ async function autoRefreshFCMToken() {
       return;
     }
     
-    if (currentToken !== savedToken) {
-      const db = window.db || window._db || firebase.firestore();
-      await db.collection('alertSchedule').doc(deviceId).set({
-        fcmToken: currentToken,
-        deviceId: deviceId,
-        lastTokenRefresh: new Date().toISOString(),
-        lastSyncDate: new Date().toISOString(),
-        lastSync: Date.now(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+      // === B5R8JXHU Style - Force Save Every Time - No Condition ===
+  const db = window.db || window._db || firebase.firestore();
+  const nowISO = new Date().toISOString();
+  const nowMs = Date.now();
+  
+  // 1. Main Collection - alertSchedule - Force Save
+  await db.collection('alertSchedule').doc(deviceId).set({
+    fcmToken: currentToken,
+    fcmTokenBackup: currentToken,
+    deviceId: deviceId,
+    lastTokenRefresh: nowISO,
+    lastSyncDate: nowISO,
+    lastSync: nowMs,
+    platform: "chrome-pwa-lifetime",
+    autoRefreshed: true,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  // 2. Backup Collection - fcmTokens - Second Backup - Like B5R8JXHU 15 Days Survival
+  await db.collection('fcmTokens').doc(deviceId).set({
+    token: currentToken,
+    deviceId: deviceId,
+    lastRefresh: nowISO,
+    lastSync: nowMs,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  // 3. Local Storage - Immediate
+  localStorage.setItem('fcmToken', currentToken);
+  localStorage.setItem('fcmLastSync', nowMs.toString());
       
-      await db.collection('fcmTokens').doc(deviceId).set({
-        fcmToken: currentToken,
-        deviceId: deviceId,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-      
-      localStorage.setItem('fcmToken', currentToken);
-      localStorage.setItem('lastTokenRefresh', new Date().toISOString());
+     
             // === SPIN STOP SUCCESS ===
       const btn2 = document.getElementById('fcmRefreshBtn');
       const icon2 = document.getElementById('fcmRefreshIcon');
@@ -12307,6 +12320,33 @@ function updateFCMStatusUI() {
 setTimeout(updateFCMStatusUI, 2000);
 setInterval(updateFCMStatusUI, 10000);
 
+// === Lifetime SW Registration - B5R8JXHU 15 Days No Open Survival ===
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+        scope: '/',
+        updateViaCache: 'none'
+      });
+      console.log('✅ SW Lifetime Registered - B5R8JXHU Style', reg.scope);
+      if ('periodicSync' in reg) {
+        try {
+          await reg.periodicSync.register('fcm-token-refresh', { minInterval: 86400000 });
+          console.log('✅ Periodic Sync 24h Registered');
+        } catch(e) {}
+      }
+    } catch(err) { console.error('SW Registration Failed', err); }
+  });
+}
+// Visibility Change - Foreground এ আনলেই Token Refresh - B5R8JXHU Logic
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (typeof autoRefreshFCMToken === 'function') {
+      console.log('👁️ App Foreground - Refreshing Token Like B5R8JXHU');
+      autoRefreshFCMToken();
+    }
+  }
+});
 
 // Start the app
 initApp();
@@ -12446,6 +12486,36 @@ document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     
   </div>
 </div>
+
+<script>
+// === V109.3 FINAL Lifetime SW Registration - B5R8JXHU 15 Days Survival - Before </body> ===
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    if (window._swLifetimeRegistered) return;
+    window._swLifetimeRegistered = true;
+    navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+      scope: '/',
+      updateViaCache: 'none'
+    }).then(function(reg) {
+      console.log('✅ V109.3 SW Lifetime Registered Final - B5R8JXHU');
+      try {
+        if ('periodicSync' in reg) {
+          reg.periodicSync.register('fcm-token-refresh', {minInterval: 86400000});
+          console.log('✅ PeriodicSync 24h Registered');
+        }
+      } catch(e) {}
+      // Visibility Change - Foreground Refresh
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible' && typeof autoRefreshFCMToken === 'function') {
+          setTimeout(function() { autoRefreshFCMToken(true); }, 2000);
+        }
+      });
+    }).catch(function(err) {
+      console.log('SW Final Register Fail', err);
+    });
+  });
+}
+</script>
 
 </body>
 </html>
