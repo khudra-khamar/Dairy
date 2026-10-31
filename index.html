@@ -1542,6 +1542,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     Permission: <span id="fcmPermission">-</span>
   </div>
   <button onclick="autoRefreshFCMToken(); updateFCMStatusUI();" style="margin-top:10px; padding:8px 14px; background:#0ea5e9; color:white; border:none; border-radius:8px; font-size:13px;">🔄 Refresh Token</button>
+<button onclick="forceDeleteOldFCMToken()" style="background:#ef4444;color:white;padding:8px 12px;border-radius:8px;margin-left:8px;">🗑️ Delete Old Token</button>
   <div id="fcmStatusLog" style="margin-top:6px; font-size:11px; color:#666;"></div>
 </div>
 
@@ -12183,6 +12184,7 @@ async function autoRefreshFCMToken(){
       return;
     }
     const vapidKey = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
+try{ const oldT = localStorage.getItem('fcmToken'); if(oldT && msg.deleteToken){ await msg.deleteToken(oldT); } }catch(e){}
 let swReg;
 try { swReg = await navigator.serviceWorker.ready; } catch(e) { swReg = null; }
 const currentToken = swReg ? await msg.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: swReg }) : await msg.getToken({ vapidKey: vapidKey });
@@ -12240,6 +12242,25 @@ setTimeout(()=>{
   }
 }
 
+// === FORCE DELETE DEAD TOKEN - No Console Need - V109.1 ===
+async function forceDeleteOldFCMToken(){
+  try{
+    const msg = window.messaging || firebase.messaging();
+    const oldTok = localStorage.getItem('fcmToken');
+    if(!oldTok){ alert('No Old Token Found'); return; }
+    if(confirm('Dead Token Delete করবেন? DEV-4TA56VPV এর পুরানো Token Delete হবে - '+oldTok.substring(0,15)+'...')){
+      if(msg.deleteToken){ try{ await msg.deleteToken(oldTok); }catch(e){ try{ await msg.deleteToken(); }catch(e2){} } }
+      localStorage.removeItem('fcmToken');
+      localStorage.removeItem('fcmTokenBackup');
+      localStorage.removeItem('fcmLastSync');
+      const db = window.db || firebase.firestore();
+      try{ await db.collection('alertSchedule').doc('DEV-4TA56VPV').update({fcmToken: firebase.firestore.FieldValue.delete(), fcmTokenBackup: firebase.firestore.FieldValue.delete()}); }catch(e){}
+      try{ await db.collection('fcmTokens').doc('DEV-4TA56VPV').delete(); }catch(e){}
+      alert('✅ Old Dead Token Deleted - এবার Refresh Token Click করুন নতুন Token এর জন্য');
+      location.reload();
+    }
+  }catch(err){ alert('Delete Error: '+err.message); }
+}
 
 // === FCM STATUS UI UPDATE - V109.1 ===
 function updateFCMStatusUI() {
