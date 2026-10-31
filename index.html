@@ -12487,35 +12487,6 @@ document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
   </div>
 </div>
 
-<script>
-// === V109.3 FINAL Lifetime SW Registration - B5R8JXHU 15 Days Survival - Before </body> ===
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    if (window._swLifetimeRegistered) return;
-    window._swLifetimeRegistered = true;
-    navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-      scope: '/',
-      updateViaCache: 'none'
-    }).then(function(reg) {
-      console.log('✅ V109.3 SW Lifetime Registered Final - B5R8JXHU');
-      try {
-        if ('periodicSync' in reg) {
-          reg.periodicSync.register('fcm-token-refresh', {minInterval: 86400000});
-          console.log('✅ PeriodicSync 24h Registered');
-        }
-      } catch(e) {}
-      // Visibility Change - Foreground Refresh
-      document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible' && typeof autoRefreshFCMToken === 'function') {
-          setTimeout(function() { autoRefreshFCMToken(true); }, 2000);
-        }
-      });
-    }).catch(function(err) {
-      console.log('SW Final Register Fail', err);
-    });
-  });
-}
-</script>
 
 </body>
 </html>
