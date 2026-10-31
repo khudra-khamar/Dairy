@@ -295,7 +295,13 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   to { transform: rotate(360deg); }
 }
 </style>
-
+<script>
+// V109.3 Emergency dmSplash Hide - Lifetime Fix
+setTimeout(function(){
+  var s=document.getElementById('dmSplash');
+  if(s){ s.style.display='none'; console.log('✅ dmSplash Emergency Hide'); }
+}, 3500);
+</script>
 
 <!-- ========== SETUP WIZARD SCREEN ========== -->
 <div id="setupScreen" class="lock-screen" style="display:none;">
@@ -12003,6 +12009,11 @@ _dbTrial.collection('trialUsers').doc(DB.deviceId).set({
 // ========== INIT ==========
 async function initApp() {
   try {
+  // V109.3 White Screen Emergency - Force Hide Splash in 1 Sec
+setTimeout(function(){
+  var s=document.getElementById('dmSplash');
+  if(s) s.style.display='none';
+}, 1000);
     // Step 1: Initialize IndexedDB - FAST
     await initIndexedDB();
     const hasIDBData = await loadDBAsync();
