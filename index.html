@@ -12217,6 +12217,9 @@ const currentToken = swReg ? await msg.getToken({ vapidKey: vapidKey, serviceWor
     localStorage.setItem('fcmToken', currentToken);
     localStorage.setItem('fcmTokenBackup', currentToken);
     localStorage.setItem('fcmLastSync', nowMs.toString());
+    localStorage.setItem('lastTokenRefresh', nowISO);
+    localStorage.setItem('lastRefresh', nowISO);
+    localStorage.setItem('fcmLastSyncDisplay', nowISO);
     console.log('✅ FCM Token Auto Refreshed - Triple Backup - Like B5R8JXHU');
     alert('✅ Token Refreshed: ' + currentToken.substring(0,20) + '...');
     updateFCMStatusUI();
