@@ -12184,7 +12184,6 @@ async function autoRefreshFCMToken(){
       return;
     }
     const vapidKey = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
-try{ const oldT = localStorage.getItem('fcmToken'); if(oldT && msg.deleteToken){ await msg.deleteToken(oldT); } }catch(e){}
 let swReg;
 try { swReg = await navigator.serviceWorker.ready; } catch(e) { swReg = null; }
 const currentToken = swReg ? await msg.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: swReg }) : await msg.getToken({ vapidKey: vapidKey });
