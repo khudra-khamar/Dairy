@@ -12277,75 +12277,38 @@ async function autoRefreshFCMToken() {
       return;
     }
     
-      // === B5R8JXHU Style - Force Save Every Time - No Condition ===
-  const db = window.db || window._db || firebase.firestore();
-  const nowISO = new Date().toISOString();
-  const nowMs = Date.now();
-  
-  // 1. Main Collection - alertSchedule - Force Save
-  await db.collection('alertSchedule').doc(deviceId).set({
-    fcmToken: currentToken,
-    fcmTokenBackup: currentToken,
-    deviceId: deviceId,
-    lastTokenRefresh: nowISO,
-    lastSyncDate: nowISO,
-    lastSync: nowMs,
-    platform: "chrome-pwa-lifetime",
-    autoRefreshed: true,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-
-  // 2. Backup Collection - fcmTokens - Second Backup - Like B5R8JXHU 15 Days Survival
-  await db.collection('fcmTokens').doc(deviceId).set({
-    token: currentToken,
-    deviceId: deviceId,
-    lastRefresh: nowISO,
-    lastSync: nowMs,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-
-  // 3. Local Storage - Immediate
-  localStorage.setItem('fcmToken', currentToken);
-  localStorage.setItem('fcmLastSync', nowMs.toString());
-      
-     
-            // === SPIN STOP SUCCESS ===
-      const btn2 = document.getElementById('fcmRefreshBtn');
-      const icon2 = document.getElementById('fcmRefreshIcon');
-      const txt2 = document.getElementById('fcmRefreshText');
-      if(btn2){ btn2.disabled=false; btn2.style.opacity='1'; btn2.style.background='#22c55e'; }
-      if(icon2){ icon2.textContent='✅'; icon2.classList.remove('fcm-spinning'); }
-      if(txt2){ txt2.textContent='Token Created!'; }
-      setTimeout(()=>{ 
-        if(btn2){ btn2.style.background='#0ea5e9'; }
-        if(icon2){ icon2.textContent='🔄'; }
-        if(txt2){ txt2.textContent='Refresh Token'; }
-      }, 2000);
-      
+// === V109.3 FINAL LIFETIME FCM - B5R8JXHU STYLE - FIXED ===
+async function autoRefreshFCMToken(){
+  try {
+    console.log('🔄 Auto FCM Refresh DEV-4TA56VPV');
+    if(typeof firebase==='undefined' || !firebase.messaging) return;
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: 'BBXUSqS5bKf0jYV1l9z4jYv1X1z_YOUR_FULL_VAPID_HERE' });
+    if(token){
+      localStorage.setItem('fcmToken', token);
+      localStorage.setItem('fcmTokenBackup', token);
+      localStorage.setItem('fcmLastSync', Date.now().toString());
       console.log('✅ FCM Token Auto Refreshed');
-      alert('✅ Token Refreshed: ' + currentToken.substring(0,20) + '...');
+      const btn2=document.getElementById('fcmRefreshBtn');
+      const txt2=document.getElementById('fcmRefreshText');
+      const icon2=document.getElementById('fcmRefreshIcon');
+      if(btn2){ btn2.disabled=false; btn2.style.opacity='1'; }
+      if(icon2){ icon2.textContent='✅'; }
+      if(txt2){ txt2.textContent='Token Created!'; }
+      setTimeout(()=>{ if(btn2){ btn2.style.background='#0ea5e9'; } if(icon2){ icon2.textContent='🔄'; } if(txt2){ txt2.textContent='Refresh Token'; } },2000);
     } else {
       console.log('✅ Token Already Valid');
     }
     updateFCMStatusUI();
-  } catch (err) {
+  } catch(err){
     console.error('Auto Refresh Error:', err);
-    alert('Refresh Error: ' + err.message);
-          // === SPIN STOP ERROR ===
-      const btnE = document.getElementById('fcmRefreshBtn');
-      const iconE = document.getElementById('fcmRefreshIcon');
-      const txtE = document.getElementById('fcmRefreshText');
-      if(btnE){ btnE.disabled=false; btnE.style.opacity='1'; btnE.style.background='#ef4444'; }
-      if(iconE){ iconE.textContent='❌'; iconE.classList.remove('fcm-spinning'); }
-      if(txtE){ txtE.textContent='Failed - Try Again'; }
-      setTimeout(()=>{ 
-        if(btnE){ btnE.style.background='#0ea5e9'; }
-        if(iconE){ iconE.textContent='🔄'; }
-        if(txtE){ txtE.textContent='Refresh Token'; }
-      }, 2000);
-      
-    const statusEl = document.getElementById('fcmStatus');
-    if(statusEl){ statusEl.textContent = '❌ Error: ' + err.message; statusEl.style.color = 'red'; }
+    const btnE=document.getElementById('fcmRefreshBtn');
+    const iconE=document.getElementById('fcmRefreshIcon');
+    const txtE=document.getElementById('fcmRefreshText');
+    if(btnE){ btnE.disabled=false; }
+    if(iconE){ iconE.textContent='❌'; }
+    if(txtE){ txtE.textContent='Failed - Try Again'; }
+    setTimeout(()=>{ if(btnE){ btnE.style.background='#0ea5e9'; } if(iconE){ iconE.textContent='🔄'; } if(txtE){ txtE.textContent='Refresh Token'; } },2000);
   }
 }
 
