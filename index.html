@@ -12179,8 +12179,9 @@ async function autoRefreshFCMToken(){
       return;
     }
     const vapidKey = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
-const swReg = await navigator.serviceWorker.ready;
-const currentToken = await msg.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: swReg });
+let swReg;
+try { swReg = await navigator.serviceWorker.ready; } catch(e) { swReg = null; }
+const currentToken = swReg ? await msg.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: swReg }) : await msg.getToken({ vapidKey: vapidKey });
     if (!currentToken) {
       alert('No Token Received - Check firebase-messaging-sw.js');
       if(statusEl){ statusEl.textContent = '❌ No Token'; }
