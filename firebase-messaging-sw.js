@@ -16,12 +16,15 @@ const messaging = firebase.messaging();
 const VAPID_KEY = "BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg";
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || payload.data?.title || '🐄 Dairy Alert';
+  const title = payload.notification?.title || payload.data?.title || "Dairy Manager";
+  const body = payload.notification?.body || payload.data?.body || "You have alerts";
   const options = {
-    body: payload.notification?.body || payload.data?.body || 'New Task Pending',
+    body: body,
     icon: '/icon-192.png',
-    badge: '/badge.png',
+    badge: '/badge-72.png',
     data: payload.data,
+    tag: "dairy-alerts-group",
+    renotify: true,
     requireInteraction: true,
     vibrate: [200, 100, 200]
   };
