@@ -1541,8 +1541,8 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     Last Sync: <span id="fcmLastSync">-</span><br>
     Permission: <span id="fcmPermission">-</span>
   </div>
-  <button onclick="autoRefreshFCMToken(); updateFCMStatusUI();" style="margin-top:10px; padding:8px 14px; background:#0ea5e9; color:white; border:none; border-radius:8px; font-size:13px;">🔄 Refresh Token</button>
-<button onclick="forceDeleteOldFCMToken()" style="background:#ef4444;color:white;padding:8px 12px;border-radius:8px;margin-left:8px;">🗑️ Delete Old Token</button>
+<button onclick="autoRefreshFCMToken(); updateFCMStatusUI();" style="display:none;">🔄 Refresh Token</button>
+<button onclick="forceDeleteOldFCMToken()" style="display:none;">🗑️ Delete Old Token</button>
   <div id="fcmStatusLog" style="margin-top:6px; font-size:11px; color:#666;"></div>
 </div>
 
