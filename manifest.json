@@ -1,7 +1,7 @@
 {
   "name": "Dairy Manager",
   "short_name": "Dairy Manager",
-  "description": "Complete digital solution for dairy farmers to manage cattle, milk production, income &amp; expenses, and feed management.",
+  "description": "Complete digital solution for dairy farmers to manage cattle, milk production, income & expenses, and feed management.",
   "start_url": "/Dairy/",
   "scope": "/Dairy/",
   "display": "standalone",
@@ -10,6 +10,7 @@
   "orientation": "portrait",
   "lang": "en",
   "dir": "ltr",
+  "gcm_sender_id": "103953800507",
   "icons": [
     {
       "src": "icon-192.png",
@@ -35,19 +36,11 @@
     "productivity",
     "business"
   ],
-  "screenshots": [
-    {
-      "src": "farm-photo.jpg",
-      "sizes": "1080x1920",
-      "type": "image/jpeg",
-      "form_factor": "narrow"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Add Animal",
       "short_name": "Add Animal",
-      "description": "Add a new animal to your farm",
+      "description": "Add a new animal",
       "url": "/Dairy/?page=add-cow",
       "icons": [
         {
@@ -59,7 +52,7 @@
     {
       "name": "Milk Entry",
       "short_name": "Milk Entry",
-      "description": "Record today's milk production",
+      "description": "Record today's milk",
       "url": "/Dairy/?page=milk-record",
       "icons": [
         {
