@@ -12198,99 +12198,62 @@ const currentToken = swReg ? await msg.getToken({ vapidKey: vapidKey, serviceWor
       alert('No Device ID');
       return;
     }
-    // V109.1 FINAL - Force Save Triple Backup - B5R8JXHU Style - No Condition
-    const db = window.db || window._db || firebase.firestore();
-    const nowISO = new Date().toISOString();
-    const nowMs = Date.now();
-    await db.collection('alertSchedule').doc(deviceId).set({
-      fcmToken: currentToken,
-      fcmTokenBackup: currentToken,
-      deviceId: deviceId,
-      lastTokenRefresh: nowISO,
-      lastSyncDate: nowISO,
-      lastSync: nowMs,
-      platform: "chrome-pwa-lifetime",
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    await db.collection('fcmTokens').doc(deviceId).set({
-      token: currentToken,
-      deviceId: deviceId,
-      lastRefresh: nowISO,
-      lastSync: nowMs,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    localStorage.setItem('fcmToken', currentToken);
-    localStorage.setItem('fcmTokenBackup', currentToken);
-    localStorage.setItem('fcmLastSync', nowMs.toString());
-    localStorage.setItem('lastTokenRefresh', nowISO);
-    localStorage.setItem('lastRefresh', nowISO);
-    localStorage.setItem('fcmLastSyncDisplay', nowISO);
-    console.log('✅ FCM Token Auto Refreshed - Triple Backup - Like B5R8JXHU');
-    alert('✅ Token Refreshed: ' + currentToken.substring(0,20) + '...');
-if(rb){ rb.style.background = '#22c55e'; rb.style.opacity = '1'; }
-if(rbTxt && rbTxt.tagName==='SPAN'){ rbTxt.textContent = '✅ Token Created!'; } else if(rb){ rb.textContent = '✅ Token Created!'; }
-setTimeout(()=>{
-  if(rb){ rb.disabled = false; rb.style.opacity = '1'; rb.style.background = '#0ea5e9'; if(rbTxt && rbTxt.tagName==='SPAN'){ rbTxt.textContent = '🔄 Refresh Token'; } else { rb.textContent = '🔄 Refresh Token'; } }
-  updateFCMStatusUI();
-}, 2500);
+ // V110 FINAL - Single Token - No Backup - Auto - Final
+const db = window.db || window._db || firebase.firestore();
+const nowISO = new Date().toISOString();
+const nowMs = Date.now();
+await db.collection('alertSchedule').doc(deviceId).set({
+  fcmToken: currentToken,
+  deviceId: deviceId,
+  lastSyncDate: nowISO,
+  lastSync: nowMs,
+  platform: "chrome-pwa-lifetime",
+  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+}, { merge: true });
+await db.collection('fcmTokens').doc(deviceId).set({
+  token: currentToken,
+  deviceId: deviceId,
+  lastSync: nowMs,
+  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+}, { merge: true });
+localStorage.setItem('fcmToken', currentToken);
+localStorage.setItem('fcmLastSync', nowMs.toString());
+console.log('✅ FCM Token Saved Single - No Backup - Final');
+updateFCMStatusUI();
 } catch (err) {
-    console.error('Auto Refresh Error:', err);
-    alert('Refresh Error: ' + err.message);
-    const statusEl = document.getElementById('fcmStatusText');
-    if(statusEl){ statusEl.textContent = '❌ Error: ' + err.message; }
-  }
+  console.error('Auto Refresh Error:', err);
+  const statusEl = document.getElementById('fcmStatus');
+  if(statusEl){ statusEl.textContent = '❌ Error: ' + err.message; }
+}
 }
 
-// === FORCE DELETE DEAD TOKEN - No Console Need - V109.1 ===
-async function forceDeleteOldFCMToken(){
-  try{
-    const msg = window.messaging || firebase.messaging();
-    const oldTok = localStorage.getItem('fcmToken');
-    if(!oldTok){ alert('No Old Token Found'); return; }
-    if(confirm('Dead Token Delete করবেন? DEV-4TA56VPV এর পুরানো Token Delete হবে - '+oldTok.substring(0,15)+'...')){
-      if(msg.deleteToken){ try{ await msg.deleteToken(oldTok); }catch(e){ try{ await msg.deleteToken(); }catch(e2){} } }
-      localStorage.removeItem('fcmToken');
-      localStorage.removeItem('fcmTokenBackup');
-      localStorage.removeItem('fcmLastSync');
-      const db = window.db || firebase.firestore();
-      try{ await db.collection('alertSchedule').doc('DEV-4TA56VPV').update({fcmToken: firebase.firestore.FieldValue.delete(), fcmTokenBackup: firebase.firestore.FieldValue.delete()}); }catch(e){}
-      try{ await db.collection('fcmTokens').doc('DEV-4TA56VPV').delete(); }catch(e){}
-      alert('✅ Old Dead Token Deleted - এবার Refresh Token Click করুন নতুন Token এর জন্য');
-      location.reload();
-    }
-  }catch(err){ alert('Delete Error: '+err.message); }
-}
-
-// === FCM STATUS UI UPDATE - V109.1 ===
+// === FCM STATUS UI UPDATE - V110 FINAL ===
 function updateFCMStatusUI() {
-  try {
-    const deviceId = (DB && DB.deviceId) ? DB.deviceId : localStorage.getItem('deviceId') || '-';
-    const token = localStorage.getItem('fcmToken') || '';
-    const lastRefresh = localStorage.getItem('lastTokenRefresh') || '-';
-    const perm = Notification.permission || 'unknown';
-    const elD = document.getElementById('fcmDeviceId');
-    const elS = document.getElementById('fcmStatus');
-    const elT = document.getElementById('fcmTokenShort');
-    const elL = document.getElementById('fcmLastSync');
-    const elP = document.getElementById('fcmPermission');
-    if(elD) elD.textContent = deviceId;
-    if(elP){ elP.textContent = perm; elP.style.color = perm==='granted'?'green':'red'; }
-    if(elT) elT.textContent = token ? token.substring(0,20)+'...'+token.slice(-10) : 'No token';
-    if(elL) elL.textContent = lastRefresh !== '-' ? new Date(lastRefresh).toLocaleString() : '-';
-    if(elS){
-      if(!token){ elS.textContent='❌ No Token'; elS.style.color='red'; }
-      else if(perm!=='granted'){ elS.textContent='⚠️ Permission Denied'; elS.style.color='orange'; }
-      else { elS.textContent='✅ Active - Ready'; elS.style.color='green'; }
-    }
-    const elLog = document.getElementById('fcmStatusLog');
-    if(elLog) elLog.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
-  } catch(e){}
+try {
+  const deviceId = (DB && DB.deviceId) ? DB.deviceId : localStorage.getItem('deviceId') || 'Unknown';
+  const token = localStorage.getItem('fcmToken') || '';
+  const lastRefresh = localStorage.getItem('fcmLastSync') || '';
+  const perm = Notification.permission || 'unknown';
+  const elD = document.getElementById('fcmDeviceId');
+  const elS = document.getElementById('fcmStatus');
+  const elT = document.getElementById('fcmTokenDisplay');
+  const elL = document.getElementById('fcmLastSync');
+  const elP = document.getElementById('fcmPermission');
+  if(elD) elD.textContent = deviceId;
+  if(elP){ elP.textContent = perm; elP.style.color = perm==='granted'?'green':'red'; }
+  if(elT) elT.textContent = token ? token.substring(0,20)+'...' : 'No Token';
+  if(elL) elL.textContent = lastRefresh ? new Date(parseInt(lastRefresh)).toLocaleString() : 'Never';
+  if(elS){
+    if(!token){ elS.textContent='❌ No Token'; elS.style.color='red'; }
+    else if(perm!=='granted'){ elS.textContent='⚠️ Permission Needed'; elS.style.color='orange'; }
+    else { elS.textContent='✅ Active - Ready'; elS.style.color='green'; }
+  }
+} catch(e){}
 }
 setTimeout(updateFCMStatusUI, 2000);
 setInterval(updateFCMStatusUI, 10000);
 
-
-// Start the app
+// Start the app - SINGLE - Line 12293
 initApp();
 
 // ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
