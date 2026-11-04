@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+window.onerror = function(msg, url, line) {
+  alert("Error: " + msg + "\nLine: " + line);
+  return false;
+};
+</script>
 <!-- Firebase Preconnect — দ্রুত connection -->
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
@@ -1839,10 +1845,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 })();
 </script>
 
-<script defer src="first-aid-data.js"></script>
-<script defer src="symptom-data.js"></script>
-<script>
-<script>
 /* ============================================================
    Notification & FCM Token Setup (Safe Version)
    ============================================================ */
@@ -1913,8 +1915,13 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     console.warn("⚠️ Notification setup failed, but app is running:", error);
   }
 })();
-<script>
 </script>
+
+<script defer src="first-aid-data.js"></script>
+<script defer src="symptom-data.js"></script>
+<script>
+
+
 
 // ========== TRANSLATIONS ==========
 const T = {
