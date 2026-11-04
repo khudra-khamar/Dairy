@@ -1765,85 +1765,91 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<!-- Firebase Init -->
+<!-- Firebase Init (Unified & Final) -->
 <script>
 (function initFirebase() {
-  // Wait for firebase to be available (deferred SDK)
-  if (typeof firebase === 'undefined' || typeof firebase.messaging === 'undefined' || typeof firebase.auth === 'undefined') {
+  // Firebase SDK লোড হওয়া পর্যন্ত অপেক্ষা করবে
+  if (typeof firebase === 'undefined' || 
+      typeof firebase.auth === 'undefined' || 
+      typeof firebase.messaging === 'undefined') {
     console.log('⏳ Waiting for Firebase SDK...');
     setTimeout(initFirebase, 100);
     return;
   }
   
   try {
-    // ১. Firebase Config Setup
-    firebase.initializeApp({
-      apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
-      authDomain: "dairy-manager-1.firebaseapp.com",
-      projectId: "dairy-manager-1",
-      // নিচের লাইনটা আপনার ডকুমেন্ট অনুযায়ী ঠিক করা হলো
-      storageBucket: "dairy-manager-1.appspot.com", 
-      messagingSenderId: "724466410200",
-      appId: "1:724466410200:web:14f91a33287e95d8b1edad",
-      measurementId: "G-ETEEL2QSNY"
-    });
-    
-    // ২. সার্ভিসগুলো চালু করা
-    window._fbAnalytics = firebase.analytics();
-    window._db = firebase.firestore();
-    window._messaging = firebase.messaging();
-    window._auth = firebase.auth();
-    
-    window._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-      .then(function() {
-        console.log('✅ Auth persistence: LOCAL');
-      })
-      .catch(function(e) {
-        console.warn('Auth persistence failed:', e.message);
+    // ১. Firebase Config Setup (একবারই চালু হবে)
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
+        authDomain: "dairy-manager-1.firebaseapp.com",
+        projectId: "dairy-manager-1",
+        storageBucket: "dairy-manager-1.appspot.com", 
+        messagingSenderId: "724466410200",
+        appId: "1:724466410200:web:14f91a33287e95d8b1edad",
+        measurementId: "G-ETEEL2QSNY"
       });
+    }
     
-    // ৩. Unified SW রেজিস্ট্রেশন (সমস্যা ১ এর সমাধান)
+    // ২. বেসিক সার্ভিসগুলো চালু করা
+    try { window._fbAnalytics = firebase.analytics(); } catch(e) { console.warn('Analytics error', e); }
+    try { window._db = firebase.firestore(); } catch(e) { console.warn('Firestore error', e); }
+    try { window._auth = firebase.auth(); } catch(e) { console.warn('Auth error', e); }
+    
+    if (window._auth) {
+        window._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+          .then(function() { console.log('✅ Auth persistence: LOCAL'); })
+          .catch(function(e) { console.warn('Auth persistence failed:', e.message); });
+    }
+    
+    // ৩. আগে SW রেজিস্টার করি, তারপর Messaging চালু করি
     if ('serviceWorker' in navigator) {
-      // সরাসরি sw.js রেজিস্টার করছি
       navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then(function(reg) {
           console.log('✅ SW Registered:', reg.scope);
           window._fcmSWReg = reg;
           
-          // Firebase-কে বলছি এই রেজিস্ট্রেশনটাই ব্যবহার করতে
           try {
-            if (window._messaging && window._messaging.useServiceWorker) {
-              window._messaging.useServiceWorker(reg);
-              console.log('✅ FCM successfully linked to sw.js');
+            if (firebase.messaging.isSupported()) {
+                window._messaging = firebase.messaging();
+                window._messaging.useServiceWorker(reg); 
+                console.log('✅ Messaging initialized and linked to sw.js');
             }
           } catch(e) {
-            console.warn('useServiceWorker failed:', e.message);
+            console.error('Messaging init failed:', e);
           }
+          
+          window._fbReady = true;
+          console.log('✅ Firebase ready');
         })
-        .catch(function(err) {
-          console.error('❌ SW Registration failed:', err);
+        .catch(function(err) { 
+            console.error('❌ SW Registration failed:', err); 
+            window._fbReady = true; 
         });
+    } else {
+        try { window._messaging = firebase.messaging(); } catch(e){}
+        window._fbReady = true;
     }
     
-    window._fbReady = true;
-    console.log('✅ Firebase ready');
-    
-    // Track app open
-    try {
-      window._fbAnalytics.logEvent('app_open', {
-        platform: 'pwa',
-        timestamp: Date.now()
-      });
-    } catch(e) {
-      console.warn('Analytics event failed:', e);
+    // Analytics Track
+    if(window._fbAnalytics) {
+        try {
+          window._fbAnalytics.logEvent('app_open', { platform: 'pwa', timestamp: Date.now() });
+        } catch(e) {}
     }
     
   } catch(e) {
-    console.warn('⚠️ Firebase failed:', e.message);
-    window._fbReady = false;
+    if (e.code === 'app/duplicate-app') {
+      window._fbReady = true;
+      console.log('✅ Firebase already initialized.');
+    } else {
+      alert('⚠️ Firebase initializeApp failed: ' + e.message);
+      window._fbReady = false;
+    }
   }
 })();
 </script>
+
 <script>
 /* ============================================================
    Notification & FCM Token Setup (Safe Version)
@@ -2972,66 +2978,8 @@ function updateHeaderSubtitle() {
 // ========== PUSH NOTIFICATION ==========
 
 // --- Enable Notifications ---
-// --- Enable Notifications (Diagnostic Version) ---
-async function enableNotifications() {
-  // ১. ফায়ারবেস এবং মেসেজিং চেক
-  if (!window._fbReady || !window._messaging) {
-    let debugMsg = "⚠️ Firebase বা Messaging রেডি হয়নি। কারণ:\n";
-    debugMsg += "1. Firebase লোড হয়েছে: " + (typeof firebase !== 'undefined') + "\n";
-    debugMsg += "2. Messaging ভেরিয়েবল: " + (typeof window._messaging) + "\n";
-    debugMsg += "3. Auth লোড হয়েছে: " + (typeof firebase !== 'undefined' && typeof firebase.auth !== 'undefined');
-    alert(debugMsg);
-    return;
-  }
 
-  try {
-    // ২. পারমিশন চাওয়া
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      if (typeof showAlert === 'function') showAlert('❌ Notification Permission Denied');
-      return;
-    }
 
-    // ৩. সার্ভিস ওয়ার্কার রেজিস্ট্রেশন চেক
-    if (!window._fcmSWReg) {
-      // যদি সার্ভিস ওয়ার্কার রেডি না থাকে, ২ সেকেন্ড অপেক্ষা করবে
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    // ৪. টোকেন নেওয়া
-    const VAPID = "BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg";
-    const tokenOptions = { vapidKey: VAPID };
-    
-    if (window._fcmSWReg) {
-      tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-    }
-
-    const token = await window._messaging.getToken(tokenOptions);
-    
-    if (!token) throw new Error('Token পাওয়া যায়নি');
-
-    // ৫. ডাটাবেসে সেভ করা
-    DB.fcmToken = token;
-    DB.notifEnabled = true;
-    localStorage.setItem('dm_notifEnabled', 'true');
-    if (typeof saveDB === 'function') saveDB();
-
-    if (typeof saveFCMToken === 'function') {
-      saveFCMToken(token);
-    }
-
-    if (typeof toast === 'function') toast('✅ Notification Enabled successfully!');
-    
-  } catch (e) {
-    if (typeof showAlert === 'function') {
-      showAlert('❌ Error: ' + e.message);
-    } else {
-      alert('Error: ' + e.message);
-    }
-  } finally {
-    if (typeof updateNotificationUI === 'function') updateNotificationUI();
-  }
-}
 
 // ---- Save FCM Token (Clean version) ----
 async function saveFCMToken(token) {
@@ -9165,7 +9113,7 @@ function shareRetailWhatsApp() {
   let msg = '🐄 *' + farm + '*\n';
   if (owner) msg += '👤 ' + owner + '\n';
   msg += '\n👤 *ক্রেতার নাম:* ' + c.name + '\n';
-  if (c.type) msg += '📝 *ধরন:* ' + c.type + '\n';
+  if (c.type) msg += '?? *ধরন:* ' + c.type + '\n';
   msg += '💵 *দুধের দাম:* ' + (c.rate || 40) + ' Rs/L\n';
   msg += '📅 *মাস:* ' + monthLabel + '\n';
   msg += '\n─────────────────────\n';
