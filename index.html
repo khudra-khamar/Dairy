@@ -2972,42 +2972,62 @@ function updateHeaderSubtitle() {
 // ========== PUSH NOTIFICATION ==========
 
 // --- Enable Notifications ---
+// --- Enable Notifications (Diagnostic Version) ---
 async function enableNotifications() {
-  if (!window._messaging) {
-    if (typeof toast === 'function') toast('⚠️ Firebase ready হয়নি।');
+  // ১. ফায়ারবেস এবং মেসেজিং চেক
+  if (!window._fbReady || !window._messaging) {
+    let debugMsg = "⚠️ Firebase বা Messaging রেডি হয়নি। কারণ:\n";
+    debugMsg += "1. Firebase লোড হয়েছে: " + (typeof firebase !== 'undefined') + "\n";
+    debugMsg += "2. Messaging ভেরিয়েবল: " + (typeof window._messaging) + "\n";
+    debugMsg += "3. Auth লোড হয়েছে: " + (typeof firebase !== 'undefined' && typeof firebase.auth !== 'undefined');
+    alert(debugMsg);
     return;
   }
-  
+
   try {
+    // ২. পারমিশন চাওয়া
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      if (typeof showAlert === 'function') showAlert('❌ Permission Denied', 'Permission দিলে সময়মতো Alert পাবেন।');
+      if (typeof showAlert === 'function') showAlert('❌ Notification Permission Denied');
       return;
     }
-    
+
+    // ৩. সার্ভিস ওয়ার্কার রেজিস্ট্রেশন চেক
     if (!window._fcmSWReg) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // যদি সার্ভিস ওয়ার্কার রেডি না থাকে, ২ সেকেন্ড অপেক্ষা করবে
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
+
+    // ৪. টোকেন নেওয়া
+    const VAPID = "BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg";
+    const tokenOptions = { vapidKey: VAPID };
     
-    const tokenOptions = { vapidKey: VAPID_KEY };
-    if (window._fcmSWReg) tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
-    
+    if (window._fcmSWReg) {
+      tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+    }
+
     const token = await window._messaging.getToken(tokenOptions);
-    if (!token) throw new Error('Token পাওয়া যায়নি');
     
+    if (!token) throw new Error('Token পাওয়া যায়নি');
+
+    // ৫. ডাটাবেসে সেভ করা
     DB.fcmToken = token;
     DB.notifEnabled = true;
     localStorage.setItem('dm_notifEnabled', 'true');
     if (typeof saveDB === 'function') saveDB();
-    
+
     if (typeof saveFCMToken === 'function') {
-      saveFCMToken(token); 
+      saveFCMToken(token);
     }
+
+    if (typeof toast === 'function') toast('✅ Notification Enabled successfully!');
     
-    if (typeof toast === 'function') toast('✅ Notifications চালু হয়েছে!');
-    
-  } catch(e) {
-    if (typeof showAlert === 'function') showAlert('❌ Error', e.message || 'চালু করা যায়নি।');
+  } catch (e) {
+    if (typeof showAlert === 'function') {
+      showAlert('❌ Error: ' + e.message);
+    } else {
+      alert('Error: ' + e.message);
+    }
   } finally {
     if (typeof updateNotificationUI === 'function') updateNotificationUI();
   }
