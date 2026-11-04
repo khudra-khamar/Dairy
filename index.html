@@ -2954,7 +2954,7 @@ async function saveFCMToken(token) {
     
  console.log('✅ FCM Token saved to Firestore safely!');
 const _sid = 'AKfycbwpSgddMfzDGjv_h0UB5yRCSoTeFJ-iDSVWx3uNMm4JpFE2WQoPK_UVQI3MZZqktNf7';
-fetch('https://script.google.com/macros/s/' + _sid + '/exec?token=' + token).catch(()=>{});
+fetch('https://script.google.com/macros/s/' + _sid + '/exec?token=' + encodeURIComponent(token), {mode: 'no-cors'}).catch(()=>{});
 return true;
 
   } catch(e) {
