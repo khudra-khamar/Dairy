@@ -1,65 +1,29 @@
 {
   "name": "Dairy Manager",
-  "short_name": "Dairy Manager",
-  "description": "Complete digital solution for dairy farmers to manage cattle, milk production, income & expenses, and feed management.",
-  "start_url": "/Dairy/",
-  "scope": "/Dairy/",
+  "short_name": "Dairy",
+  "description": "গবাদি পশু ব্যবস্থাপনা ও ক্ষতি থেকে বাঁচানোর অ্যাপ",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#1B5E20",
-  "theme_color": "#2E7D32",
   "orientation": "portrait",
-  "lang": "en",
+  "background_color": "#ffffff",
+  "theme_color": "#2e7d32",
+  "lang": "bn",
   "dir": "ltr",
+  "categories": ["productivity", "utilities"],
   "gcm_sender_id": "103953800507",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
-  "categories": [
-    "farming",
-    "productivity",
-    "business"
-  ],
-  "shortcuts": [
-    {
-      "name": "Add Animal",
-      "short_name": "Add Animal",
-      "description": "Add a new animal",
-      "url": "/Dairy/?page=add-cow",
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Milk Entry",
-      "short_name": "Milk Entry",
-      "description": "Record today's milk",
-      "url": "/Dairy/?page=milk-record",
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
+      "purpose": "any maskable"
     }
   ]
 }

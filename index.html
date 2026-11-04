@@ -1770,22 +1770,24 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   }
   
   try {
+    // ১. Firebase Config Setup
     firebase.initializeApp({
       apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
       authDomain: "dairy-manager-1.firebaseapp.com",
       projectId: "dairy-manager-1",
-      storageBucket: "dairy-manager-1.firebasestorage.app",
+      // নিচের লাইনটা আপনার ডকুমেন্ট অনুযায়ী ঠিক করা হলো
+      storageBucket: "dairy-manager-1.appspot.com", 
       messagingSenderId: "724466410200",
       appId: "1:724466410200:web:14f91a33287e95d8b1edad",
       measurementId: "G-ETEEL2QSNY"
     });
     
+    // ২. সার্ভিসগুলো চালু করা
     window._fbAnalytics = firebase.analytics();
     window._db = firebase.firestore();
     window._messaging = firebase.messaging();
-    
-    // ===== NEW: Firebase Auth =====
     window._auth = firebase.auth();
+    
     window._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
       .then(function() {
         console.log('✅ Auth persistence: LOCAL');
@@ -1794,23 +1796,27 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         console.warn('Auth persistence failed:', e.message);
       });
     
-    // Unified SW - Use existing sw.js registration for FCM (Fix double SW conflict)
+    // ৩. Unified SW রেজিস্ট্রেশন (সমস্যা ১ এর সমাধান)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then(function(reg) {
-        if (reg) {
+      // সরাসরি sw.js রেজিস্টার করছি
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(function(reg) {
+          console.log('✅ SW Registered:', reg.scope);
           window._fcmSWReg = reg;
+          
+          // Firebase-কে বলছি এই রেজিস্ট্রেশনটাই ব্যবহার করতে
           try {
             if (window._messaging && window._messaging.useServiceWorker) {
               window._messaging.useServiceWorker(reg);
-              console.log('✅ FCM using existing SW:', reg.scope);
+              console.log('✅ FCM successfully linked to sw.js');
             }
           } catch(e) {
             console.warn('useServiceWorker failed:', e.message);
           }
-        } else {
-          console.log('⏳ No SW yet, FCM will use default');
-        }
-      });
+        })
+        .catch(function(err) {
+          console.error('❌ SW Registration failed:', err);
+        });
     }
     
     window._fbReady = true;
@@ -1833,12 +1839,82 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 })();
 </script>
 
-
 <script defer src="first-aid-data.js"></script>
 <script defer src="symptom-data.js"></script>
-
 <script>
+<script>
+/* ============================================================
+   Notification & FCM Token Setup (Safe Version)
+   ============================================================ */
+(function initDairyNotifications() {
+  try {
+    // Firebase এবং Messaging লোড হওয়া পর্যন্ত অপেক্ষা করবে
+    if (!window._fbReady || !window._messaging) {
+      setTimeout(initDairyNotifications, 1000);
+      return; // মূল অ্যাপ ব্লক করবে না
+    }
 
+    var messaging = window._messaging;
+    var VAPID_KEY = "BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg";
+
+    function requestPermissionAndGetToken() {
+      if (!("Notification" in window)) return;
+
+      Notification.requestPermission().then(function (permission) {
+        if (permission === 'granted') {
+          messaging.getToken({ vapidKey: VAPID_KEY }).then(function (currentToken) {
+            if (currentToken) {
+              console.log('🔥 FCM Token:', currentToken);
+              saveTokenToFirestore(currentToken);
+            }
+          }).catch(function (err) {
+            console.warn('FCM Token Error:', err);
+          });
+        }
+      });
+    }
+
+    function saveTokenToFirestore(token) {
+      var deviceId = localStorage.getItem('deviceId') || localStorage.getItem('device_id') || 'DEV-UNKNOWN';
+      if (window._db) {
+        window._db.collection('fcmTokens').doc(deviceId).set({
+          token: token,
+          deviceId: deviceId,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          platform: 'web/twa'
+        }, { merge: true })
+        .then(function() {
+          console.log('✅ Token saved to Firestore');
+        }).catch(function(e) {
+          console.warn('Firestore save error:', e);
+        });
+      }
+    }
+
+    // অ্যাপ ওপেন থাকলে নোটিফিকেশন দেখাবে
+    messaging.onMessage(function (payload) {
+      var title = (payload.notification && payload.notification.title) || 'Dairy Manager';
+      var body = (payload.notification && payload.notification.body) || 'নতুন তথ্য';
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body: body, icon: './icon-192.png' });
+      }
+    });
+
+    // পারমিশন চেক
+    if (Notification.permission === 'granted') {
+      requestPermissionAndGetToken();
+    } else if (Notification.permission !== 'denied') {
+      // ৩ সেকেন্ড পর নোটিফিকেশন পারমিশন পপ-আপ আসবে
+      setTimeout(requestPermissionAndGetToken, 3000); 
+    }
+
+  } catch (error) {
+    // কোনো ভুল হলে অ্যাপ ক্র্যাশ করবে না, শুধু কনসোল-এ এরর দেখাবে
+    console.warn("⚠️ Notification setup failed, but app is running:", error);
+  }
+})();
+<script>
+</script>
 
 // ========== TRANSLATIONS ==========
 const T = {
