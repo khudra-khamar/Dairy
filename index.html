@@ -1851,6 +1851,69 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </script>
 
 <script>
+
+// --- Enable Notifications (Safe Version) ---
+async function enableNotifications() {
+  if (!window._fbReady || !window._messaging) {
+    let debugMsg = "⚠️ Firebase বা Messaging রেডি হয়নি। কারণ:\n";
+    debugMsg += "1. Firebase লোড হয়েছে: " + (typeof firebase !== 'undefined') + "\n";
+    debugMsg += "2. Messaging ভেরিয়েবল: " + (typeof window._messaging) + "\n";
+    alert(debugMsg);
+    return;
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      if (typeof showAlert === 'function') showAlert('❌ Notification Permission Denied');
+      else alert('❌ Notification Permission Denied');
+      return;
+    }
+
+    if (!window._fcmSWReg) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    const VAPID = "BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg";
+    const tokenOptions = { vapidKey: VAPID };
+    
+    if (window._fcmSWReg) {
+      tokenOptions.serviceWorkerRegistration = window._fcmSWReg;
+    }
+
+    const token = await window._messaging.getToken(tokenOptions);
+    
+    if (!token) throw new Error('Token পাওয়া যায়নি');
+
+    if (typeof DB !== 'undefined') {
+        DB.fcmToken = token;
+        DB.notifEnabled = true;
+        localStorage.setItem('dm_notifEnabled', 'true');
+        if (typeof saveDB === 'function') saveDB();
+    }
+
+    // Firestore-এ সেভ করার জন্য সরাসরি কল
+    if (window._db && DB.deviceId) {
+        await window._db.collection('fcmTokens').doc(DB.deviceId).set({
+          token: token,
+          deviceId: DB.deviceId,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          platform: 'web/twa',
+          active: true
+        }, { merge: true });
+    }
+
+    if (typeof toast === 'function') toast('✅ Notification Enabled successfully!');
+    else alert('✅ Notification Enabled successfully!');
+    
+  } catch (e) {
+    if (typeof showAlert === 'function') showAlert('❌ Error: ' + e.message);
+    else alert('Error: ' + e.message);
+  } finally {
+    if (typeof updateNotificationUI === 'function') updateNotificationUI();
+  }
+}
+
 /* ============================================================
    Notification & FCM Token Setup (Safe Version)
    ============================================================ */
@@ -9113,7 +9176,7 @@ function shareRetailWhatsApp() {
   let msg = '🐄 *' + farm + '*\n';
   if (owner) msg += '👤 ' + owner + '\n';
   msg += '\n👤 *ক্রেতার নাম:* ' + c.name + '\n';
-  if (c.type) msg += '?? *ধরন:* ' + c.type + '\n';
+  if (c.type) msg += '📝 *ধরন:* ' + c.type + '\n';
   msg += '💵 *দুধের দাম:* ' + (c.rate || 40) + ' Rs/L\n';
   msg += '📅 *মাস:* ' + monthLabel + '\n';
   msg += '\n─────────────────────\n';
