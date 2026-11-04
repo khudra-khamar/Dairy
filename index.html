@@ -10075,18 +10075,15 @@ function generateDeviceId() {
 const VAPID_KEY = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
 
 // অ্যাপ ওপেন হলেই ব্যাকগ্রাউন্ডে টোকেন অটো-আপডেট হবে
-if (typeof firebase !== 'undefined' && firebase.messaging) {
+if (typeof firebase !== 'undefined' && window._messaging) {
   try {
-    const msg = firebase.messaging();
+    const msg = window._messaging; // 👈 এখানে window._messaging ব্যবহার করা হলো
     msg.onTokenRefresh(function() {
       console.log('🔄 FCM Token refreshed automatically');
-      msg.getToken({ vapidKey: VAPID_KEY }).then(function(newToken) {
+      const vapidKey = "BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg"; // VAPID Key যোগ করা হলো
+      msg.getToken({ vapidKey: vapidKey }).then(function(newToken) {
         if (newToken && typeof saveFCMToken === 'function') {
           saveFCMToken(newToken); 
-          if (typeof DB !== 'undefined') {
-            DB.fcmToken = newToken;
-            if (typeof saveDB === 'function') saveDB();
-          }
         }
       }).catch(function(err) {
         console.warn('Token refresh error:', err);
@@ -12255,62 +12252,75 @@ async function autoRefreshFCMToken(){
     console.log('🔄 Refresh Clicked...');
     const statusEl = document.getElementById('fcmStatusText');
     if(statusEl){ statusEl.textContent = '⏳ Getting Token...'; }
-  const rb = document.querySelector('button[onclick*="autoRefreshFCMToken"]'); 
-  const rbTxt = rb ? rb.querySelector('span') || rb : null;
-  if(rb){ rb.disabled = true; rb.style.opacity = '0.6'; rb.style.background = '#6b7280'; }
-  if(rbTxt && rbTxt.tagName==='SPAN'){ rbTxt.textContent = '⏳ Creating Token... Please wait...'; } else if(rb){ rb.textContent = '⏳ Creating Token... Please wait...'; }
+    
+    const rb = document.querySelector('button[onclick*="autoRefreshFCMToken"]'); 
+    const rbTxt = rb ? rb.querySelector('span') || rb : null;
+    if(rb){ rb.disabled = true; rb.style.opacity = '0.6'; rb.style.background = '#6b7280'; }
+    if(rbTxt && rbTxt.tagName==='SPAN'){ rbTxt.textContent = '⏳ Creating Token... Please wait...'; } else if(rb){ rb.textContent = '⏳ Creating Token... Please wait...'; }
+    
     if (Notification.permission !== 'granted') {
       alert('Notification Permission Not Granted - Please Allow');
       if(statusEl){ statusEl.textContent = '⚠️ Permission Denied'; }
       return;
     }
-    const msg = window.messaging || (typeof firebase !== 'undefined' ? firebase.messaging() : null);
+    
+    // 👈 এখানে window._messaging ব্যবহার করা হলো
+    const msg = window._messaging || (typeof firebase !== 'undefined' ? firebase.messaging() : null);
     if (!msg) {
       alert('Messaging not ready - Reload App');
       return;
     }
+    
     const vapidKey = 'BBXUSqS5IwIpfm5zuvGJwxLjJNmu-5bVq1VQ28JvHSbZ-TJGN0Mj_bNJSFLsq_qPTaold9ifAa3HqA69y4FzzKg';
-let swReg;
-try { swReg = await navigator.serviceWorker.ready; } catch(e) { swReg = null; }
-const currentToken = swReg ? await msg.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: swReg }) : await msg.getToken({ vapidKey: vapidKey });
+    
+    // 👈 serviceWorkerRegistration বাদ দেওয়া হলো, যাতে ক্র্যাশ না করে
+    const currentToken = await msg.getToken({ vapidKey: vapidKey });
+    
     if (!currentToken) {
-      alert('No Token Received - Check firebase-messaging-sw.js');
+      alert('No Token Received - Check sw.js');
       if(statusEl){ statusEl.textContent = '❌ No Token'; }
       return;
     }
-    const savedToken = localStorage.getItem('fcmToken');
+    
     const deviceId = (typeof DB !== 'undefined' && DB.deviceId) ? DB.deviceId : localStorage.getItem('deviceId');
     if (!deviceId) {
       alert('No Device ID');
       return;
     }
-// V110 FINAL - Single Token - Lifetime - B5R8JXHU Style - active:true
-const db = window.db || window._db || firebase.firestore();
-const nowMs = Date.now();
-await db.collection('alertSchedule').doc(deviceId).set({
-  fcmToken: currentToken,
-  deviceId: deviceId,
-  active: true,
-  lastSync: firebase.firestore.FieldValue.serverTimestamp(),
-  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-}, { merge: true });
-await db.collection('fcmTokens').doc(deviceId).set({
-  token: currentToken,
-  deviceId: deviceId,
-  active: true,
-  lastSync: firebase.firestore.FieldValue.serverTimestamp(),
-  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-}, { merge: true });
-localStorage.setItem('fcmToken', currentToken);
-localStorage.setItem('fcmLastSync', nowMs.toString());
-console.log('✅ FCM Token Saved Single - Lifetime - active:true - B5R8JXHU Style');
-updateFCMStatusUI();
 
-} catch (err) {
-  console.error('Auto Refresh Error:', err);
-  const statusEl = document.getElementById('fcmStatus');
-  if(statusEl){ statusEl.textContent = '❌ Error: ' + err.message; }
-}
+    const db = window._db || firebase.firestore();
+    const nowMs = Date.now();
+    
+    // Firestore-এ টোকেন সেভ
+    await db.collection('alertSchedule').doc(deviceId).set({
+      fcmToken: currentToken,
+      deviceId: deviceId,
+      active: true,
+      lastSync: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    
+    await db.collection('fcmTokens').doc(deviceId).set({
+      token: currentToken,
+      deviceId: deviceId,
+      active: true,
+      lastSync: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    
+    localStorage.setItem('fcmToken', currentToken);
+    localStorage.setItem('fcmLastSync', nowMs.toString());
+    console.log('✅ FCM Token Saved Successfully!');
+    updateFCMStatusUI();
+
+    if(statusEl){ statusEl.textContent = '✅ Token Generated!'; }
+    
+  } catch (err) {
+    console.error('Auto Refresh Error:', err);
+    alert('Error: ' + err.message); // 👈 এরর আসলে স্ক্রিনে দেখাবে
+    const statusEl = document.getElementById('fcmStatus');
+    if(statusEl){ statusEl.textContent = '❌ Error: ' + err.message; }
+  }
 }
 
 // === FCM STATUS UI UPDATE - V110 FINAL ===
@@ -12342,21 +12352,7 @@ setInterval(updateFCMStatusUI, 10000);
 // Start the app - SINGLE - Line 12293
 initApp();
 
-// ========== SERVICE WORKER REGISTRATION + AUTO UPDATE ==========
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js').then(function(reg) {
-      console.log('✅ SW registered:', reg.scope);
-      
-      // প্রতি ৩০ মিনিটে background update check
-      setInterval(function() { 
-        try { reg.update(); } catch(e) {} 
-      }, 30 * 60 * 1000);
-      
-    }).catch(function(err) {
-      console.log('❌ SW failed:', err);
-    });
-  });
+
   
   // ===== Reload LOOP prevent (time-based) =====
   // ৫ মিনিটে একবারই reload হবে — loop বন্ধ
