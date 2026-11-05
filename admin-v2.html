@@ -2036,9 +2036,10 @@ async function sendViaAppsScript() {
         secret: 'dairy-admin-2026-secret'
       })
     });
-    
-    const data = await response.json();
-    console.log('Apps Script response:', data);
+// fetch শেষ হওয়ার পর একবারই json রিড করব
+const data = await response.json();
+console.log('Apps Script response:', data);
+alert("Response: " + JSON.stringify(data)); // ডিবাগ করার জন্য
     
     if (data.success) {
       toast('Sent to ' + data.sent + ' / ' + data.total + ' users');
