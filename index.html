@@ -1946,7 +1946,7 @@ async function enableNotifications() {
     }
 
     function saveTokenToFirestore(token) {
-      var deviceId = localStorage.getItem('deviceId') || localStorage.getItem('device_id') || 'DEV-UNKNOWN';
+      var deviceId = (typeof DB !== 'undefined' && DB.deviceId) ? DB.deviceId : (localStorage.getItem('deviceId') || 'DEV-UNKNOWN');
       if (window._db) {
         window._db.collection('fcmTokens').doc(deviceId).set({
           token: token,
