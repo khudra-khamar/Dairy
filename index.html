@@ -1768,17 +1768,28 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <!-- Firebase Init (Unified & Final) -->
 <script>
 (function initFirebase() {
-  // Firebase SDK লোড হওয়া পর্যন্ত অপেক্ষা করবে
+  // ১. ফায়ারবেস লোড চেক (লোড না হলে অপেক্ষা করবে)
+  window._fbLoadAttempts = (window._fbLoadAttempts || 0) + 1;
+  
   if (typeof firebase === 'undefined' || 
       typeof firebase.auth === 'undefined' || 
       typeof firebase.messaging === 'undefined') {
+      
+    if (window._fbLoadAttempts > 20) { // ২০ বার (প্রায় ২ সেকেন্ড) চেষ্টা করবে
+        console.warn('⚠️ Offline: Firebase SDK load failed. Running in offline mode.');
+        window._fbReady = false; 
+        const mainApp = document.getElementById('mainApp');
+        if (mainApp) mainApp.style.display = 'block'; // অ্যাপ খুলে দিলাম
+        return; 
+    }
+    
     console.log('⏳ Waiting for Firebase SDK...');
     setTimeout(initFirebase, 100);
     return;
   }
   
   try {
-    // ১. Firebase Config Setup (একবারই চালু হবে)
+    // ২. Firebase Config Setup
     if (!firebase.apps.length) {
       firebase.initializeApp({
         apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
@@ -1791,10 +1802,18 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       });
     }
     
-    // ২. বেসিক সার্ভিসগুলো চালু করা
-    try { window._fbAnalytics = firebase.analytics(); } catch(e) { console.warn('Analytics error', e); }
-    try { window._db = firebase.firestore(); } catch(e) { console.warn('Firestore error', e); }
-    try { window._auth = firebase.auth(); } catch(e) { console.warn('Auth error', e); }
+    // ৩. সার্ভিস চালু (অফলাইন পারসিস্টেন্স সহ)
+    try { window._fbAnalytics = firebase.analytics(); } catch(e) {}
+    
+    try { 
+        window._db = firebase.firestore(); 
+        // 💡 অফলাইন ডাটা সেভ (IndexedDB) চালু করা হলো
+        window._db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
+            console.warn('Offline persistence failed:', err.code);
+        });
+    } catch(e) { console.warn('Firestore error', e); }
+    
+    try { window._auth = firebase.auth(); } catch(e) {}
     
     if (window._auth) {
         window._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
@@ -1802,23 +1821,18 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
           .catch(function(e) { console.warn('Auth persistence failed:', e.message); });
     }
     
-    // ৩. আগে SW রেজিস্টার করি, তারপর Messaging চালু করি
+    // ৪. Service Worker রেজিস্ট্রেশন
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then(function(reg) {
           console.log('✅ SW Registered:', reg.scope);
           window._fcmSWReg = reg;
-          
           try {
             if (firebase.messaging.isSupported()) {
                 window._messaging = firebase.messaging();
                 window._messaging.useServiceWorker(reg); 
-                console.log('✅ Messaging initialized and linked to sw.js');
             }
-          } catch(e) {
-            console.error('Messaging init failed:', e);
-          }
-          
+          } catch(e) {}
           window._fbReady = true;
           console.log('✅ Firebase ready');
         })
@@ -1831,7 +1845,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         window._fbReady = true;
     }
     
-    // Analytics Track
+    // ৫. Analytics Track
     if(window._fbAnalytics) {
         try {
           window._fbAnalytics.logEvent('app_open', { platform: 'pwa', timestamp: Date.now() });
@@ -1841,9 +1855,8 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
   } catch(e) {
     if (e.code === 'app/duplicate-app') {
       window._fbReady = true;
-      console.log('✅ Firebase already initialized.');
     } else {
-      alert('⚠️ Firebase initializeApp failed: ' + e.message);
+      console.warn('⚠️ Firebase initializeApp failed: ' + e.message);
       window._fbReady = false;
     }
   }
