@@ -10766,17 +10766,21 @@ async function proceedAfterLogin() {
       saveDB();
     }
     
-   // Farm Name Modal — একবারই জিজ্ঞাসা করবে (সেভ বা Skip হবার পর আর আসবে না)
-if (!DB.settings.farmName && !DB.settings.farmNameAsked) {
+   // Farm Name Modal — localStorage দিয়ে পার্মানেন্ট ফিক্স
+const isNameAsked = localStorage.getItem('dm_farmNameAsked') === 'true';
+
+if (!DB.settings.farmName && !isNameAsked) {
   try {
     if (typeof askNameModal === 'function') {
       const name = await askNameModal();
+      
       if (name) {
         DB.settings.farmName = name;
+        if (typeof saveDB === 'function') saveDB();
       }
-      // 💡 এটি সেট করলেই ইউজার Skip করলেও পরেরবার আর পপ-আপ আসবে না
-      DB.settings.farmNameAsked = true; 
-      if (typeof saveDB === 'function') saveDB();
+      
+      // 💡 localStorage-এ সেভ করলেই ইউজার চিরদিনের জন্য আর এই পপ-আপ দেখবে না
+      localStorage.setItem('dm_farmNameAsked', 'true');
       
       if (typeof saveNameToFirestore === 'function') {
         try { await saveNameToFirestore(name || ""); } catch(e) {}
