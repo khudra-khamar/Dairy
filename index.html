@@ -10408,66 +10408,71 @@ async function saveUserAfterLogin(user, method) {
     const uid = user.uid;
     const now = Date.now();
     
-// ===== 1. Save to users collection =====
-try {
-  const userRef = window._db.collection('users').doc(uid);
-  
-  const userData = {
-    uid: uid,
-    authMethod: method,
-    email: user.email || '',
-    phone: user.phoneNumber || '',
-    displayName: user.displayName || '',
-    photoURL: user.photoURL || '',
-    deviceId: DB.deviceId || '',
-    lastSeen: now,
-    appVersion: '2026.09'
-  };
-  
-  // যদি প্রথমবার লগইন হয়, তবে এই ফিল্ডগুলো সেট হবে
-  // (আমরা merge: true ব্যবহার করছি, তাই বারবার লগইন করলেও আগের ডাটা নষ্ট হবে না)
-  userData.firstSeen = now; 
-  userData.farmerName = DB.settings ? (DB.settings.farmName || '') : '';
-  userData.ownerName = DB.settings ? (DB.settings.ownerName || user.displayName || '') : (user.displayName || '');
-
-  await userRef.set(userData, { merge: true });
-  console.log('✅ users saved (merged):', uid);
-
-} catch(e) {
-  console.warn('users save failed:', e);
-}
+    // ===== 1. Save to users collection =====
+    try {
+      const userRef = window._db.collection('users').doc(uid);
+      const userSnap = await userRef.get();
+      
+      const userData = {
+        uid: uid,
+        authMethod: method,
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        displayName: user.displayName || '',
+        photoURL: user.photoURL || '',
+        deviceId: DB.deviceId || '',
+        lastSeen: now
+      };
+      
+      if (!userSnap.exists) {
+        userData.firstSeen = now;
+        userData.farmerName = DB.settings ? (DB.settings.farmName || '') : '';
+        userData.ownerName = DB.settings ? (DB.settings.ownerName || user.displayName || '') : (user.displayName || '');
+        userData.appVersion = '2026.09';
+        await userRef.set(userData);
+        console.log('✅ users created:', uid);
+      } else {
+        await userRef.update(userData);
+        console.log('✅ users updated:', uid);
+      }
+    } catch(e) {
+      console.warn('users save failed:', e);
+    }
     
-   // ===== 2. Save to trialUsers collection =====
-try {
-  // এখানে doc(uid) ব্যবহার করা হয়েছে, আপনি চাইলে doc(DB.deviceId) দিয়েও করতে পারেন
-  const trialRef = window._db.collection('trialUsers').doc(uid); 
-  
-  const trialData = {
-    type: 'auth',
-    uid: uid,
-    authMethod: method,
-    deviceId: DB.deviceId || '',
-    email: user.email || '',
-    phone: user.phoneNumber || '',
-    lastSeen: now,
-    appVersion: '2026.09',
+    // ===== 2. Save to trialUsers collection =====
+    try {
+      const trialRef = window._db.collection('trialUsers').doc(uid);
+      const trialSnap = await trialRef.get();
+      
+      const trialData = {
+        type: 'auth',
+        uid: uid,
+        authMethod: method,
+        deviceId: DB.deviceId || '',
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        lastSeen: now,
+        appVersion: '2026.09'
+      };
+      
+      if (!trialSnap.exists) {
+        trialData.farmerName = DB.settings ? (DB.settings.farmName || '') : '';
+        trialData.ownerName = user.displayName || (DB.settings ? DB.settings.ownerName : '') || '';
+        trialData.firstSeen = now;
+        trialData.converted = false;
+        await trialRef.set(trialData);
+        console.log('✅ trialUsers created:', uid);
+      } else {
+        await trialRef.update(trialData);
+        console.log('✅ trialUsers updated:', uid);
+      }
+    } catch(e) {
+      console.warn('trialUsers save failed:', e);
+    }
     
-    // এই ফিল্ডগুলো সবসময় আপডেট হবে, তবে merge: true থাকায় আগের ডাটা নষ্ট হবে না
-    farmerName: DB.settings ? (DB.settings.farmName || '') : '',
-    ownerName: user.displayName || (DB.settings ? DB.settings.ownerName : '') || '',
-    converted: true // লগইন করলেই converted true হয়ে যাবে
-  };
-  
-  // merge: true ব্যবহার করায় প্রথমবার হলে firstSeen সেট হবে, পরেরবার হলে আগেরটাই থাকবে
-  if (!trialData.firstSeen) {
-      trialData.firstSeen = now;
+  } catch(e) {
+    console.error('❌ saveUserAfterLogin failed:', e);
   }
-
-  await trialRef.set(trialData, { merge: true });
-  console.log('✅ trialUsers saved (merged):', uid);
-
-} catch(e) {
-  console.warn('trialUsers save failed:', e);
 }
 
 function showLoginOptions() {
@@ -12163,14 +12168,10 @@ async function initApp() {
       DB.deviceId = generateDeviceId();
       await saveDBAsync();
     }
-// ✅ Fix 1: TrialUsers create (Only for Guest, won't overwrite Auth users)
-try {
-  if (window.firebase && firebase.firestore) {
-    const db = firebase.firestore();
-    const isLoggedIn = window._auth && window._auth.currentUser;
-    
-    if (!isLoggedIn) {
-        // গেস্ট ইউজারের জন্য
+        // ✅ Fix 1: TrialUsers create - 20 দিন আগে delete হয়েছিল
+    try {
+      if (window.firebase && firebase.firestore) {
+        const db = firebase.firestore();
         db.collection('trialUsers').doc(DB.deviceId).set({
           deviceId: DB.deviceId,
           type: 'trial',
@@ -12179,25 +12180,14 @@ try {
           lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
           converted: false,
           active: true
-        }, { merge: true }).catch(function(e){
-            console.warn("trialUsers save error:", e);
-        });
-        console.log('✅ trialUsers created for Guest:', DB.deviceId);
-    } else {
-        // লগইন করা ইউজারের ক্ষেত্রে শুধু lastSeen আপডেট হবে, type 'auth' থাকবে
-        db.collection('trialUsers').doc(DB.deviceId).set({
-          deviceId: DB.deviceId,
-          lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).catch(function(e){
-            console.warn("trialUsers lastSeen error:", e);
-        });
-    }
-  }
-} catch(e) { console.log('trialUsers error', e); }
-
-
-const dShow = document.getElementById('deviceIdShow');
-if (dShow) dShow.textContent = DB.deviceId;
+        }, { merge: true }).catch(function(){});
+        console.log('✅ trialUsers created:', DB.deviceId);
+      }
+    } catch(e) { console.log('trialUsers error', e); }
+    
+    
+    const dShow = document.getElementById('deviceIdShow');
+    if (dShow) dShow.textContent = DB.deviceId;
 
     // ===== FAST RENDER - Home immediately =====
     try {
