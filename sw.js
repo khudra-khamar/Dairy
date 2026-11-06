@@ -2,11 +2,11 @@
    sw.js
    Dairy Manager — Main Service Worker
    Caching (Hybrid) + FCM Push Notifications (merged)
-   Version: 2026-10-11-v9
+   Version: 2026-11-06-v10 (Offline Support Fixed)
    ============================================================ */
 
-const CACHE_NAME = 'dairy-v9-2026-10-11';
-const DATA_CACHE = 'dairy-data-v9';
+const CACHE_NAME = 'dairy-v10-2026-11-06';
+const DATA_CACHE = 'dairy-data-v10';
 
 /* ---------- Static assets (first install-এ cache হবে) ---------- */
 const STATIC_ASSETS = [
@@ -20,7 +20,13 @@ const STATIC_ASSETS = [
   './first-aid-data.js',
   './feed-data.js',
   './symptom-data.js',
-  './privacy-policy.html'
+  './privacy-policy.html',
+  // 👇 ফায়ারবেসের স্ক্রিপ্টগুলো ক্যাশে রাখার জন্য যোগ করা হলো
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js'
 ];
 
 /* ============================================================
@@ -89,13 +95,16 @@ self.addEventListener('notificationclick', function (event) {
    Install — skipWaiting + assets pre-cache
    ============================================================ */
 self.addEventListener('install', function (event) {
-  console.log('[sw.js] Installing v9...');
+  console.log('[sw.js] Installing v10...');
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
       return Promise.all(
         STATIC_ASSETS.map(function (url) {
-          return cache.add(url).catch(function (e) {
+          // cross-origin (gstatic) ফাইলগুলো ক্যাশে করার জন্য mode: 'cors' দরকার হতে পারে
+          return fetch(url, { mode: 'cors' }).then(function(res) {
+             if(res.ok) return cache.put(url, res);
+          }).catch(function (e) {
             console.warn('[sw.js] cache miss:', url, e);
           });
         })
@@ -108,7 +117,7 @@ self.addEventListener('install', function (event) {
    Activate — পুরনো cache পরিষ্কার
    ============================================================ */
 self.addEventListener('activate', function (event) {
-  console.log('[sw.js] Activated v9');
+  console.log('[sw.js] Activated v10');
   event.waitUntil(
     caches.keys().then(function (names) {
       return Promise.all(
@@ -128,13 +137,17 @@ self.addEventListener('activate', function (event) {
 /* ============================================================
    Fetch — Hybrid
    HTML → Network-first | Data/JS/CSS/Images → Cache-first
+   Firebase scripts → Cache-first (Offline support)
    ============================================================ */
 self.addEventListener('fetch', function (event) {
   const req = event.request;
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
+  const isFirebase = url.href.includes('gstatic.com');
+
+  // ফায়ারবেসের রিকোয়েস্ট বাদে বাকি সব ক্রস-অরিজিন রিকোয়েস্ট বাদ দেব
+  if (url.origin !== self.location.origin && !isFirebase) return;
 
   const accept = req.headers.get('accept') || '';
   const isHTML  = accept.includes('text/html');
@@ -153,7 +166,8 @@ self.addEventListener('fetch', function (event) {
         });
       })
     );
-  } else if (isData || isAsset) {
+  } else if (isData || isAsset || isFirebase) {
+    // ফায়ারবেস স্ক্রিপ্ট হলে প্রথমে ক্যাশে খুঁজবে, না পেলে নেটওয়ার্ক থেকে আনবে
     event.respondWith(
       caches.match(req).then(function (cached) {
         if (cached) return cached;
