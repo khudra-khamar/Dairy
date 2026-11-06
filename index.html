@@ -10766,34 +10766,27 @@ async function proceedAfterLogin() {
       saveDB();
     }
     
-    // Farm Name Modal — একবার per session
-    if (!DB.settings.farmName) {
-      let asked = '0';
-      try {
-        asked = sessionStorage.getItem('dm_farmNameAsked') || '0';
-      } catch(e) {}
+   // Farm Name Modal — একবারই জিজ্ঞাসা করবে (সেভ বা Skip হবার পর আর আসবে না)
+if (!DB.settings.farmName && !DB.settings.farmNameAsked) {
+  try {
+    if (typeof askNameModal === 'function') {
+      const name = await askNameModal();
+      if (name) {
+        DB.settings.farmName = name;
+      }
+      // 💡 এটি সেট করলেই ইউজার Skip করলেও পরেরবার আর পপ-আপ আসবে না
+      DB.settings.farmNameAsked = true; 
+      if (typeof saveDB === 'function') saveDB();
       
-      if (asked !== '1') {
-        try {
-          sessionStorage.setItem('dm_farmNameAsked', '1');
-        } catch(e) {}
-        
-        try {
-          if (typeof askNameModal === 'function') {
-            const name = await askNameModal();
-            if (name) {
-              DB.settings.farmName = name;
-              saveDB();
-              if (typeof saveNameToFirestore === 'function') {
-                try { await saveNameToFirestore(name); } catch(e) {}
-              }
-            }
-          }
-        } catch(e) {
-          console.warn('Farm name modal failed:', e);
-        }
+      if (typeof saveNameToFirestore === 'function') {
+        try { await saveNameToFirestore(name || ""); } catch(e) {}
       }
     }
+  } catch(e) {
+    console.warn('Farm name modal failed:', e);
+  }
+}
+  
   } catch(e) {
     console.error('proceedAfterLogin error:', e);
   }
