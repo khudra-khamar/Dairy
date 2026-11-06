@@ -11175,12 +11175,14 @@ function disablePin() {
 async function saveDeviceSetupToFirestore() {
   try {
     if (!window._db || !DB.deviceId) return;
-    if (!DB.settings || !DB.settings.setupDone) return;
     
+    // 💡 setupDone না থাকলেও সেভ হবে, যাতে ফিল্ডগুলো ফায়ারবেসে চলে যায়
+    if (!DB.settings) DB.settings = {};
+
     const ref = window._db.collection('devices').doc(DB.deviceId);
     await ref.set({
       deviceId: DB.deviceId,
-      setupDone: true,
+      setupDone: DB.settings.setupDone || false, // যদি সেটআপ না করাও থাকে, false সেভ হবে
       lang: DB.settings.lang || 'bn',
       preset: DB.settings.preset || 'advanced',
       farmName: DB.settings.farmName || '',
