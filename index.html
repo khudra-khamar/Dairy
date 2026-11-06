@@ -1775,11 +1775,20 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       typeof firebase.auth === 'undefined' || 
       typeof firebase.messaging === 'undefined') {
       
-    if (window._fbLoadAttempts > 20) { // ২০ বার (প্রায় ২ সেকেন্ড) চেষ্টা করবে
+    if (window._fbLoadAttempts > 15) { // ১.৫ সেকেন্ড পর থেমে যাবে
         console.warn('⚠️ Offline: Firebase SDK load failed. Running in offline mode.');
         window._fbReady = false; 
+        
+        // লোডিং স্ক্রিন সরিয়ে মেইন অ্যাপ দেখানো
+        const splash = document.getElementById('splashScreen');
+        if (splash) splash.style.display = 'none';
+        
         const mainApp = document.getElementById('mainApp');
-        if (mainApp) mainApp.style.display = 'block'; // অ্যাপ খুলে দিলাম
+        if (mainApp) mainApp.style.display = 'block';
+        
+        if (typeof afterLogin === 'function') {
+            try { afterLogin(); } catch(e){}
+        }
         return; 
     }
     
@@ -6692,7 +6701,7 @@ const INCOME_CATS = {
 
 const EXPENSE_CATS = {
   en: ['🌾 Feed/Grain','🌿 Grass/Hay','💊 Medicine/Vaccine','👨‍⚕️ Doctor/Treatment','🐂 AI Cost','👷 Labor/Wages','🏠 Repairs','⚡ Electricity/Water','🐄 Animal Purchase','📦 Other Expense'],
-  bn: ['🌾 খাদ্য/দানাদার','🌿 ঘাস/খড়','💊 ঔষধ/টিকা','👨‍⚕️ ডাক্তার/চিকিৎসা','🐂 কৃত্রিম প্রজনন','👷 শ্রমিক/মজুরি','🏠 মেরামত','⚡ বিদ্যুৎ/পানি','🐄 পশু ক্রয়','📦 অন্যান্য ব্যয়'],
+  bn: ['🌾 খাদ্য/দানাদার','🌿 ঘাস/খড়','💊 ঔষধ/টিকা','??‍⚕️ ডাক্তার/চিকিৎসা','🐂 কৃত্রিম প্রজনন','👷 শ্রমিক/মজুরি','🏠 মেরামত','⚡ বিদ্যুৎ/পানি','🐄 পশু ক্রয়','📦 অন্যান্য ব্যয়'],
   hi: ['🌾 चारा/दाना','🌿 घास/भूसा','💊 दवा/टीका','👨‍⚕️ डॉक्टर/इलाज','🐂 AI खर्च','👷 मजदूरी','🏠 मरम्मत','⚡ बिजली/पानी','🐄 पशु खरीद','📦 अन्य खर्च']
 };
 
