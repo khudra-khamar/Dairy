@@ -10114,7 +10114,7 @@ function saveSettings() {
       saveGuestTrialUser();
   }
 
-  // 💡 মূল ফিক্স: devices কলেকশনে সরাসরি রাইট করা
+  // ৪. devices কলেকশনে রাইট করা
   if (window._db && DB.deviceId) {
       window._db.collection('devices').doc(DB.deviceId).set({
           deviceId: DB.deviceId,
@@ -10131,6 +10131,19 @@ function saveSettings() {
           console.log('✅ Settings synced to devices collection successfully!');
       }).catch(err => {
           console.warn('⚠️ Sync to devices failed:', err);
+      });
+
+      // ৫. 💡 fcmTokens কলেকশনেও ইউজারের নাম ও ফোন নম্বর আপডেট করা
+      window._db.collection('fcmTokens').doc(DB.deviceId).set({
+          farmName: DB.settings.farmName || '',
+          ownerName: DB.settings.ownerName || '',
+          phone: DB.settings.phone || '',
+          lang: DB.settings.lang || 'bn',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).then(() => {
+          console.log('✅ User info synced to fcmTokens successfully!');
+      }).catch(err => {
+          console.warn('⚠️ Sync to fcmTokens failed:', err);
       });
   }
 }
