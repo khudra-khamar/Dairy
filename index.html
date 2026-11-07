@@ -10088,27 +10088,50 @@ async function syncNameToLicense() {
 }
 
 function saveSettings() {
-  DB.settings.farmName = document.getElementById('setFarmName').value.trim();
-  DB.settings.ownerName = document.getElementById('setOwnerName').value.trim();
-  DB.settings.phone = document.getElementById('setPhone').value.trim();
-  DB.settings.price = Number(document.getElementById('setPrice').value) || 40;
+  // ১. UI থেকে ডাটা নিয়ে সরাসরি DB.settings এ রাখা
+  const farmNameEl = document.getElementById('setFarmName');
+  const ownerNameEl = document.getElementById('setOwnerName');
+  const phoneEl = document.getElementById('setPhone');
+  const priceEl = document.getElementById('setPrice');
+
+  DB.settings.farmName = farmNameEl ? farmNameEl.value.trim() : (DB.settings.farmName || '');
+  DB.settings.ownerName = ownerNameEl ? ownerNameEl.value.trim() : (DB.settings.ownerName || '');
+  DB.settings.phone = phoneEl ? phoneEl.value.trim() : (DB.settings.phone || '');
+  DB.settings.price = priceEl ? (Number(priceEl.value) || 40) : (DB.settings.price || 40);
   
   if (tempLogo) DB.settings.logo = tempLogo;
+  DB.settings.setupDone = true; // 💡 সেটআপ সম্পূর্ণ ফ্ল্যাগ সেভ করা হলো
   
-  // ১. লোকাল ডাটাবেসে সেভ
+  // ২. লোকাল স্টোরেজে সেভ
   saveDB();
   applyLang();
   toast(t('settings_saved'));
 
-  // ২. License/TrialUsers এ নাম ও ফোন আপডেট
+  // ৩. ফায়ারবেসে সেভ করা (Licenses, TrialUsers, Devices)
   syncNameToLicense(); 
+  
   if (typeof saveGuestTrialUser === 'function') {
       saveGuestTrialUser();
   }
 
-  // ৩. 💡 devices কলেকশনে ডাটা সেভ (এটাই আসল ফিক্স)
-  if (typeof saveDeviceSetupToFirestore === 'function') {
-      saveDeviceSetupToFirestore();
+  // 💡 মূল ফিক্স: devices কলেকশনে সরাসরি রাইট করা
+  if (window._db && DB.deviceId) {
+      window._db.collection('devices').doc(DB.deviceId).set({
+          deviceId: DB.deviceId,
+          setupDone: true,
+          lang: DB.settings.lang || 'bn',
+          preset: DB.settings.preset || 'advanced',
+          farmName: DB.settings.farmName || '',
+          ownerName: DB.settings.ownerName || '',
+          phone: DB.settings.phone || '',
+          lastUpdated: Date.now(),
+          appVersion: '3.0',
+          totalCows: DB.cows ? DB.cows.length : 0
+      }, { merge: true }).then(() => {
+          console.log('✅ Settings synced to devices collection successfully!');
+      }).catch(err => {
+          console.warn('⚠️ Sync to devices failed:', err);
+      });
   }
 }
 
