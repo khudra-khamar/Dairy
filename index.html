@@ -10092,24 +10092,24 @@ function saveSettings() {
   DB.settings.ownerName = document.getElementById('setOwnerName').value.trim();
   DB.settings.phone = document.getElementById('setPhone').value.trim();
   DB.settings.price = Number(document.getElementById('setPrice').value) || 40;
+  
   if (tempLogo) DB.settings.logo = tempLogo;
+  
+  // ১. লোকাল ডাটাবেসে সেভ
   saveDB();
   applyLang();
   toast(t('settings_saved'));
-  syncNameToLicense(); 
-}
 
-function saveSettings() {
-  DB.settings.farmName = document.getElementById('setFarmName').value.trim();
-  DB.settings.ownerName = document.getElementById('setOwnerName').value.trim();
-  DB.settings.phone = document.getElementById('setPhone').value.trim();
-  DB.settings.price = Number(document.getElementById('setPrice').value) || 40;
-  if (tempLogo) DB.settings.logo = tempLogo;
-  saveDB();
-  applyLang();
-  toast(t('settings_saved'));
-  syncNameToLicense();
-  saveGuestTrialUser();
+  // ২. License/TrialUsers এ নাম ও ফোন আপডেট
+  syncNameToLicense(); 
+  if (typeof saveGuestTrialUser === 'function') {
+      saveGuestTrialUser();
+  }
+
+  // ৩. 💡 devices কলেকশনে ডাটা সেভ (এটাই আসল ফিক্স)
+  if (typeof saveDeviceSetupToFirestore === 'function') {
+      saveDeviceSetupToFirestore();
+  }
 }
 
 // ========== DEVICE ID ==========
