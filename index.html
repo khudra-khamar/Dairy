@@ -12590,40 +12590,55 @@ async function forceBackupToCloud() {
     return;
   }
   
-  if (!DB.cows || DB.cows.length === 0) {
-    alert("⚠️ আপনার ফোনে কোনো গরু নেই! আগে ব্যাকআপ রিস্টোর করুন।");
+  if (!confirm(`আপনার ফোনে ${DB.cows ? DB.cows.length : 0} টি গরু আছে। আপনি কি ফোনের ডাটা অনুযায়ী ক্লাউড আপডেট করতে চান? (ডিলিট হওয়া গরু ক্লাউড থেকেও মুছে যাবে)`)) {
     return;
   }
 
-  if (!confirm(`আপনার ফোনে ${DB.cows.length} টি গরু আছে। আপনি কি এগুলো ক্লাউডে সেভ করতে চান?`)) {
-    return;
-  }
-
-  alert("⏳ ক্লাউডে ডাটা সেভ হচ্ছে... একটু অপেক্ষা করুন।");
+  alert("⏳ ক্লাউডে ডাটা সিঙ্ক হচ্ছে... একটু অপেক্ষা করুন।");
   const uid = window._auth.currentUser.uid;
   const deviceId = DB.deviceId;
 
   try {
-    // ১. users/{uid} এ সেভ করা
+    // ১. লোকাল আইডিগুলোর একটি লিস্ট (Set) তৈরি করি
+    const localCowIds = new Set((DB.cows || []).map(c => c.id));
+
+    // ২. devices/{deviceId}/cows থেকে ডিলিট হওয়া গরু মুছে ফেলা
+    const devSnap = await window._db.collection('devices').doc(deviceId).collection('cows').get();
+    for (const doc of devSnap.docs) {
+      if (!localCowIds.has(doc.id)) {
+        await doc.ref.delete();
+        console.log("🗑️ Deleted cow from devices subcollection:", doc.id);
+      }
+    }
+
+    // ৩. trialUsers/{deviceId}/cows থেকে ডিলিট হওয়া গরু মুছে ফেলা
+    const trialSnap = await window._db.collection('trialUsers').doc(deviceId).collection('cows').get();
+    for (const doc of trialSnap.docs) {
+      if (!localCowIds.has(doc.id)) {
+        await doc.ref.delete();
+        console.log("🗑️ Deleted cow from trialUsers subcollection:", doc.id);
+      }
+    }
+
+    // ৪. users/{uid} ডকুমেন্টে গরুর পুরো অ্যারে আপডেট (এখানে পুরো অ্যারে রিপ্লেস হবে)
     await window._db.collection('users').doc(uid).set({
-      cows: DB.cows,
+      cows: DB.cows || [],
       lastSync: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    // ২. devices/{deviceId} এ গরুর সংখ্যা আপডেট করা
+    // ৫. devices/{deviceId} এবং trialUsers/{deviceId}-এ মোট গরুর সংখ্যা আপডেট
     await window._db.collection('devices').doc(deviceId).set({
-      totalCows: DB.cows.length,
+      totalCows: DB.cows ? DB.cows.length : 0,
       lastSync: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    // 💡 ৩. trialUsers/{deviceId} এ গরুর সংখ্যা (totalCow) আপডেট করা
     await window._db.collection('trialUsers').doc(deviceId).set({
-      totalCow: DB.cows.length,
+      totalCow: DB.cows ? DB.cows.length : 0,
       lastSeen: Date.now()
     }, { merge: true });
 
-    // ৪. devices/{deviceId}/cows এবং trialUsers/{deviceId}/cows সাব-কলেকশনে সেভ করা
-    for (const cow of DB.cows) {
+    // ৬. ফোনে থাকা বর্তমান গরুগুলো ক্লাউডে সেভ করা
+    for (const cow of (DB.cows || [])) {
       // devices সাব-কলেকশনে
       await window._db.collection('devices').doc(deviceId).collection('cows').doc(cow.id).set({
         ...cow,
@@ -12639,7 +12654,7 @@ async function forceBackupToCloud() {
       }, { merge: true });
     }
 
-    alert(`✅ সফলভাবে ${DB.cows.length} টি গরু ক্লাউডে সেভ হয়েছে!`);
+    alert(`✅ সফলভাবে সিঙ্ক হয়েছে! ক্লাউডে এখন ${DB.cows ? DB.cows.length : 0} টি গরু আছে।`);
     
   } catch(e) {
     alert("❌ এরর: " + e.message);
