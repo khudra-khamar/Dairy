@@ -1529,9 +1529,8 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 
     <div class="summary-box">
       <h3 data-t="farm_info">🏠 Farm Info</h3>
-      <!-- 💡 অস্থায়ী ক্লাউড রিস্টোর বাটন -->
-<button onclick="forceRestoreFromCloud()" style="width:100%; padding:12px; background:#1976D2; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:15px; cursor:pointer; font-size:15px;">
-  ☁️ Cloud থেকে গরুর ডাটা আনুন (Force Sync)
+    <button onclick="forceBackupToCloud()" style="width:100%; padding:12px; background:#2E7D32; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:15px; cursor:pointer; font-size:15px;">
+  ☁️ ফোনের ডাটা ক্লাউডে সেভ করুন (Cloud Backup)
 </button>
       <div class="form-group"><label data-t="farm_name">Farm Name</label><input type="text" id="setFarmName"></div>
       <div class="form-group"><label data-t="owner_name">Owner Name</label><input type="text" id="setOwnerName"></div>
@@ -12537,73 +12536,50 @@ window.addEventListener('load', function() {
 // Prevent zoom on input focus
 document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 
-// 💡 ক্লাউড থেকে গরুর ডাটা স্মার্টলি খুঁজে বের করে ফোনে আনার ফাংশন
-async function forceRestoreFromCloud() {
+// 💡 ফোন থেকে ১০টি গরু ক্লাউডে পাঠানোর ফাংশন
+async function forceBackupToCloud() {
   if (!window._db || !window._auth || !window._auth.currentUser) {
     alert("দয়া করে আগে গুগল লগইন করুন!");
     return;
   }
   
-  alert("⏳ ক্লাউডে গরুর ডাটা খোঁজা হচ্ছে... (একটু সময় নেবে)");
+  if (!DB.cows || DB.cows.length === 0) {
+    alert("⚠️ আপনার ফোনে কোনো গরু নেই! আগে ব্যাকআপ রিস্টোর করুন।");
+    return;
+  }
+
+  if (!confirm(`আপনার ফোনে ${DB.cows.length} টি গরু আছে। আপনি কি এগুলো ক্লাউডে (Firebase) সেভ করতে চান?`)) {
+    return;
+  }
+
+  alert("⏳ ক্লাউডে ডাটা সেভ হচ্ছে... একটু অপেক্ষা করুন।");
   const uid = window._auth.currentUser.uid;
   const deviceId = DB.deviceId;
-  let bestCows = [];
-  let source = "";
 
   try {
-    // ১. users/{uid} কলেকশনে খোঁজা
-    const userDoc = await window._db.collection('users').doc(uid).get();
-    if (userDoc.exists && userDoc.data().cows && userDoc.data().cows.length > bestCows.length) {
-      bestCows = userDoc.data().cows;
-      source = "users";
+    // ১. users/{uid} এ সেভ করা
+    await window._db.collection('users').doc(uid).set({
+      cows: DB.cows,
+      lastSync: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    // ২. devices/{deviceId} এ গরুর সংখ্যা আপডেট করা
+    await window._db.collection('devices').doc(deviceId).set({
+      totalCows: DB.cows.length,
+      lastSync: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    // ৩. devices/{deviceId}/cows সাব-কলেকশনে সেভ করা
+    for (const cow of DB.cows) {
+      await window._db.collection('devices').doc(deviceId).collection('cows').doc(cow.id).set({
+        ...cow,
+        deviceId: deviceId,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
     }
 
-    // ২. devices/{deviceId} কলেকশনে খোঁজা (অ্যারে হিসেবে)
-    const devDoc = await window._db.collection('devices').doc(deviceId).get();
-    if (devDoc.exists && devDoc.data().cows && devDoc.data().cows.length > bestCows.length) {
-      bestCows = devDoc.data().cows;
-      source = "devices (Array)";
-    }
-
-    // ৩. devices/{deviceId}/cows সাব-কলেকশনে খোঁজা (সবচেয়ে বেশি সম্ভাবনা এখানে)
-    const subSnap = await window._db.collection('devices').doc(deviceId).collection('cows').get();
-    if (!subSnap.empty) {
-      let subCows = [];
-      subSnap.forEach(doc => {
-        subCows.push(doc.data());
-      });
-      if (subCows.length > bestCows.length) {
-        bestCows = subCows;
-        source = "devices Sub-collection";
-      }
-    }
-
-    // ৪. trialUsers/{deviceId}/cows চেক করা
-    const trialSnap = await window._db.collection('trialUsers').doc(deviceId).collection('cows').get();
-    if (!trialSnap.empty) {
-      let tCows = [];
-      trialSnap.forEach(doc => tCows.push(doc.data()));
-      if (tCows.length > bestCows.length) {
-        bestCows = tCows;
-        source = "trialUsers Sub-collection";
-      }
-    }
-
-    // ফলাফল দেখানো
-    if (bestCows.length > 0) {
-      if (bestCows.length > (DB.cows ? DB.cows.length : 0)) {
-        if (confirm(`✅ ক্লাউডের ${source} থেকে ${bestCows.length} টি গরু পাওয়া গেছে।\n\nআপনার ফোনে বর্তমানে ${DB.cows ? DB.cows.length : 0} টি গরু আছে।\n\nআপনি কি ক্লাউডের ডাটা ফোনে রিস্টোর করতে চান?`)) {
-          DB.cows = bestCows;
-          if (typeof saveDB === 'function') saveDB();
-          alert("✅ সফলভাবে গরুগুলো ফোনে রিস্টোর হয়েছে! অ্যাপ রিলোড হচ্ছে...");
-          location.reload();
-        }
-      } else {
-        alert(`ক্লাউডে ${bestCows.length} টি গরু পাওয়া গেছে, কিন্তু ফোনে ইতিমধ্যেই ${DB.cows.length} টি গরু আছে। রিস্টোর করার দরকার নেই।`);
-      }
-    } else {
-      alert("❌ ক্লাউডের কোথাও কোনো গরুর ডাটা পাওয়া যায়নি!");
-    }
+    alert(`✅ সফলভাবে ${DB.cows.length} টি গরু ক্লাউডে সেভ হয়েছে!`);
+    
   } catch(e) {
     alert("❌ এরর: " + e.message);
   }
