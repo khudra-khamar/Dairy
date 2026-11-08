@@ -12595,7 +12595,7 @@ async function forceBackupToCloud() {
     return;
   }
 
-  if (!confirm(`আপনার ফোনে ${DB.cows.length} টি গরু আছে। আপনি কি এগুলো ক্লাউডে (Firebase) সেভ করতে চান?`)) {
+  if (!confirm(`আপনার ফোনে ${DB.cows.length} টি গরু আছে। আপনি কি এগুলো ক্লাউডে সেভ করতে চান?`)) {
     return;
   }
 
@@ -12616,9 +12616,23 @@ async function forceBackupToCloud() {
       lastSync: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    // ৩. devices/{deviceId}/cows সাব-কলেকশনে সেভ করা
+    // 💡 ৩. trialUsers/{deviceId} এ গরুর সংখ্যা (totalCow) আপডেট করা
+    await window._db.collection('trialUsers').doc(deviceId).set({
+      totalCow: DB.cows.length,
+      lastSeen: Date.now()
+    }, { merge: true });
+
+    // ৪. devices/{deviceId}/cows এবং trialUsers/{deviceId}/cows সাব-কলেকশনে সেভ করা
     for (const cow of DB.cows) {
+      // devices সাব-কলেকশনে
       await window._db.collection('devices').doc(deviceId).collection('cows').doc(cow.id).set({
+        ...cow,
+        deviceId: deviceId,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      // trialUsers সাব-কলেকশনে
+      await window._db.collection('trialUsers').doc(deviceId).collection('cows').doc(cow.id).set({
         ...cow,
         deviceId: deviceId,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
