@@ -1816,10 +1816,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     
     try { 
         window._db = firebase.firestore(); 
-        // 💡 অফলাইন ডাটা সেভ (IndexedDB) চালু করা হলো
-        window._db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
-            console.warn('Offline persistence failed:', err.code);
-        });
+
     } catch(e) { console.warn('Firestore error', e); }
     
     try { window._auth = firebase.auth(); } catch(e) {}
