@@ -5594,20 +5594,27 @@ function saveCow() {
     createdAt: editId ? (DB.cows.find(c => c.id === editId)?.createdAt || today()) : today()
   };
 
+// 💡 Heifer (বাঁকা গরু) যোগ করা হলো, যাতে তার ডাটাও সেভ হয়
+if (type === 'cow' || type === 'buffalo' || type === 'heifer') {
+  
+  // ল্যাকটেশন এবং ক্যাপাসিটি শুধু গরু এবং মহিষের জন্যই প্রযোজ্য
   if (type === 'cow' || type === 'buffalo') {
     cow.lactation = document.getElementById('cowLactation').value;
     cow.capacity = document.getElementById('cowCapacity').value;
     cow.lastCalving = document.getElementById('cowLastCalving').value;
-    cow.inseminated = document.getElementById('cowInseminated').value;
-    if (cow.inseminated === 'yes') {
-      cow.insemDate = document.getElementById('cowInsemDate').value;
-      cow.insemType = document.getElementById('cowInsemType').value;
-      cow.semen = document.getElementById('cowSemen').value;
-      cow.bullNo = document.getElementById('cowBullNo').value;
-      cow.aiCost = document.getElementById('cowAiCost').value;
-      cow.aiWorker = document.getElementById('cowAiWorker').value;
-    }
   }
+  
+  // ইনসেমিনেশনের ডাটা গরু, মহিষ এবং হিফার—তিনজনের জন্যই প্রযোজ্য
+  cow.inseminated = document.getElementById('cowInseminated').value;
+  if (cow.inseminated === 'yes') {
+    cow.insemDate = document.getElementById('cowInsemDate').value;
+    cow.insemType = document.getElementById('cowInsemType').value;
+    cow.semen = document.getElementById('cowSemen').value;
+    cow.bullNo = document.getElementById('cowBullNo').value;
+    cow.aiCost = document.getElementById('cowAiCost').value;
+    cow.aiWorker = document.getElementById('cowAiWorker').value;
+  }
+}
 
   if (editId) {
     const old = DB.cows.find(c => c.id === editId);
@@ -5735,6 +5742,7 @@ function renderCowCalvesSection(c) {
     ${rows}
   </div>`;
 }
+
 function renderPurchaseSection(c) {
   if (!c.purchasePrice || c.purchasePrice <= 0) return '';
   return `<div class="summary-box" style="background:#FFF3E0;border-left:4px solid #E65100;">
