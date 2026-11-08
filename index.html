@@ -12708,9 +12708,9 @@ function triggerAutoSync() {
       }, { merge: true });
 
       await window._db.collection('trialUsers').doc(deviceId).set({
-        totalCow: DB.cows ? DB.cows.length : 0,
-        lastSeen: Date.now()
-      }, { merge: true });
+  totalCows: DB.cows ? DB.cows.length : 0, // 👈 ঠিক করা হলো
+  lastSeen: Date.now()
+}, { merge: true });
 
       // ৫. নতুন গরুগুলো সাব-কলেকশনে সেভ
       for (const cow of (DB.cows || [])) {
