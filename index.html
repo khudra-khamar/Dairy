@@ -12533,6 +12533,39 @@ window.addEventListener('load', function() {
 // Prevent zoom on input focus
 document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 
+// 💡 ক্লাউড থেকে গরুর ডাটা জোর করে নামানোর ফাংশন
+async function forceRestoreCowsFromCloud() {
+  if (!window._db || !window._auth || !window._auth.currentUser) {
+    alert("দয়া করে আগে গুগল লগইন করুন!");
+    return;
+  }
+  
+  const uid = window._auth.currentUser.uid;
+  const btn = document.getElementById('btnForceSync');
+  if(btn) btn.textContent = '⏳ ডাটা আসছে...';
+
+  try {
+    const doc = await window._db.collection('users').doc(uid).get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.cows && data.cows.length > 0) {
+        // ক্লাউডের ডাটা লোকাল ডাটাবেসে বসানো
+        DB.cows = data.cows;
+        if (typeof saveDB === 'function') saveDB();
+        
+        alert("✅ সফলভাবে " + data.cows.length + " টি গরু ক্লাউড থেকে ফোনে আনা হয়েছে!");
+        location.reload(); // অ্যাপ রিলোড হবে
+      } else {
+        alert("⚠️ ক্লাউডে কোনো গরুর ডাটা পাওয়া যায়নি!");
+        if(btn) btn.textContent = '🔄 Force Sync Cows';
+      }
+    }
+  } catch(e) {
+    alert("❌ এরর: " + e.message);
+    if(btn) btn.textContent = '🔄 Force Sync Cows';
+  }
+}
+
 </script>
 
 <!-- First Aid Data (separate file) -->
