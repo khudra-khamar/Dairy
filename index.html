@@ -10820,7 +10820,7 @@ async function proceedAfterLogin() {
     if (DB.security && DB.security.pin) {
       const pinLogin = document.getElementById('pinLoginScreen');
       if (pinLogin) pinLogin.style.display = 'flex';
-      return; // PIN দেওয়া পর্যন্ত বাকি কাজ বন্ধ থাকবে
+      return; 
     }
     
     // ৩. Default Preset Advanced
@@ -10832,58 +10832,70 @@ async function proceedAfterLogin() {
       saveDB();
     }
     
-    // ৪. Farm Name Modal — localStorage দিয়ে পার্মানেন্ট ফিক্স
+    // ৪. Farm Name Modal
     const isNameAsked = localStorage.getItem('dm_farmNameAsked') === 'true';
-
     if (!DB.settings.farmName && !isNameAsked) {
       try {
         if (typeof askNameModal === 'function') {
           const name = await askNameModal();
-          
           if (name) {
             DB.settings.farmName = name;
             if (typeof saveDB === 'function') saveDB();
           }
-          
           localStorage.setItem('dm_farmNameAsked', 'true');
-          
           if (typeof saveNameToFirestore === 'function') {
             try { await saveNameToFirestore(name || ""); } catch(e) {}
           }
         }
-      } catch(e) {
-        console.warn('Farm name modal failed:', e);
-      }
+      } catch(e) {}
     }
   } catch(e) {
-    console.error('proceedAfterLogin error:', e);
+    console.error('proceedAfterLogin (Modal) error:', e);
   }
 
-  // 💡 ৫. নতুন ফোনে বা Incognito-তে লগইন করলে ক্লাউড থেকে গরুর ডাটা অটো-রিস্টোর করা
+  // 💡 ৫. নতুন ফোনে বা Incognito-তে লগইন করলে UID দিয়ে গরু খোঁজা
   try {
     if (window._auth && window._auth.currentUser && (!DB.cows || DB.cows.length === 0)) {
-      console.log("⏳ Local cows empty. Fetching from cloud...");
+      console.log("⏳ Local cows empty. Fetching from cloud via UID...");
       const uid = window._auth.currentUser.uid;
-      
+      let restored = false;
+
       if (window._db) {
-        const doc = await window._db.collection('users').doc(uid).get();
-        if (doc.exists && doc.data().cows && doc.data().cows.length > 0) {
-          DB.cows = doc.data().cows;
-          if (typeof saveDB === 'function') saveDB();
-          console.log("✅ Cows restored from cloud:", DB.cows.length);
-          if (typeof toast === 'function') toast('☁️ ক্লাউড থেকে ' + DB.cows.length + ' টি গরুর ডাটা ফিরে এসেছে!');
-        } else {
-          // যদি users/{uid} তে না থাকে, তবে devices সাব-কলেকশনে চেক করবে
-          const devId = DB.deviceId;
-          const subSnap = await window._db.collection('devices').doc(devId).collection('cows').get();
-          if (!subSnap.empty) {
-            let subCows = [];
-            subSnap.forEach(d => subCows.push(d.data()));
-            DB.cows = subCows;
-            if (typeof saveDB === 'function') saveDB();
-            console.log("✅ Cows restored from subcollection:", DB.cows.length);
-            if (typeof toast === 'function') toast('☁️ ক্লাউড থেকে ' + DB.cows.length + ' টি গরুর ডাটা ফিরে এসেছে!');
+        // ১ম চেষ্টা: users/{uid} থেকে গরুর অ্যারে চেক করা
+        const userDoc = await window._db.collection('users').doc(uid).get();
+        if (userDoc.exists && userDoc.data().cows && userDoc.data().cows.length > 0) {
+          DB.cows = userDoc.data().cows;
+          restored = true;
+        } 
+        
+        // ২য় চেষ্টা: যদি users/{uid} ফাঁকা হয়, তবে trialUsers-এ uid দিয়ে সার্চ করা
+        if (!restored) {
+          const trialQuery = await window._db.collection('trialUsers').where('uid', '==', uid).get();
+          if (!trialQuery.empty) {
+            let bestDoc = null;
+            // সবচেয়ে রিসেন্ট ডকুমেন্টটা বের করি
+            trialQuery.forEach(doc => {
+              if (!bestDoc || (doc.data().lastSeen > bestDoc.data().lastSeen)) bestDoc = doc;
+            });
+
+            if (bestDoc) {
+              const oldDeviceId = bestDoc.id; // পুরনো ডিভাইস আইডি পেয়ে গেলাম
+              // পুরনো ডিভাইসের সাব-কলেকশন থেকে গরু নিয়ে আসি
+              const subSnap = await window._db.collection('trialUsers').doc(oldDeviceId).collection('cows').get();
+              if (!subSnap.empty) {
+                let subCows = [];
+                subSnap.forEach(d => subCows.push(d.data()));
+                DB.cows = subCows;
+                restored = true;
+              }
+            }
           }
+        }
+
+        if (restored) {
+          if (typeof saveDB === 'function') saveDB();
+          console.log("✅ Cows restored via UID:", DB.cows.length);
+          if (typeof toast === 'function') toast('☁️ ক্লাউড থেকে ' + DB.cows.length + ' টি গরুর ডাটা ফিরে এসেছে!');
         }
       }
     }
@@ -10891,7 +10903,7 @@ async function proceedAfterLogin() {
     console.warn('Auto restore cows failed:', e);
   }
   
-  // ৬. Main App দেখাই (error হলেও)
+  // ৬. Main App দেখাই
   try {
     const mainApp = document.getElementById('mainApp');
     if (mainApp) mainApp.style.display = 'block';
@@ -10899,6 +10911,11 @@ async function proceedAfterLogin() {
     if (typeof afterLogin === 'function') {
       afterLogin();
     }
+    
+    // UI রিফ্রেশ
+    if (typeof renderHome === 'function') renderHome();
+    if (typeof renderCows === 'function') renderCows();
+
   } catch(e) {
     console.error('afterLogin error:', e);
   }
