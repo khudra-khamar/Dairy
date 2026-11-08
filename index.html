@@ -2957,6 +2957,11 @@ function saveDB() {
     console.log('localStorage save skipped:', e.message);
   }
   try { scheduleSave(); } catch(e){}
+  // 💡 ডাটা পরিবর্তন হলেই অটোমেটিক ক্লাউডে সিঙ্ক হবে
+if (typeof triggerAutoSync === 'function') {
+  triggerAutoSync();
+}
+
 }
  
 // Save to IndexedDB (debounced) + Single Guest Sync
@@ -12660,6 +12665,71 @@ async function forceBackupToCloud() {
     alert("❌ এরর: " + e.message);
   }
 }
+
+
+// 💡 অটোমেটিক ক্লাউড সিঙ্ক (Background Sync)
+let _autoSyncTimer = null;
+function triggerAutoSync() {
+  if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
+  
+  // ইউজার ডাটা পরিবর্তনের ৫ সেকেন্ড পর সিঙ্ক হবে (যাতে বারবার ফায়ারবেসে হিট না পড়ে)
+  _autoSyncTimer = setTimeout(async () => {
+    if (!window._db || !window._auth || !window._auth.currentUser) return;
+    
+    try {
+      const uid = window._auth.currentUser.uid;
+      const deviceId = DB.deviceId;
+      const localCowIds = new Set((DB.cows || []).map(c => c.id));
+
+      console.log("⏳ Auto-syncing to cloud...");
+
+      // ১. devices/{deviceId}/cows থেকে ডিলিট হওয়া গরু মুছে ফেলা
+      const devSnap = await window._db.collection('devices').doc(deviceId).collection('cows').get();
+      for (const doc of devSnap.docs) {
+        if (!localCowIds.has(doc.id)) await doc.ref.delete();
+      }
+
+      // ২. trialUsers/{deviceId}/cows থেকে ডিলিট হওয়া গরু মুছে ফেলা
+      const trialSnap = await window._db.collection('trialUsers').doc(deviceId).collection('cows').get();
+      for (const doc of trialSnap.docs) {
+        if (!localCowIds.has(doc.id)) await doc.ref.delete();
+      }
+
+      // ৩. users/{uid} ডকুমেন্টে গরুর পুরো অ্যারে আপডেট
+      await window._db.collection('users').doc(uid).set({
+        cows: DB.cows || [],
+        lastSync: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      // ৪. কাউন্টার আপডেট
+      await window._db.collection('devices').doc(deviceId).set({
+        totalCows: DB.cows ? DB.cows.length : 0,
+        lastSync: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      await window._db.collection('trialUsers').doc(deviceId).set({
+        totalCow: DB.cows ? DB.cows.length : 0,
+        lastSeen: Date.now()
+      }, { merge: true });
+
+      // ৫. নতুন গরুগুলো সাব-কলেকশনে সেভ
+      for (const cow of (DB.cows || [])) {
+        await window._db.collection('devices').doc(deviceId).collection('cows').doc(cow.id).set({
+          ...cow, deviceId: deviceId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        await window._db.collection('trialUsers').doc(deviceId).collection('cows').doc(cow.id).set({
+          ...cow, deviceId: deviceId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+
+      console.log("✅ Auto-sync successful!");
+      
+    } catch(e) {
+      console.warn("⚠️ Auto-sync failed:", e);
+    }
+  }, 5000); // ৫ সেকেন্ড
+}
+
 
 </script>
 
