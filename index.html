@@ -10812,18 +10812,18 @@ window.addEventListener('error', function(e) {
 // ========== AFTER LOGIN — Farm Name + Main App ==========
 async function proceedAfterLogin() {
   try {
-    // License screen লুকাই
+    // ১. License screen লুকাই
     const licScreen = document.getElementById('licenseScreen');
     if (licScreen) licScreen.style.display = 'none';
     
-    // PIN set থাকলে PIN Login
+    // ২. PIN set থাকলে PIN Login
     if (DB.security && DB.security.pin) {
       const pinLogin = document.getElementById('pinLoginScreen');
       if (pinLogin) pinLogin.style.display = 'flex';
-      return;
+      return; // PIN দেওয়া পর্যন্ত বাকি কাজ বন্ধ থাকবে
     }
     
-    // Default Preset Advanced
+    // ৩. Default Preset Advanced
     if (!DB.settings.preset) {
       DB.settings.preset = 'advanced';
       if (typeof PRESETS !== 'undefined' && PRESETS.advanced) {
@@ -10832,36 +10832,66 @@ async function proceedAfterLogin() {
       saveDB();
     }
     
-   // Farm Name Modal — localStorage দিয়ে পার্মানেন্ট ফিক্স
-const isNameAsked = localStorage.getItem('dm_farmNameAsked') === 'true';
+    // ৪. Farm Name Modal — localStorage দিয়ে পার্মানেন্ট ফিক্স
+    const isNameAsked = localStorage.getItem('dm_farmNameAsked') === 'true';
 
-if (!DB.settings.farmName && !isNameAsked) {
-  try {
-    if (typeof askNameModal === 'function') {
-      const name = await askNameModal();
-      
-      if (name) {
-        DB.settings.farmName = name;
-        if (typeof saveDB === 'function') saveDB();
-      }
-      
-      // 💡 localStorage-এ সেভ করলেই ইউজার চিরদিনের জন্য আর এই পপ-আপ দেখবে না
-      localStorage.setItem('dm_farmNameAsked', 'true');
-      
-      if (typeof saveNameToFirestore === 'function') {
-        try { await saveNameToFirestore(name || ""); } catch(e) {}
+    if (!DB.settings.farmName && !isNameAsked) {
+      try {
+        if (typeof askNameModal === 'function') {
+          const name = await askNameModal();
+          
+          if (name) {
+            DB.settings.farmName = name;
+            if (typeof saveDB === 'function') saveDB();
+          }
+          
+          localStorage.setItem('dm_farmNameAsked', 'true');
+          
+          if (typeof saveNameToFirestore === 'function') {
+            try { await saveNameToFirestore(name || ""); } catch(e) {}
+          }
+        }
+      } catch(e) {
+        console.warn('Farm name modal failed:', e);
       }
     }
   } catch(e) {
-    console.warn('Farm name modal failed:', e);
-  }
-}
-  
-  } catch(e) {
     console.error('proceedAfterLogin error:', e);
   }
+
+  // 💡 ৫. নতুন ফোনে বা Incognito-তে লগইন করলে ক্লাউড থেকে গরুর ডাটা অটো-রিস্টোর করা
+  try {
+    if (window._auth && window._auth.currentUser && (!DB.cows || DB.cows.length === 0)) {
+      console.log("⏳ Local cows empty. Fetching from cloud...");
+      const uid = window._auth.currentUser.uid;
+      
+      if (window._db) {
+        const doc = await window._db.collection('users').doc(uid).get();
+        if (doc.exists && doc.data().cows && doc.data().cows.length > 0) {
+          DB.cows = doc.data().cows;
+          if (typeof saveDB === 'function') saveDB();
+          console.log("✅ Cows restored from cloud:", DB.cows.length);
+          if (typeof toast === 'function') toast('☁️ ক্লাউড থেকে ' + DB.cows.length + ' টি গরুর ডাটা ফিরে এসেছে!');
+        } else {
+          // যদি users/{uid} তে না থাকে, তবে devices সাব-কলেকশনে চেক করবে
+          const devId = DB.deviceId;
+          const subSnap = await window._db.collection('devices').doc(devId).collection('cows').get();
+          if (!subSnap.empty) {
+            let subCows = [];
+            subSnap.forEach(d => subCows.push(d.data()));
+            DB.cows = subCows;
+            if (typeof saveDB === 'function') saveDB();
+            console.log("✅ Cows restored from subcollection:", DB.cows.length);
+            if (typeof toast === 'function') toast('☁️ ক্লাউড থেকে ' + DB.cows.length + ' টি গরুর ডাটা ফিরে এসেছে!');
+          }
+        }
+      }
+    }
+  } catch(e) {
+    console.warn('Auto restore cows failed:', e);
+  }
   
-  // Main App দেখাই (error হলেও)
+  // ৬. Main App দেখাই (error হলেও)
   try {
     const mainApp = document.getElementById('mainApp');
     if (mainApp) mainApp.style.display = 'block';
