@@ -12659,7 +12659,7 @@ async function forceBackupToCloud() {
     }, { merge: true });
 
     await window._db.collection('trialUsers').doc(deviceId).set({
-      totalCow: DB.cows ? DB.cows.length : 0,
+      totalCows: DB.cows ? DB.cows.length : 0,
       lastSeen: Date.now()
     }, { merge: true });
 
