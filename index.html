@@ -5903,7 +5903,7 @@ function openCowProfile(id) {
   const avatar = c.photo ? `<img src="${c.photo}">` : getTypeIcon(c.type);
 
   let insemHtml = '';
-  if ((c.type === 'cow' || c.type === 'buffalo') && c.inseminated === 'yes' && c.insemDate) {
+    if ((c.type === 'cow' || c.type === 'buffalo' || c.type === 'heifer') && c.inseminated === 'yes' && c.insemDate) {
     const ds = daysFromToday(c.insemDate);
     const isBuffalo = c.type === 'buffalo';
     const totalDays = isBuffalo ? alertSettings.calvingBuffalo : alertSettings.calvingCow;
