@@ -5,8 +5,8 @@
    Version: 2026-11-06-v10 (Offline Support Fixed)
    ============================================================ */
 
-const CACHE_NAME = 'dairy-v10-2026-11-06';
-const DATA_CACHE = 'dairy-data-v10';
+const CACHE_NAME = 'dairy-v11-2026-11-10'; // 👈 নাম পরিবর্তন করুন
+const DATA_CACHE = 'dairy-data-v11';
 
 /* ---------- Static assets (first install-এ cache হবে) ---------- */
 const STATIC_ASSETS = [

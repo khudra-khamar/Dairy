@@ -1768,6 +1768,18 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
+
+<script>
+  // 💡 অফলাইনে ফায়ারবেস স্ক্রিপ্ট লোড না হলে ব্রাউজারের লাল এরর বন্ধ করার জন্য
+  window.addEventListener('error', function(e) {
+    if (e.message && (e.message.includes('network error') || e.message.includes('Script error'))) {
+      console.warn('⚠️ Offline mode: Ignored network error.');
+      e.preventDefault();
+      return true;
+    }
+  }, true);
+</script>
+
 <!-- Firebase Init (Unified & Final) -->
 <script>
 (function initFirebase() {
