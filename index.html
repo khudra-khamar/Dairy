@@ -1762,11 +1762,11 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <!-- Firebase SDK Preload — দ্রুত download -->
 
 <!-- Firebase SDK (deferred for fast load) -->
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" onerror="this.remove()"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js" onerror="this.remove()"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js" onerror="this.remove()"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js" onerror="this.remove()"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" onerror="this.remove()"></script>
 
 
 <script>
