@@ -1783,18 +1783,35 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <!-- Firebase Init (Unified & Final) -->
 <script>
 (function initFirebase() {
-  // ১. ফায়ারবেস লোড চেক (লোড না হলে অপেক্ষা করবে)
+  // 💡 ১. প্রথমেই চেক করি ইন্টারনেট আছে কি না
+  if (!navigator.onLine) {
+    console.warn('⚠️ Offline detected. Skipping Firebase load.');
+    window._fbReady = false;
+    
+    // লোডিং স্ক্রিন সরিয়ে সরাসরি মেইন অ্যাপ দেখাই
+    const splash = document.getElementById('splashScreen');
+    if (splash) splash.style.display = 'none';
+    
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) mainApp.style.display = 'block';
+    
+    if (typeof afterLogin === 'function') {
+        try { afterLogin(); } catch(e){}
+    }
+    return; // ফায়ারবেস লোড করব না
+  }
+
+  // ২. ইন্টারনেট থাকলে ফায়ারবেস চেক করি
   window._fbLoadAttempts = (window._fbLoadAttempts || 0) + 1;
   
   if (typeof firebase === 'undefined' || 
       typeof firebase.auth === 'undefined' || 
       typeof firebase.messaging === 'undefined') {
       
-    if (window._fbLoadAttempts > 15) { // ১.৫ সেকেন্ড পর থেমে যাবে
-        console.warn('⚠️ Offline: Firebase SDK load failed. Running in offline mode.');
+    if (window._fbLoadAttempts > 15) { 
+        console.warn('⚠️ Firebase SDK load timeout.');
         window._fbReady = false; 
         
-        // লোডিং স্ক্রিন সরিয়ে মেইন অ্যাপ দেখানো
         const splash = document.getElementById('splashScreen');
         if (splash) splash.style.display = 'none';
         
@@ -1807,13 +1824,11 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         return; 
     }
     
-    console.log('⏳ Waiting for Firebase SDK...');
     setTimeout(initFirebase, 100);
     return;
   }
   
   try {
-    // ২. Firebase Config Setup
     if (!firebase.apps.length) {
       firebase.initializeApp({
         apiKey: "AIzaSyCsdwJmEeZg0wa-OpKyccl7sbHk9fTXb6Q",
@@ -1826,27 +1841,19 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
       });
     }
     
-    // ৩. সার্ভিস চালু (অফলাইন পারসিস্টেন্স সহ)
     try { window._fbAnalytics = firebase.analytics(); } catch(e) {}
-    
-    try { 
-        window._db = firebase.firestore(); 
-
-    } catch(e) { console.warn('Firestore error', e); }
-    
+    try { window._db = firebase.firestore(); } catch(e) {}
     try { window._auth = firebase.auth(); } catch(e) {}
     
     if (window._auth) {
         window._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
           .then(function() { console.log('✅ Auth persistence: LOCAL'); })
-          .catch(function(e) { console.warn('Auth persistence failed:', e.message); });
+          .catch(function(e) {});
     }
     
-    // ৪. Service Worker রেজিস্ট্রেশন
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then(function(reg) {
-          console.log('✅ SW Registered:', reg.scope);
           window._fcmSWReg = reg;
           try {
             if (firebase.messaging.isSupported()) {
@@ -1858,7 +1865,6 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
           console.log('✅ Firebase ready');
         })
         .catch(function(err) { 
-            console.error('❌ SW Registration failed:', err); 
             window._fbReady = true; 
         });
     } else {
@@ -1866,18 +1872,10 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         window._fbReady = true;
     }
     
-    // ৫. Analytics Track
-    if(window._fbAnalytics) {
-        try {
-          window._fbAnalytics.logEvent('app_open', { platform: 'pwa', timestamp: Date.now() });
-        } catch(e) {}
-    }
-    
   } catch(e) {
     if (e.code === 'app/duplicate-app') {
       window._fbReady = true;
     } else {
-      console.warn('⚠️ Firebase initializeApp failed: ' + e.message);
       window._fbReady = false;
     }
   }
