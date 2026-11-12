@@ -6170,7 +6170,7 @@ function editCow(id) {
 function deleteCow(id) {
   if (!confirm(t('confirm_del'))) return;
   
-  // ১. লোকাল ডাটাবেস থেকে ডিলিট করা (সব ধরনের পশুর জন্য)
+  // ১. লোকাল ডাটাবেস থেকে ডিলিট করা
   DB.cows = DB.cows.filter(c => c.id !== id);
   DB.milk = DB.milk.filter(m => m.cowId !== id);
   DB.medicine = DB.medicine.filter(m => m.cowId !== id);
@@ -6184,12 +6184,16 @@ function deleteCow(id) {
     const devId = DB.deviceId;
     
     // devices সাব-কলেকশন থেকে ডিলিট
-    window._db.collection('devices').doc(devId).collection('cows').doc(id).delete().catch(e => console.warn(e));
+    window._db.collection('devices').doc(devId).collection('cows').doc(id).delete()
+      .then(() => console.log("✅ Deleted from devices subcollection"))
+      .catch(e => console.warn("❌ devices delete failed:", e));
     
     // trialUsers সাব-কলেকশন থেকে ডিলিট
-    window._db.collection('trialUsers').doc(devId).collection('cows').doc(id).delete().catch(e => console.warn(e));
+    window._db.collection('trialUsers').doc(devId).collection('cows').doc(id).delete()
+      .then(() => console.log("✅ Deleted from trialUsers subcollection"))
+      .catch(e => console.warn("❌ trialUsers delete failed:", e));
     
-    // users ডকুমেন্টের অ্যারে আপডেট করা (পুরো নতুন লিস্টটা পাঠিয়ে দিলেই ডিলিট হওয়া গরুটা মুছে যাবে)
+    // users ডকুমেন্টের অ্যারে আপডেট করা
     if (window._auth && window._auth.currentUser) {
       window._db.collection('users').doc(window._auth.currentUser.uid).set({
         cows: DB.cows 
