@@ -5746,13 +5746,21 @@ if (window._db && DB.deviceId) {
     }, { merge: true }).catch(e=>console.warn(e));
 
     // ৪. trialUsers-এ totalCows এবং uid আপডেট
-const currentUid = (window._auth && window._auth.currentUser) ? window._auth.currentUser.uid : '';
+let currentUid = '';
+if (window._auth && window._auth.currentUser) {
+    // 💡 যদি ইউজার লগইন করা থাকে, তবে গুগলের uid নেবে
+    currentUid = window._auth.currentUser.uid;
+} else {
+    // 💡 গেস্ট হলে ডিভাইস আইডিকেই uid হিসেবে সেভ করবে
+    currentUid = devId; 
+}
+
 window._db.collection('trialUsers').doc(devId).set({
     deviceId: devId,
-    uid: currentUid, // 💡 লগইন করা থাকলে uid সেভ হবে
+    uid: currentUid, 
     totalCows: DB.cows.length
 }, { merge: true })
-.then(() => console.log("✅ totalCows updated in trialUsers"))
+.then(() => console.log("✅ totalCows and uid updated in trialUsers"))
 .catch(e => console.warn("❌ trialUsers update failed:", e));
 }
   
