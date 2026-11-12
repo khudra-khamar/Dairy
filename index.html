@@ -3,6 +3,10 @@
 <head>
 <script>
 window.onerror = function(msg, url, line) {
+  if (msg && msg.includes("Script error")) {
+    console.warn("Ignored cross-origin script error.");
+    return true; 
+  }
   alert("Error: " + msg + "\nLine: " + line);
   return false;
 };
@@ -1789,6 +1793,7 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     const s = document.createElement('script');
     s.src = src;
     s.defer = true;
+    s.crossOrigin = "anonymous"; // 💡 ক্রস-অরিজিন এরর লুকানোর জন্য
     s.onload = () => {
       loadedCount++;
       if (loadedCount === scripts.length) {
@@ -4033,7 +4038,7 @@ const MANUAL_CONTENT = {
       '🔐 लाइसेंस — Device Code, लाइसेंस, नवीनीकरण'
     ]},
     { icon: '📤', title: 'ऐप शेयर करें', steps: [
-      'Header → ⋮ मेनू → 📤 Share App',
+      'Header → ⋮ मेनू → ?? Share App',
       'या किसानों को यह लिंक भेजें:',
       'https://khudra-khamar.github.io/Dairy/',
       'प्राप्तकर्ता: Chrome में खोलें → Install',
