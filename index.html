@@ -5718,6 +5718,30 @@ if (tempPhoto && savedCowId) {
   tempPhoto = null;
   document.getElementById('cowEditId').value = '';
   showPage('cows');
+  
+  // 💡 নতুন গরু ক্লাউডে সেভ এবং কাউন্টার আপডেট
+if (window._db && DB.deviceId) { 
+    const devId = DB.deviceId;
+    
+    // ১. devices এবং trialUsers সাব-কলেকশনে গরু সেভ
+    window._db.collection('devices').doc(devId).collection('cows').doc(cow.id).set({
+        ...cow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(e=>console.warn(e));
+    
+    window._db.collection('trialUsers').doc(devId).collection('cows').doc(cow.id).set({
+        ...cow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(e=>console.warn(e));
+
+    // ২. মোট গরুর সংখ্যা (totalCows) আপডেট
+    window._db.collection('devices').doc(devId).set({
+        totalCows: DB.cows.length
+    }, { merge: true }).catch(e=>console.warn(e));
+
+    window._db.collection('trialUsers').doc(devId).set({
+        totalCows: DB.cows.length
+    }, { merge: true }).catch(e=>console.warn(e));
+}
+  
 }
 // ========== COW PROFILE ==========
 function autoTransferCattleTypes() {
@@ -10964,6 +10988,13 @@ async function proceedAfterLogin() {
           if (typeof saveDB === 'function') saveDB();
           console.log("✅ Cows restored via UID:", DB.cows.length);
           if (typeof toast === 'function') toast('☁️ ক্লাউড থেকে ' + DB.cows.length + ' টি গরুর ডাটা ফিরে এসেছে!');
+                    
+// 💡 ক্লাউডে গরুর সংখ্যা (totalCows) আপডেট করা
+if (window._db && DB.deviceId) {
+    const devId = DB.deviceId;
+    window._db.collection('devices').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e=>console.warn(e));
+    window._db.collection('trialUsers').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e=>console.warn(e));
+}
         }
       }
     }
