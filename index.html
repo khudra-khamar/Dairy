@@ -6183,28 +6183,25 @@ function deleteCow(id) {
   if (window._db && DB.deviceId) {
     const devId = DB.deviceId;
     
-    // devices সাব-কলেকশন থেকে ডিলিট
     window._db.collection('devices').doc(devId).collection('cows').doc(id).delete()
-      .then(() => console.log("✅ Deleted from devices subcollection"))
-      .catch(e => console.warn("❌ devices delete failed:", e));
+      .then(() => console.log("✅ Deleted from devices"))
+      .catch(e => console.warn(e));
     
-    // trialUsers সাব-কলেকশন থেকে ডিলিট
     window._db.collection('trialUsers').doc(devId).collection('cows').doc(id).delete()
-      .then(() => console.log("✅ Deleted from trialUsers subcollection"))
-      .catch(e => console.warn("❌ trialUsers delete failed:", e));
+      .then(() => console.log("✅ Deleted from trialUsers"))
+      .catch(e => console.warn(e));
     
-    // users ডকুমেন্টের অ্যারে আপডেট করা
     if (window._auth && window._auth.currentUser) {
       window._db.collection('users').doc(window._auth.currentUser.uid).set({
         cows: DB.cows 
       }, { merge: true }).catch(e => console.warn(e));
     }
     
-    // কাউন্টার আপডেট করা (totalCows)
     window._db.collection('devices').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e => console.warn(e));
     window._db.collection('trialUsers').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e => console.warn(e));
   }
 }
+
 function openCalfEntry(cowId) {
   const cow = DB.cows.find(c => c.id === cowId);
   if (!cow) return;
