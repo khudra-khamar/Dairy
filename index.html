@@ -5719,25 +5719,28 @@ if (tempPhoto && savedCowId) {
   document.getElementById('cowEditId').value = '';
   showPage('cows');
   
-  // 💡 নতুন গরু ক্লাউডে সেভ এবং কাউন্টার আপডেট
+// 💡 নতুন গরু ক্লাউডে সেভ এবং কাউন্টার আপডেট
 if (window._db && DB.deviceId) { 
     const devId = DB.deviceId;
     
-    // ১. devices এবং trialUsers সাব-কলেকশনে গরু সেভ
+    // ১. devices সাব-কলেকশনে গরু সেভ
     window._db.collection('devices').doc(devId).collection('cows').doc(cow.id).set({
         ...cow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(e=>console.warn(e));
     
+    // ২. trialUsers সাব-কলেকশনে গরু সেভ
     window._db.collection('trialUsers').doc(devId).collection('cows').doc(cow.id).set({
         ...cow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(e=>console.warn(e));
 
-    // ২. মোট গরুর সংখ্যা (totalCows) আপডেট
+    // ৩. devices-এ totalCows আপডেট
     window._db.collection('devices').doc(devId).set({
         totalCows: DB.cows.length
     }, { merge: true }).catch(e=>console.warn(e));
 
+    // ৪. trialUsers-এ totalCows আপডেট (এবং ডকুমেন্ট না থাকলে তৈরি)
     window._db.collection('trialUsers').doc(devId).set({
+        deviceId: devId, // ডকুমেন্ট না থাকলে যেন তৈরি হয়
         totalCows: DB.cows.length
     }, { merge: true }).catch(e=>console.warn(e));
 }
