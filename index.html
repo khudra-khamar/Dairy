@@ -726,31 +726,38 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 </div>
 <div class="container">
 
-  <!-- COWS LIST PAGE -->
-  <div id="page-cows" class="page">
-    <div class="page-header">
+<!-- COWS LIST PAGE -->
+<div id="page-cows" class="page">
+  <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 8px;">
       <button class="back-icon" onclick="showPage('home')">←</button>
-      <h2 data-t="cows_list">🐮 Animal List</h2>
-      <button class="small-btn" onclick="showPage('gallery')">📸</button>
+      <h2 data-t="cows_list" style="font-size: 18px; margin: 0;">🐮 Animal List</h2>
     </div>
-
-    <div class="tabs" style="margin-bottom:12px;">
-      <div class="tab active" id="tabActive" onclick="switchCowTab('active')">🐮 Active</div>
-      <div class="tab" id="tabSold" onclick="switchCowTab('sold')">📦 Sold</div>
+    <div style="display: flex; gap: 8px;">
+      <button class="small-btn" onclick="showPage('gallery')" style="padding: 6px 10px;">📸</button>
+      <button class="small-btn" onclick="showPage('add-cow')" style="padding: 6px 10px; background: #2e7d32; color: white; border: none; border-radius: 5px; font-weight: bold;">➕ Add</button>
     </div>
+  </div>
 
-    <div id="activeSection">
-      <div class="filter-tabs">
-        <div class="filter-tab active" data-filter="all" onclick="setFilter('all')" data-t="filter_all">All</div>
-        <div class="filter-tab" data-filter="calf" onclick="setFilter('calf')" data-t="type_calf">🐄 Calf</div>
-        <div class="filter-tab" data-filter="heifer" onclick="setFilter('heifer')" data-t="type_heifer">🐄 Heifer</div>
-        <div class="filter-tab" data-filter="cow" onclick="setFilter('cow')" data-t="type_cow">🐮 Cow</div>
-        <div class="filter-tab" data-filter="bull" onclick="setFilter('bull')" data-t="type_bull">🐂 Bull</div>
-        <div class="filter-tab" data-filter="buffalo" onclick="setFilter('buffalo')" data-t="type_buffalo">🐃 Buffalo</div>
-      </div>
+  <div class="tabs" style="margin-bottom:12px;">
+    <div class="tab active" id="tabActive" onclick="switchCowTab('active')">🐮 Active</div>
+    <div class="tab" id="tabSold" onclick="switchCowTab('sold')">📦 Sold</div>
+  </div>
+
+  <div id="activeSection">
+    <div class="filter-tabs">
+      <div class="filter-tab active" data-filter="all" onclick="setFilter('all')" data-t="filter_all">All</div>
+      <div class="filter-tab" data-filter="calf" onclick="setFilter('calf')" data-t="type_calf">🐄 Calf</div>
+      <div class="filter-tab" data-filter="heifer" onclick="setFilter('heifer')" data-t="type_heifer">🐄 Heifer</div>
+      <div class="filter-tab" data-filter="cow" onclick="setFilter('cow')" data-t="type_cow">🐮 Cow</div>
+      <div class="filter-tab" data-filter="bull" onclick="setFilter('bull')" data-t="type_bull">🐂 Bull</div>
+      <div class="filter-tab" data-filter="buffalo" onclick="setFilter('buffalo')" data-t="type_buffalo">🐃 Buffalo</div>
     </div>
+  </div>
 
-    <div id="cowsList"></div>
+  <div id="cowsList"></div>
+
+</div>
 
   </div>
 
