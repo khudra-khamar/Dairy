@@ -5738,11 +5738,15 @@ if (window._db && DB.deviceId) {
         totalCows: DB.cows.length
     }, { merge: true }).catch(e=>console.warn(e));
 
-    // ৪. trialUsers-এ totalCows আপডেট (এবং ডকুমেন্ট না থাকলে তৈরি)
-    window._db.collection('trialUsers').doc(devId).set({
-        deviceId: devId, // ডকুমেন্ট না থাকলে যেন তৈরি হয়
-        totalCows: DB.cows.length
-    }, { merge: true }).catch(e=>console.warn(e));
+    // ৪. trialUsers-এ totalCows এবং uid আপডেট
+const currentUid = (window._auth && window._auth.currentUser) ? window._auth.currentUser.uid : '';
+window._db.collection('trialUsers').doc(devId).set({
+    deviceId: devId,
+    uid: currentUid, // 💡 লগইন করা থাকলে uid সেভ হবে
+    totalCows: DB.cows.length
+}, { merge: true })
+.then(() => console.log("✅ totalCows updated in trialUsers"))
+.catch(e => console.warn("❌ trialUsers update failed:", e));
 }
   
 }
