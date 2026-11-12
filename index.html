@@ -1762,22 +1762,49 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
 <!-- Firebase SDK Preload — দ্রুত download -->
 
 <!-- Firebase SDK (deferred for fast load) -->
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" onerror="this.remove()"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js" onerror="this.remove()"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js" onerror="this.remove()"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js" onerror="this.remove()"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" onerror="this.remove()"></script>
-
-
 <script>
-  // 💡 অফলাইনে ফায়ারবেস স্ক্রিপ্ট লোড না হলে ব্রাউজারের লাল এরর বন্ধ করার জন্য
-  window.addEventListener('error', function(e) {
-    if (e.message && (e.message.includes('network error') || e.message.includes('Script error'))) {
-      console.warn('⚠️ Offline mode: Ignored network error.');
-      e.preventDefault();
-      return true;
-    }
-  }, true);
+// 💡 অফলাইনে ফায়ারবেস স্ক্রিপ্ট লোড না করার জন্য ডাইনামিক লোডার
+(function loadFirebase() {
+  if (!navigator.onLine) {
+    console.warn("⚠️ Offline: Firebase scripts will not be loaded.");
+    window._fbReady = false;
+    const splash = document.getElementById('splashScreen');
+    if (splash) splash.style.display = 'none';
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) mainApp.style.display = 'block';
+    if (typeof afterLogin === 'function') { try { afterLogin(); } catch(e){} }
+    return;
+  }
+
+  const scripts = [
+    "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js",
+    "https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js",
+    "https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js",
+    "https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js",
+    "https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
+  ];
+
+  let loadedCount = 0;
+  scripts.forEach(src => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.defer = true;
+    s.onload = () => {
+      loadedCount++;
+      if (loadedCount === scripts.length) {
+        if (typeof initFirebase === 'function') initFirebase();
+      }
+    };
+    s.onerror = () => {
+      console.warn("Failed to load: " + src);
+      loadedCount++;
+      if (loadedCount === scripts.length) {
+        if (typeof initFirebase === 'function') initFirebase();
+      }
+    };
+    document.head.appendChild(s);
+  });
+})();
 </script>
 
 <!-- Firebase Init (Unified & Final) -->

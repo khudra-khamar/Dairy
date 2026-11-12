@@ -1,14 +1,12 @@
 /* ============================================================
    sw.js
    Dairy Manager — Main Service Worker
-   Caching (Hybrid) + FCM Push Notifications (merged)
-   Version: 2026-11-06-v10 (Offline Support Fixed)
+   Version: 2026-11-12-v12 (Offline Support Fixed)
    ============================================================ */
 
-const CACHE_NAME = 'dairy-v11-2026-11-10'; // 👈 নাম পরিবর্তন করুন
-const DATA_CACHE = 'dairy-data-v11';
+const CACHE_NAME = 'dairy-v12-2026-11-12';
+const DATA_CACHE = 'dairy-data-v12';
 
-/* ---------- Static assets (first install-এ cache হবে) ---------- */
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -20,18 +18,9 @@ const STATIC_ASSETS = [
   './first-aid-data.js',
   './feed-data.js',
   './symptom-data.js',
-  './privacy-policy.html',
-  // 👇 ফায়ারবেসের স্ক্রিপ্টগুলো ক্যাশে রাখার জন্য যোগ করা হলো
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js'
+  './privacy-policy.html'
 ];
 
-/* ============================================================
-   FCM — Firebase Messaging
-   ============================================================ */
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
 
@@ -47,10 +36,8 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
-  console.log('[sw.js] BG message:', payload);
   const n = payload.notification || {};
   const d = payload.data || {};
-
   return self.registration.showNotification(
     n.title || d.title || 'Dairy Manager',
     {
@@ -60,15 +47,8 @@ messaging.onBackgroundMessage(function (payload) {
       vibrate: [200, 100, 200],
       tag: d.tag || 'dairy-alert',
       requireInteraction: true,
-      data: {
-        url: d.url || './index.html',
-        deviceId: d.deviceId || '',
-        timestamp: Date.now()
-      },
-      actions: [
-        { action: 'open', title: 'খুলুন' },
-        { action: 'close', title: 'বন্ধ' }
-      ]
+      data: { url: d.url || './index.html', deviceId: d.deviceId || '', timestamp: Date.now() },
+      actions: [{ action: 'open', title: 'খুলুন' }, { action: 'close', title: 'বন্ধ' }]
     }
   );
 });
@@ -77,7 +57,6 @@ self.addEventListener('notificationclick', function (event) {
   event.notification.close();
   if (event.action === 'close') return;
   const targetUrl = (event.notification.data && event.notification.data.url) || './index.html';
-
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
       for (const c of list) {
@@ -91,39 +70,24 @@ self.addEventListener('notificationclick', function (event) {
   );
 });
 
-/* ============================================================
-   Install — skipWaiting + assets pre-cache
-   ============================================================ */
 self.addEventListener('install', function (event) {
-  console.log('[sw.js] Installing v10...');
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
       return Promise.all(
         STATIC_ASSETS.map(function (url) {
-          // cross-origin (gstatic) ফাইলগুলো ক্যাশে করার জন্য mode: 'cors' দরকার হতে পারে
-          return fetch(url, { mode: 'cors' }).then(function(res) {
-             if(res.ok) return cache.put(url, res);
-          }).catch(function (e) {
-            console.warn('[sw.js] cache miss:', url, e);
-          });
+          return cache.add(url).catch(function (e) {});
         })
       );
     })
   );
 });
-
-/* ============================================================
-   Activate — পুরনো cache পরিষ্কার
-   ============================================================ */
 self.addEventListener('activate', function (event) {
-  console.log('[sw.js] Activated v10');
   event.waitUntil(
     caches.keys().then(function (names) {
       return Promise.all(
         names.map(function (name) {
           if (name !== CACHE_NAME && name !== DATA_CACHE) {
-            console.log('[sw.js] Deleting old cache:', name);
             return caches.delete(name);
           }
         })
@@ -134,11 +98,6 @@ self.addEventListener('activate', function (event) {
   );
 });
 
-/* ============================================================
-   Fetch — Hybrid
-   HTML → Network-first | Data/JS/CSS/Images → Cache-first
-   Firebase scripts → Cache-first (Offline support)
-   ============================================================ */
 self.addEventListener('fetch', function (event) {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -146,7 +105,6 @@ self.addEventListener('fetch', function (event) {
   const url = new URL(req.url);
   const isFirebase = url.href.includes('gstatic.com');
 
-  // ফায়ারবেসের রিকোয়েস্ট বাদে বাকি সব ক্রস-অরিজিন রিকোয়েস্ট বাদ দেব
   if (url.origin !== self.location.origin && !isFirebase) return;
 
   const accept = req.headers.get('accept') || '';
@@ -167,7 +125,6 @@ self.addEventListener('fetch', function (event) {
       })
     );
   } else if (isData || isAsset || isFirebase) {
-    // ফায়ারবেস স্ক্রিপ্ট হলে প্রথমে ক্যাশে খুঁজবে, না পেলে নেটওয়ার্ক থেকে আনবে
     event.respondWith(
       caches.match(req).then(function (cached) {
         if (cached) return cached;
@@ -175,6 +132,9 @@ self.addEventListener('fetch', function (event) {
           const copy = res.clone();
           caches.open(DATA_CACHE).then(function (c) { c.put(req, copy); });
           return res;
+        }).catch(function () {
+          // অফলাইনে ফায়ারবেস ফাইল না পেলে ব্রাউজারকে ফাঁকা রেসপন্স দেব, যাতে লাল এরর না আসে
+          return new Response('', { status: 404, statusText: 'Offline' });
         });
       })
     );
