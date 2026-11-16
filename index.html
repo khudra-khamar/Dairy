@@ -3080,6 +3080,23 @@ async function autoSyncFromCloud(){
   }catch(e){ console.log('Sync skip:', e.message); }
 }
 
+// ===== FIX: undefined -> null (Firebase এর জন্য) =====
+function cleanForFirestore(o){
+  if(o===undefined) return null;
+  if(o===null) return null;
+  if(Array.isArray(o)) return o.map(cleanForFirestore);
+  if(typeof o==='object'){
+    const out = {};
+    for(const k in o){
+      const v = o[k];
+      if(v===undefined) out[k]=null;
+      else out[k]=cleanForFirestore(v);
+    }
+    return out;
+  }
+  return o;
+}
+
 function saveDB() {
   try {
     if(!DB || !DB.cows || DB.cows.length===0){
@@ -5827,16 +5844,17 @@ if (tempPhoto && savedCowId) {
 if (window._db && DB.deviceId) { 
     const devId = DB.deviceId;
     
-    // ১. devices সাব-কলেকশনে গরু সেভ
+       // ১. devices সাব-কলেকশনে গরু সেভ
+    const cleanCow = cleanForFirestore(cow);
     window._db.collection('devices').doc(devId).collection('cows').doc(cow.id).set({
-        ...cow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        ...cleanCow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(e=>console.warn(e));
     
     // ২. trialUsers সাব-কলেকশনে গরু সেভ
     window._db.collection('trialUsers').doc(devId).collection('cows').doc(cow.id).set({
-        ...cow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        ...cleanCow, deviceId: devId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(e=>console.warn(e));
-
+    
     // ৩. devices-এ totalCows আপডেট
     window._db.collection('devices').doc(devId).set({
         totalCows: DB.cows.length
