@@ -1328,18 +1328,75 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
    </div>
  </div>
  
-  <!-- NOTES PAGE -->
-  <div id="page-notes" class="page">
-    <div class="page-header">
-      <button class="back-icon" onclick="showPage('home')">←</button>
-      <h2 data-t="notes_title">📝 My Notes</h2>
-    </div>
-    <div class="form-group">
-      <textarea id="noteText" rows="3" placeholder="Write a note..." data-t="note_placeholder"></textarea>
-    </div>
-    <button class="btn-primary" onclick="saveNote()" data-t="note_save">💾 Save Note</button>
-    <div id="notesList" style="margin-top:14px;"></div>
+<!-- NOTES PAGE - MY NOTES STYLE -->
+<div id="page-notes" class="page">
+  <div class="page-header">
+    <button class="back-icon" onclick="showPage('home')">←</button>
+    <h2>📝 My Notes</h2>
   </div>
+
+  <!-- Search -->
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <input type="text" id="noteSearch" placeholder="🔍 Search notes..." oninput="renderNotes()" style="flex:1;padding:11px;border:2px solid #E0E0E0;border-radius:10px;">
+  </div>
+
+  <!-- Folder Filter -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;">
+    <button onclick="noteFilter='All';renderNotes()" id="fltAll" style="padding:7px 12px;border-radius:20px;border:none;background:#1B5E20;color:#fff;">All</button>
+    <button onclick="noteFilter='Dairy';renderNotes()" style="padding:7px 12px;border-radius:20px;border:1px solid #CCC;background:#fff;">🐄 Dairy</button>
+    <button onclick="noteFilter='Money';renderNotes()" style="padding:7px 12px;border-radius:20px;border:1px solid #CCC;background:#fff;">💰 Money</button>
+    <button onclick="noteFilter='Personal';renderNotes()" style="padding:7px 12px;border-radius:20px;border:1px solid #CCC;background:#fff;">👤 Personal</button>
+  </div>
+
+  <!-- List -->
+  <div id="notesList"></div>
+
+  <!-- + Button -->
+  <button onclick="createNewNote()" style="position:fixed;bottom:90px;right:18px;width:56px;height:56px;border-radius:50%;background:#C62828;color:#fff;font-size:30px;border:none;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:50;">+</button>
+
+  <!-- Editor - নোট খুললে এটা দেখাবে -->
+  <div id="noteEditor" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:100;padding:14px;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <button onclick="closeNoteEditor()" style="border:none;background:none;font-size:22px;">←</button>
+      <span id="noteEditorDate" style="font-size:12px;color:#888;"></span>
+      <button onclick="saveOpenNote()" style="background:#1B5E20;color:#fff;border:none;padding:8px 14px;border-radius:8px;">💾 Save</button>
+    </div>
+    <select id="noteEditorFolder" style="width:100%;padding:10px;border:2px solid #E0E0E0;border-radius:10px;margin-bottom:10px;">
+      <option value="Dairy">🐄 Dairy</option>
+      <option value="Money">💰 Money</option>
+      <option value="Personal">👤 Personal</option>
+    </select>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+  <button id="btnTextMode" onclick="switchNoteMode('text')" style="flex:1;padding:10px;border-radius:10px;border:none;background:#1B5E20;color:#fff;">📝 Text</button>
+  <button id="btnTableMode" onclick="switchNoteMode('table')" style="flex:1;padding:10px;border-radius:10px;border:1px solid #CCC;background:#fff;">📊 Table / Excel</button>
+</div>
+<div id="excelWrap" style="display:none;overflow:auto;border:2px solid #E0E0E0;border-radius:10px;max-height:55vh;">
+  <div style="display:flex;gap:6px;padding:8px;flex-wrap:wrap;">
+    <button onclick="addExcelRow()" style="padding:7px 10px;border-radius:8px;border:none;background:#1B5E20;color:#fff;">➕ Row</button>
+    <button onclick="addExcelCol()" style="padding:7px 10px;border-radius:8px;border:none;background:#1976D2;color:#fff;">➕ Column</button>
+    <button onclick="excelToggleTotal()" style="padding:7px 10px;border-radius:8px;border:none;background:#FF9800;color:#fff;">∑ Auto Sum</button>
+    <button onclick="excelBold()" style="padding:7px 10px;border-radius:8px;"><b>B</b></button>
+    <button onclick="excelItalic()" style="padding:7px 10px;border-radius:8px;"><i>I</i></button>
+    <button onclick="excelUnderline()" style="padding:7px 10px;border-radius:8px;"><u>U</u></button>
+    <select onchange="excelFontSize(this.value)" style="padding:7px;border-radius:8px;"><option value="12">12</option><option value="14" selected>14</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="24">24</option></select>
+    <input type="color" id="excelTextColor" value="#000000" onchange="excelTextColor(this.value)">
+    <input type="color" id="excelBgColor" value="#FFFF00" onchange="excelBgColor(this.value)">
+  </div>
+  <table id="excelTable" style="border-collapse:collapse;width:100%;font-size:14px;"><thead id="excelHead"></thead><tbody id="excelBody"></tbody></table>
+  <div id="excelTotal" style="padding:8px;font-weight:700;"></div>
+</div>
+<div id="textToolbar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+  <button onclick="textBold()" style="padding:7px 10px;border-radius:8px;"><b>B</b></button>
+  <button onclick="textItalic()" style="padding:7px 10px;border-radius:8px;"><i>I</i></button>
+  <button onclick="textUnderline()" style="padding:7px 10px;border-radius:8px;"><u>U</u></button>
+  <select onchange="textFontSize(this.value)" style="padding:7px;border-radius:8px;"><option value="14">14</option><option value="15" selected>15</option><option value="18">18</option><option value="20">20</option><option value="24">24</option></select>
+  <input type="color" id="textColorPick" value="#000000" onchange="textColor(this.value)" title="লেখার রঙ">
+  <input type="color" id="textBgPick" value="#FFFFFF" onchange="textBg(this.value)" title="Highlight / Background">
+</div>
+    <textarea id="noteEditorText" rows="18" placeholder="এখানে লিখুন..." style="width:100%;padding:12px;border:2px solid #E0E0E0;border-radius:10px;font-size:15px;font-family:inherit;"></textarea>
+    <p style="font-size:11px;color:#888;margin-top:8px;">💡 পরে এখানেই 📊 Table / Excel বাটন অ্যাড করে দেবো।</p>
+  </div>
+</div>
 
   <!-- ALERTS PAGE -->
   <div id="page-alerts" class="page">
@@ -7869,65 +7926,180 @@ function deleteFeedStock(id) {
   renderFeedStock();
   toast(t('deleted'));
 }
-// ========== NOTES ==========
-function saveNote() {
-  const txt = document.getElementById('noteText').value.trim();
-  if (!txt) { toast('❌ Write a note'); return; }
-  DB.notes.unshift({ id: uid(), text: txt, date: today() });
-  saveDB();
-  document.getElementById('noteText').value = '';
-  renderNotes();
-  toast(t('note_saved'));
-}
+// ========== NOTES - MY NOTES STYLE ==========
+let noteFilter = 'All';
+let openNoteId = null;
 
-function renderNotes() {
-  const list = document.getElementById('notesList');
-  if (!list) return;
-  if (DB.notes.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="icon">📝</div><p>${t('no_notes')}</p></div>`;
-    return;
-  }
-  list.innerHTML = DB.notes.map(n => `
-    <div class="note-item">
-      <div class="date">📅 ${formatDate(n.date)}</div>
-      <div class="text">${n.text.replace(/\n/g, '<br>')}</div>
-      <button class="btn-sm" style="background:#1976D2;" onclick="editNote('${n.id}')">✏️</button>
-      <button class="btn-small-danger" onclick="deleteNote('${n.id}')">🗑️</button>
-    </div>
-  `).join('');
+function getNoteTitle(txt){
+  const first = (txt||'').split('\n')[0].trim();
+  return first ? first.slice(0,60) : '(Empty Note)';
 }
-function editNote(id) {
-  const n = DB.notes.find(x => x.id === id);
-  if (!n) return;
-  
-  document.getElementById('modalTitle').textContent = '✏️ Edit Note';
-  document.getElementById('modalMsg').innerHTML = '<textarea id="modalTextarea" rows="6" style="width:100%;padding:12px;border:2px solid #E0E0E0;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;">' + n.text + '</textarea>';
-  document.getElementById('modalInput').style.display = 'none';
-  document.getElementById('modalCancel').style.display = '';
-  document.getElementById('modalOk').textContent = 'Save';
-  modalInputMode = false;
-  modalCallback = function() {
-    const newText = document.getElementById('modalTextarea').value;
-    if (!newText || !newText.trim()) { toast('❌ Note cannot be empty'); return; }
-    n.text = newText.trim();
-    saveDB();
-    renderNotes();
-    toast('✅ Updated');
-  };
+function formatNoteDate(d){
+  try{ const dt=new Date(d); if(isNaN(dt)) return d||''; return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); }catch(e){ return d||''; }
+}
+function createNewNote(){
+  const id = uid();
+  DB.notes.unshift({ id, text:'', date:new Date().toISOString(), folder:'Personal', mode:'text' });
+  saveDB(); openNote(id);
+}
+function openNote(id){
+  openNoteId = id;
+  const n = DB.notes.find(x=>x.id===id); if(!n) return;
+  document.getElementById('noteEditorText').value = n.text||'';
+  document.getElementById('noteEditorFolder').value = n.folder||'Personal';
+  document.getElementById('noteEditorDate').textContent = formatNoteDate(n.date);
+  document.getElementById('noteEditor').style.display='block';
+  switchNoteMode(n.mode||'text', true);
+  applyTextStyle();
+  setTimeout(()=>document.getElementById('noteEditorText').focus(),100);
+}
+function closeNoteEditor(){ saveOpenNote(true); document.getElementById('noteEditor').style.display='none'; openNoteId=null; renderNotes(); }
+// ===== TEXT NOTE - FONT + COLOR =====
+function getTextStyle(){
+  const n = DB.notes.find(x=>x.id===openNoteId); if(!n) return null;
+  if(!n.textStyle) n.textStyle = {b:0,i:0,u:0,s:15,c:'#000000',bg:'#FFFFFF'};
+  return n.textStyle;
+}
+function applyTextStyle(){
+  const st = getTextStyle(); if(!st) return;
+  const ta = document.getElementById('noteEditorText');
+  ta.style.fontWeight = st.b?'bold':'normal';
+  ta.style.fontStyle = st.i?'italic':'normal';
+  ta.style.textDecoration = st.u?'underline':'none';
+  ta.style.fontSize = st.s+'px';
+  ta.style.color = st.c;
+  ta.style.background = st.bg;
+  const cp = document.getElementById('textColorPick'); if(cp) cp.value = st.c;
+  const bp = document.getElementById('textBgPick'); if(bp) bp.value = st.bg;
+}
+function textBold(){ const st=getTextStyle(); st.b=st.b?0:1; saveDB(); applyTextStyle(); }
+function textItalic(){ const st=getTextStyle(); st.i=st.i?0:1; saveDB(); applyTextStyle(); }
+function textUnderline(){ const st=getTextStyle(); st.u=st.u?0:1; saveDB(); applyTextStyle(); }
+function textFontSize(v){ const st=getTextStyle(); st.s=Number(v); saveDB(); applyTextStyle(); }
+function textColor(v){ const st=getTextStyle(); st.c=v; saveDB(); applyTextStyle(); }
+function textBg(v){ const st=getTextStyle(); st.bg=v; saveDB(); applyTextStyle(); }
+function saveOpenNote(silent){
+  if(!openNoteId) return;
+  const n = DB.notes.find(x=>x.id===openNoteId); if(!n) return;
+  n.text = document.getElementById('noteEditorText').value;
+  n.folder = document.getElementById('noteEditorFolder').value;
+  n.date = new Date().toISOString();
+  saveDB(); if(!silent) toast('✅ Saved');
+}
+function cloneNote(id){
+  const n = DB.notes.find(x=>x.id===id); if(!n) return;
+  DB.notes.unshift({ id:uid(), text:n.text, date:new Date().toISOString(), folder:n.folder||'Dairy' });
+  saveDB(); renderNotes(); toast('✅ Cloned');
+}
+function moveNote(id){
+  const n = DB.notes.find(x=>x.id===id); if(!n) return;
+  const f = prompt('Move to কোন Folder? Dairy / Money / Personal', n.folder||'Dairy');
+  if(!f) return;
+  n.folder = f; saveDB(); renderNotes(); toast('✅ Moved to '+f);
+}
+function deleteNote(id){
+  if(!confirm(t('note_delete'))) return;
+  DB.notes = DB.notes.filter(n=>n.id!==id);
+  saveDB(); renderNotes(); toast(t('deleted'));
+}
+function showNoteMenu(id){
+  const n = DB.notes.find(x=>x.id===id); if(!n) return;
+  document.getElementById('modalTitle').textContent = getNoteTitle(n.text);
+  document.getElementById('modalMsg').innerHTML = `
+    <button onclick="closeModal();openNote('${id}')" style="width:100%;padding:12px;text-align:left;border:none;background:none;border-bottom:1px solid #EEE;">📂 Open</button>
+    <button onclick="closeModal();cloneNote('${id}')" style="width:100%;padding:12px;text-align:left;border:none;background:none;border-bottom:1px solid #EEE;">📄 Clone</button>
+    <button onclick="closeModal();moveNote('${id}')" style="width:100%;padding:12px;text-align:left;border:none;background:none;border-bottom:1px solid #EEE;">📁 Move to</button>
+    <button onclick="closeModal();deleteNote('${id}')" style="width:100%;padding:12px;text-align:left;border:none;background:none;color:#C62828;">🗑️ Delete</button>`;
+  document.getElementById('modalInput').style.display='none';
+  document.getElementById('modalCancel').style.display='';
+  document.getElementById('modalOk').style.display='none';
   document.getElementById('modalOverlay').classList.add('show');
-  setTimeout(() => {
-    const ta = document.getElementById('modalTextarea');
-    if (ta) ta.focus();
-  }, 100);
 }
-
-function deleteNote(id) {
-  if (!confirm(t('note_delete'))) return;
-  DB.notes = DB.notes.filter(n => n.id !== id);
-  saveDB();
-  renderNotes();
-  toast(t('deleted'));
+// ===== EXCEL INSIDE NOTE =====
+let excelSel = null;
+function getExcelOfNote(){
+  const n = DB.notes.find(x=>x.id===openNoteId); if(!n) return null;
+  if(!n.excel){
+    n.excel = { cols:[{id:'c1',name:'নাম',width:130},{id:'c2',name:'টাকা',width:110},{id:'c3',name:'তারিখ',width:130}], rows:[{id:uid(), cells:{c1:{t:'',b:0,i:0,u:0,s:14,c:'#000',bg:'#fff'},c2:{t:'',b:0,i:0,u:0,s:14,c:'#000',bg:'#fff'},c3:{t:today(),b:0,i:0,u:0,s:14,c:'#000',bg:'#fff'}}}] };
+  }
+  return n.excel;
 }
+function switchNoteMode(mode, noSave){
+  const n = DB.notes.find(x=>x.id===openNoteId); if(!n) return;
+  n.mode = mode; if(!noSave) saveDB();
+  document.getElementById('noteEditorText').style.display = mode==='text'?'block':'none';
+  document.getElementById('excelWrap').style.display = mode==='table'?'block':'none';
+  document.getElementById('btnTextMode').style.background = mode==='text'?'#1B5E20':'#fff';
+  document.getElementById('btnTextMode').style.color = mode==='text'?'#fff':'#000';
+  document.getElementById('btnTableMode').style.background = mode==='table'?'#1976D2':'#fff';
+  document.getElementById('btnTableMode').style.color = mode==='table'?'#fff':'#000';
+  if(mode==='table') renderExcel();
+}
+function addExcelRow(){ const ex=getExcelOfNote(); const cells={}; ex.cols.forEach(col=>{ cells[col.id]={t: col.name==='তারিখ'?today():'',b:0,i:0,u:0,s:14,c:'#000',bg:'#fff'}; }); ex.rows.push({id:uid(),cells}); saveDB(); renderExcel(); }
+function addExcelCol(){ const ex=getExcelOfNote(); const id='c'+Date.now(); ex.cols.push({id,name:'নতুন Column',width:130}); ex.rows.forEach(r=>r.cells[id]={t:'',b:0,i:0,u:0,s:14,c:'#000',bg:'#fff'}); saveDB(); renderExcel(); }
+function deleteExcelCol(colId){ if(!confirm('Column মুছবেন?')) return; const ex=getExcelOfNote(); ex.cols=ex.cols.filter(c=>c.id!==colId); ex.rows.forEach(r=>delete r.cells[colId]); saveDB(); renderExcel(); }
+function deleteExcelRow(rowId){ const ex=getExcelOfNote(); ex.rows=ex.rows.filter(r=>r.id!==rowId); saveDB(); renderExcel(); }
+function updateExcelCell(rowId,colId,el){ const ex=getExcelOfNote(); const row=ex.rows.find(r=>r.id===rowId); row.cells[colId].t=el.innerText; saveDB(); renderExcelTotal(); }
+function renameExcelCol(colId,el){ const ex=getExcelOfNote(); ex.cols.find(c=>c.id===colId).name=el.innerText; saveDB(); }
+function excelSelect(rowId,colId,el){ excelSel={rowId,colId}; document.querySelectorAll('#excelTable td').forEach(td=>td.style.outline='none'); if(el) el.style.outline='2px solid #1976D2'; }
+function renderExcel(){
+  const ex=getExcelOfNote(); if(!ex) return;
+  document.getElementById('excelHead').innerHTML = `<tr><th style="padding:8px;background:#EEE;width:30px;">#</th>`+ex.cols.map(c=>`<th style="width:${c.width}px;background:#1B5E20;color:#fff;padding:0;position:relative;"><div contenteditable="true" onblur="renameExcelCol('${c.id}',this)" style="padding:8px;">${c.name}</div><button onclick="deleteExcelCol('${c.id}')" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.2);color:#fff;border:none;border-radius:50%;width:18px;height:18px;">×</button><div onmousedown="excelResizeStart(event,'${c.id}')" style="position:absolute;top:0;right:0;width:8px;height:100%;cursor:ew-resize;"></div></th>`).join('')+`<th style="background:#EEE;"></th></tr>`;
+  document.getElementById('excelBody').innerHTML = ex.rows.map((r,idx)=>`<tr><td style="padding:8px;background:#F5F5F5;text-align:center;">${idx+1}</td>`+ex.cols.map(c=>{ const cell=r.cells[c.id]||{t:'',b:0,i:0,u:0,s:14,c:'#000',bg:'#fff'}; return `<td contenteditable="true" onclick="excelSelect('${r.id}','${c.id}',this)" onblur="updateExcelCell('${r.id}','${c.id}',this)" style="border:1px solid #EEE;padding:8px;background:${cell.bg};color:${cell.c};font-size:${cell.s}px;font-weight:${cell.b?'bold':'normal'};font-style:${cell.i?'italic':'normal'};text-decoration:${cell.u?'underline':'none'};">${cell.t||''}</td>`; }).join('')+`<td style="text-align:center;"><button onclick="deleteExcelRow('${r.id}')" style="border:none;background:none;">🗑️</button></td></tr>`).join('');
+  renderExcelTotal();
+}
+let excelResizing=null;
+function excelResizeStart(e,colId){ const ex=getExcelOfNote(); excelResizing={colId,startX:e.clientX,startW:ex.cols.find(c=>c.id===colId).width}; e.preventDefault(); document.onmousemove=excelResizeMove; document.onmouseup=()=>{document.onmousemove=null; excelResizing=null;}; }
+function excelResizeMove(e){ if(!excelResizing) return; const ex=getExcelOfNote(); ex.cols.find(c=>c.id===excelResizing.colId).width=Math.max(60, excelResizing.startW+(e.clientX-excelResizing.startX)); renderExcel(); saveDB(); }
+function excelApplyStyle(fn){ if(!excelSel){ toast('❌ আগে Cell সিলেক্ট করুন'); return; } const ex=getExcelOfNote(); const cell=ex.rows.find(r=>r.id===excelSel.rowId).cells[excelSel.colId]; fn(cell); saveDB(); renderExcel(); }
+function excelBold(){ excelApplyStyle(c=>c.b=c.b?0:1); }
+function excelFontSize(v){ excelApplyStyle(c=>c.s=Number(v)); }
+function excelItalic(){ excelApplyStyle(c=>c.i=c.i?0:1); }
+function excelUnderline(){ excelApplyStyle(c=>c.u=c.u?0:1); }
+function excelTextColor(v){ excelApplyStyle(c=>c.c=v); }
+function excelBgColor(v){ excelApplyStyle(c=>c.bg=v); }
+function excelToggleTotal(){
+  const n = DB.notes.find(x=>x.id===openNoteId); if(!n) return;
+  const ex = getExcelOfNote();
+  ex.showTotal = !ex.showTotal;
+  saveDB(); renderExcel();
+  toast(ex.showTotal ? '✅ Total দেখানো হচ্ছে' : 'Total লুকানো হলো');
+}
+function renderExcelTotal(){
+  const ex = getExcelOfNote(); const el = document.getElementById('excelTotal'); if(!el) return;
+  if(!ex.showTotal){ el.innerHTML=''; return; }
+  let html = '';
+  ex.cols.forEach(col=>{
+    let sum = 0, hasNum = false;
+    ex.rows.forEach(r=>{
+      const t = (r.cells[col.id]?.t||'').trim();
+      if(/^\d{4}-\d{2}-\d{2}$/.test(t)) return;
+      const n = parseFloat(t);
+      if(!isNaN(n)){ sum += n; hasNum = true; }
+    });
+    if(hasNum) html += ` • ${col.name}: <b>${sum}</b>`;
+  });
+  el.innerHTML = html ? ('🧮 Total:' + html) : '🧮 Total: কোনো সংখ্যা নেই';
+}
+function renderNotes(){
+  const list = document.getElementById('notesList'); if(!list) return;
+  const q = (document.getElementById('noteSearch')?.value||'').toLowerCase();
+  let arr = DB.notes||[];
+  if(noteFilter!=='All') arr = arr.filter(n=>(n.folder||'Dairy')===noteFilter);
+  if(q) arr = arr.filter(n=>(n.text||'').toLowerCase().includes(q));
+  if(arr.length===0){ list.innerHTML = `<div style="text-align:center;color:#888;padding:30px;">📝 ${t('no_notes')}<br><small>+ চাপুন নতুন নোটের জন্য</small></div>`; return; }
+  list.innerHTML = arr.map(n=>`
+    <div style="background:#fff;border-bottom:1px solid #EEE;padding:12px;display:flex;justify-content:space-between;align-items:center;" onclick="openNote('${n.id}')">
+      <div style="flex:1;overflow:hidden;">
+        <div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${getNoteTitle(n.text).replace(/</g,'&lt;')}</div>
+        <div style="font-size:12px;color:#888;margin-top:3px;">${formatNoteDate(n.date)} • ${n.folder||'Dairy'}</div>
+      </div>
+      <button onclick="event.stopPropagation();showNoteMenu('${n.id}')" style="border:none;background:none;font-size:20px;padding:4px 8px;">⋮</button>
+    </div>`).join('');
+}
+// পুরনো নাম - যাতে ভাঙে না
+function saveNote(){ createNewNote(); }
+function editNote(id){ openNote(id); }
 
 // ========== ANALYTICS TRACKING ==========
 function track(eventName, params) {
@@ -9000,7 +9172,7 @@ function openAddCustomer(editId) {
         <input type="text" id="rcType" value="${c ? (c.type || '') : ''}" placeholder="চায়ের দোকান / মিষ্টির দোকান / প্রতিবেশী">
       </div>
       <div class="form-group">
-        <label>📞 মোবাইল</label>
+        <label>?? মোবাইল</label>
         <input type="tel" id="rcPhone" value="${c ? (c.phone || '') : ''}" placeholder="9876543210">
       </div>
       <div class="form-group">
