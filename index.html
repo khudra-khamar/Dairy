@@ -3047,6 +3047,39 @@ async function saveGuestTrialUser(){
     }
   }catch(e){ console.log('saveGuest err', e.message); }
 }
+
+// ===== AUTO SYNC + MERGE - Cloud + Phone =====
+async function autoSyncFromCloud(){
+  try{
+    if(!window._db || !DB.deviceId) return;
+    if(!navigator.onLine) return; // অফলাইন হলে Cloud থেকে আনবে না
+    const snap = await window._db.collection('trialUsers').doc(DB.deviceId).collection('cows').get();
+    let changed = false;
+    snap.forEach(doc=>{
+      const cloudCow = doc.data(); if(!cloudCow.id) return;
+      const local = DB.cows.find(c=>c.id===cloudCow.id);
+      if(!local){
+        // আলাদা গরু - নতুন করে Save হবে
+        DB.cows.push(cloudCow); changed = true;
+      } else {
+        // একই গরু - যেটা নতুন সেটাই থাকবে
+        const cloudTime = cloudCow.updatedAt || cloudCow.lastSeen || 0;
+        const localTime = local.updatedAt || local.lastSeen || 0;
+        if(cloudTime > localTime){
+          Object.assign(local, cloudCow); changed = true;
+        }
+      }
+    });
+    // ফোনে যেটা আছে Cloud এ নেই - সেটা Cloud এ পাঠাবে (saveDB করে)
+    if(changed){
+      await saveDB();
+      if(typeof renderAnimals === 'function') renderAnimals();
+      if(typeof updateHome === 'function') updateHome();
+      console.log('✅ Auto Sync: Cloud থেকে Merge হলো');
+    }
+  }catch(e){ console.log('Sync skip:', e.message); }
+}
+
 function saveDB() {
   try {
     if(!DB || !DB.cows || DB.cows.length===0){
@@ -12141,6 +12174,7 @@ applyFirstAidOverrides();
   renderFinance();
   renderReports();
   checkLicenseWarning();
+  setTimeout(()=>{ if(typeof autoSyncFromCloud==='function') autoSyncFromCloud(); }, 3000);
 }
 
 function checkLicenseWarning() {
