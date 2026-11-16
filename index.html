@@ -1865,27 +1865,21 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
     "https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
   ];
 
-  let loadedCount = 0;
-  scripts.forEach(src => {
+  let idx = 0;
+  function loadNext(){
+    if(idx >= scripts.length){
+      if(typeof initFirebase === 'function') initFirebase();
+      return;
+    }
+    const src = scripts[idx++];
     const s = document.createElement('script');
     s.src = src;
-    s.defer = true;
-    s.crossOrigin = "anonymous"; // 💡 ক্রস-অরিজিন এরর লুকানোর জন্য
-    s.onload = () => {
-      loadedCount++;
-      if (loadedCount === scripts.length) {
-        if (typeof initFirebase === 'function') initFirebase();
-      }
-    };
-    s.onerror = () => {
-      console.warn("Failed to load: " + src);
-      loadedCount++;
-      if (loadedCount === scripts.length) {
-        if (typeof initFirebase === 'function') initFirebase();
-      }
-    };
+    s.crossOrigin = "anonymous";
+    s.onload = loadNext;
+    s.onerror = ()=>{ console.warn("Failed to load: "+src); loadNext(); };
     document.head.appendChild(s);
-  });
+  }
+  loadNext();
 })();
 </script>
 
