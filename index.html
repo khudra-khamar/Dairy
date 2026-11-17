@@ -12975,7 +12975,7 @@ async function forceBackupToCloud() {
 
     // ৪. users/{uid} ডকুমেন্টে গরুর পুরো অ্যারে আপডেট (এখানে পুরো অ্যারে রিপ্লেস হবে)
     await window._db.collection('users').doc(uid).set({
-      cows: DB.cows || [],
+      cows: (DB.cows || []).map(c => cleanForFirestore(c)),
       lastSync: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
@@ -12992,16 +12992,17 @@ async function forceBackupToCloud() {
 
     // ৬. ফোনে থাকা বর্তমান গরুগুলো ক্লাউডে সেভ করা
     for (const cow of (DB.cows || [])) {
+    const cleanCow = cleanForFirestore(cow);
       // devices সাব-কলেকশনে
       await window._db.collection('devices').doc(deviceId).collection('cows').doc(cow.id).set({
-        ...cow,
+        ...cleanCow,
         deviceId: deviceId,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
       // trialUsers সাব-কলেকশনে
       await window._db.collection('trialUsers').doc(deviceId).collection('cows').doc(cow.id).set({
-        ...cow,
+        ...cleanCow,
         deviceId: deviceId,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -13045,7 +13046,7 @@ function triggerAutoSync() {
 
       // ৩. users/{uid} ডকুমেন্টে গরুর পুরো অ্যারে আপডেট
       await window._db.collection('users').doc(uid).set({
-        cows: DB.cows || [],
+        cows: (DB.cows || []).map(c => cleanForFirestore(c)),
         lastSync: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
@@ -13062,11 +13063,12 @@ function triggerAutoSync() {
 
       // ৫. নতুন গরুগুলো সাব-কলেকশনে সেভ
       for (const cow of (DB.cows || [])) {
+      const cleanCow = cleanForFirestore(cow);
         await window._db.collection('devices').doc(deviceId).collection('cows').doc(cow.id).set({
-          ...cow, deviceId: deviceId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          ...cleanCow, deviceId: deviceId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         await window._db.collection('trialUsers').doc(deviceId).collection('cows').doc(cow.id).set({
-          ...cow, deviceId: deviceId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          ...cleanCow, deviceId: deviceId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
       }
 
