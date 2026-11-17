@@ -5498,6 +5498,46 @@ function getTypeLabel(type) {
   return t('type_cow');
 }
 
+// ===== Tap-Hold Menu for Cow =====
+let _cowLPTimer = null;
+let _cowLPFired = false;
+function cowPressStart(id){
+  _cowLPFired = false;
+  _cowLPTimer = setTimeout(function(){
+    _cowLPFired = true;
+    if(navigator.vibrate) navigator.vibrate(30);
+    showCowMenu(id);
+  }, 500);
+}
+function cowPressEnd(){
+  if(_cowLPTimer) clearTimeout(_cowLPTimer);
+}
+function cowItemClick(id){
+  if(_cowLPFired){ _cowLPFired = false; return; }
+  openCowProfile(id);
+}
+function showCowMenu(id){
+  closeCowMenu();
+  const c = DB.cows.find(x => x.id === id);
+  const name = c ? (c.name || '—') : '—';
+  const div = document.createElement('div');
+  div.id = 'cowMenuOverlay';
+  div.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+  div.onclick = function(e){ if(e.target === div) closeCowMenu(); };
+  div.innerHTML = '<div style="background:#fff;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:14px 14px 20px;">'
+    + '<div style="text-align:center;font-weight:bold;font-size:16px;margin-bottom:12px;">🐮 ' + name + '</div>'
+    + '<button onclick="closeCowMenu();openCowProfile(\'' + id + '\')" style="width:100%;padding:13px;border:none;border-radius:10px;background:#E8F5E9;font-size:16px;font-weight:bold;margin-bottom:8px;"> 👁️ View</button>'
+    + '<button onclick="closeCowMenu();editCow(\'' + id + '\')" style="width:100%;padding:13px;border:none;border-radius:10px;background:#FFF3E0;font-size:16px;font-weight:bold;margin-bottom:8px;">✏️ Edit</button>'
+    + '<button onclick="closeCowMenu();deleteCow(\'' + id + '\')" style="width:100%;padding:13px;border:none;border-radius:10px;background:#FFEBEE;color:#C62828;font-size:16px;font-weight:bold;margin-bottom:8px;">🗑️ Delete</button>'
+    + '<button onclick="closeCowMenu()" style="width:100%;padding:13px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:16px;">❌ Close</button>'
+    + '</div>';
+  document.body.appendChild(div);
+}
+function closeCowMenu(){
+  const old = document.getElementById('cowMenuOverlay');
+  if(old) old.remove();
+}
+
 function renderCows() {
   const list = document.getElementById('cowsList');
   if (!list) return;
@@ -5510,7 +5550,7 @@ function renderCows() {
   list.innerHTML = cows.map(c => {
     const avatar = c.photo ? `<img src="${c.photo}">` : getTypeIcon(c.type);
     const lact = c.lactation ? ` • L${c.lactation}` : '';
-    return `<div class="cow-item" onclick="openCowProfile('${c.id}')">
+    return `<div class="cow-item" onclick="cowItemClick('${c.id}')" oncontextmenu="event.preventDefault();showCowMenu('${c.id}');return false;" ontouchstart="cowPressStart('${c.id}')" ontouchend="cowPressEnd()" ontouchmove="cowPressEnd()" onmousedown="cowPressStart('${c.id}')" onmouseup="cowPressEnd()" onmouseleave="cowPressEnd()">
       <div class="cow-avatar">${avatar}</div>
       <div class="cow-info">
         <h4>${c.name || '—'} <span class="tag-badge">🏷️ ${c.tag || '—'}</span></h4>
