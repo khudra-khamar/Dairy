@@ -10541,6 +10541,29 @@ function saveSettings() {
   }
 }
 
+// ===== Farm Info Cloud থেকে আনা (Login এর পর) =====
+async function loadFarmInfoFromCloud(){
+  if(!window._db || !DB.deviceId) return;
+  try{
+    const doc = await window._db.collection('devices').doc(DB.deviceId).get();
+    if(!doc.exists) return;
+    const d = doc.data() || {};
+    let changed = false;
+    if(d.farmName){ DB.settings.farmName = d.farmName; changed = true; }
+    if(d.ownerName){ DB.settings.ownerName = d.ownerName; changed = true; }
+    if(d.phone){ DB.settings.phone = d.phone; changed = true; }
+    if(changed){
+      saveDB();
+      const fn = document.getElementById('setFarmName');
+      if(fn) fn.value = DB.settings.farmName || '';
+      const on = document.getElementById('setOwnerName');
+      if(on) on.value = DB.settings.ownerName || '';
+      const ph = document.getElementById('setPhone');
+      if(ph) ph.value = DB.settings.phone || '';
+    }
+  }catch(e){ console.warn('Farm info load failed:', e); }
+}
+
 // ========== DEVICE ID ==========
 function generateDeviceId() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -12519,6 +12542,7 @@ function waitForAuthThenCheckLicense() {
         
         // Google/Phone Login হলে Trial Users ডকুমেন্ট আপডেট করা
 if (user && window._db && DB.deviceId) {
+    if(typeof loadFarmInfoFromCloud === 'function') loadFarmInfoFromCloud();
     let authType = 'google';
     if (user.providerData && user.providerData.length > 0) {
         authType = user.providerData[0].providerId.includes('phone') ? 'phone' : 'google';
