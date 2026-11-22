@@ -10537,6 +10537,24 @@ function saveSettings() {
         }, { merge: true }).catch(e => console.warn('users farm save failed:', e));
       }
 
+      // ৪.৬ userDirectory - Phone / Email দিয়ে খোঁজার জন্য
+      try{
+        const _phone = (DB.settings.phone || '').trim();
+        const _email = (window._auth && window._auth.currentUser && window._auth.currentUser.email) ? window._auth.currentUser.email.trim() : '';
+        const _dirId = _phone || _email;
+        if(_dirId){
+          window._db.collection('userDirectory').doc(_dirId).set({
+            uid: (window._auth && window._auth.currentUser) ? window._auth.currentUser.uid : '',
+            deviceId: DB.deviceId || '',
+            farmName: DB.settings.farmName || '',
+            ownerName: DB.settings.ownerName || '',
+            phone: _phone,
+            email: _email,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(e => console.warn('userDirectory save failed:', e));
+        }
+      }catch(e){ console.warn('userDirectory error:', e); }
+
       // ৫. 💡 fcmTokens কলেকশনেও ইউজারের নাম ও ফোন নম্বর আপডেট করা
       window._db.collection('fcmTokens').doc(DB.deviceId).set({
           farmName: DB.settings.farmName || '',
