@@ -10526,6 +10526,17 @@ function saveSettings() {
           console.warn('⚠️ Sync to devices failed:', err);
       });
 
+      // ৪.৫ users/{uid} তেও সেভ করা - যাতে Device বদলালেও Gmail Login করলে আসে
+      if(window._auth && window._auth.currentUser){
+        const _uid = window._auth.currentUser.uid;
+        window._db.collection('users').doc(_uid).set({
+          farmName: DB.settings.farmName || '',
+          ownerName: DB.settings.ownerName || '',
+          phone: DB.settings.phone || '',
+          updatedAt: Date.now()
+        }, { merge: true }).catch(e => console.warn('users farm save failed:', e));
+      }
+
       // ৫. 💡 fcmTokens কলেকশনেও ইউজারের নাম ও ফোন নম্বর আপডেট করা
       window._db.collection('fcmTokens').doc(DB.deviceId).set({
           farmName: DB.settings.farmName || '',
@@ -10543,11 +10554,20 @@ function saveSettings() {
 
 // ===== Farm Info Cloud থেকে আনা (Login এর পর) =====
 async function loadFarmInfoFromCloud(){
-  if(!window._db || !DB.deviceId) return;
+  if(!window._db) return;
   try{
-    const doc = await window._db.collection('devices').doc(DB.deviceId).get();
-    if(!doc.exists) return;
-    const d = doc.data() || {};
+    let d = {};
+    // ১. প্রথমে Gmail ID (uid) থেকে চেষ্টা করবো - Device বদলালেও পাওয়া যাবে
+    if(window._auth && window._auth.currentUser){
+      const _uid = window._auth.currentUser.uid;
+      const uDoc = await window._db.collection('users').doc(_uid).get();
+      if(uDoc.exists) d = uDoc.data() || {};
+    }
+    // ২. uid তে না পেলে পুরনো Device ID থেকে চেষ্টা করবো
+    if((!d.farmName && !d.ownerName && !d.phone) && DB.deviceId){
+      const doc = await window._db.collection('devices').doc(DB.deviceId).get();
+      if(doc.exists) d = doc.data() || {};
+    }
     let changed = false;
     if(d.farmName){ DB.settings.farmName = d.farmName; changed = true; }
     if(d.ownerName){ DB.settings.ownerName = d.ownerName; changed = true; }
