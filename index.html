@@ -10551,7 +10551,7 @@ function saveSettings() {
             phone: _phone,
             email: _email,
             updatedAt: Date.now()
-          }, { merge: true }).catch(e => console.warn('userDirectory save failed:', e));
+          }, { merge: true }).then(() => alert('Directory Saved: ' + _dirId)).catch(e => alert('Directory Failed: ' + e.message));
         }
       }catch(e){ console.warn('userDirectory error:', e); }
 
