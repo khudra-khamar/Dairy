@@ -402,11 +402,11 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
           <div style="flex:1;height:1px;background:#e0e0e0;"></div>
         </div>
         
-        <!-- Trial Button -->
-        <button onclick="continueWithTrial()" style="width:100%;padding:16px 20px;background:linear-gradient(135deg,#FFEB3B,#FFC107);color:#1B5E20;border:none;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(255,193,7,0.4);">
-          <div style="font-size:16px;font-weight:800;line-height:1.3;">▶️ Start 7-Day Free Trial</div>
-          <div style="font-size:11px;font-weight:600;opacity:0.8;margin-top:2px;">৭ দিন ফ্রি ট্রায়াল শুরু করুন</div>
-        </button>
+ <!-- Trial Button -->
+<button onclick="continueWithTrial()" style="width:100%;padding:16px 20px;background:linear-gradient(135deg,#FFEB3B,#FFC107);color:#1B5E20;border:none;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(255,193,7,0.4);">
+  <div style="font-size:16px;font-weight:800;line-height:1.3;">▶️ Start 15-Day Free Trial</div>
+  <div style="font-size:11px;font-weight:600;opacity:0.8;margin-top:2px;">১৫ দিন ফ্রি ট্রায়াল শুরু করুন</div>
+</button>
         
       </div>
       
@@ -440,23 +440,23 @@ body { background:#F5F5F5; padding-bottom:80px; color:#333; font-size:15px; }
         </div>
       </div>
       
-      <!-- Contact Section -->
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
-        <p style="margin:0 0 4px;font-size:13px;color:#555;font-weight:700;">
-          📞 Buy License
-        </p>
-        <p style="margin:0 0 12px;font-size:11px;color:#999;">
-          License কিনতে যোগাযোগ করুন
-        </p>
-        <div style="display:flex;gap:10px;">
-          <a href="tel:+919800696104" style="flex:1;padding:11px;background:#1976D2;color:#fff;border-radius:10px;text-decoration:none;text-align:center;">
-            <div style="font-size:13px;font-weight:700;">📞 Call</div>
-          </a>
-          <a href="https://wa.me/919800696104?text=I%20want%20Dairy%20Manager%20license%20code" style="flex:1;padding:11px;background:#25D366;color:#fff;border-radius:10px;text-decoration:none;text-align:center;">
-            <div style="font-size:13px;font-weight:700;">💬 WhatsApp</div>
-          </a>
-        </div>
-      </div>
+<!-- Contact Section -->
+<div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+  <p style="margin:0 0 4px;font-size:13px;color:#555;font-weight:700;">
+    📞 Buy License
+  </p>
+  <p style="margin:0 0 12px;font-size:11px;color:#999;">
+    License কিনতে যোগাযোগ করুন
+  </p>
+  <div style="display:flex;gap:10px;">
+    <a href="tel:+919800696104" style="flex:1;padding:11px;background:#1976D2;color:#fff;border-radius:10px;text-decoration:none;text-align:center;">
+      <div style="font-size:13px;font-weight:700;">📞 Call</div>
+    </a>
+    <button onclick="requestLicenseViaWhatsApp()" style="flex:1;padding:11px;background:#25D366;color:#fff;border-radius:10px;border:none;text-align:center;font-family:inherit;cursor:pointer;">
+      <div style="font-size:13px;font-weight:700;">💬 WhatsApp</div>
+    </button>
+  </div>
+</div>
       
     </div>
     
@@ -2695,6 +2695,17 @@ function initIndexedDB() {
 }
 
 // ========== DATABASE ==========
+// ===== Anti Time Cheat (Global) =====
+try {
+  const savedTime = localStorage.getItem('dairy_lastCheckTime');
+  if (savedTime && Date.now() < parseInt(savedTime) - 3600000) {
+    alert('❌ Time Changed: আপনার মোবাইলের তারিখ বা সময় পেছনে দেওয়া হয়েছে।');
+    document.body.innerHTML = '<div style="text-align:center;padding:50px;font-family:sans-serif;"><h2>❌ Time Error</h2><p>অনুগ্রহ করে মোবাইলের সঠিক তারিখ ও সময় সেট করুন।</p></div>';
+    throw new Error('Time cheat detected');
+  }
+  localStorage.setItem('dairy_lastCheckTime', Date.now());
+} catch(e) { console.error(e); }
+
 let DB = {
   cows: [], milk: [], finance: [], medicine: [], notes: [],
   medStock: [], feedStock: [], contacts: [],
@@ -10637,8 +10648,8 @@ if (typeof firebase !== 'undefined' && window._messaging) {
     console.warn("Token refresh setup failed:", e);
   }
 }
-const TRIAL_DAYS = 7;
-const GRACE_DAYS = 7;
+const TRIAL_DAYS = 15;
+const GRACE_DAYS = 0;
 
 // hmacSign removed in Phase 3 — using Firestore verify instead
 
@@ -11259,9 +11270,12 @@ window.addEventListener('error', function(e) {
 // ========== AFTER LOGIN — Farm Name + Main App ==========
 async function proceedAfterLogin() {
   try {
-    // ১. License screen লুকাই
-    const licScreen = document.getElementById('licenseScreen');
-    if (licScreen) licScreen.style.display = 'none';
+    // 💡 ১. সব ধরনের স্টার্টআপ স্ক্রিন লুকিয়ে ফেলা (Setup, License, PIN)
+    const screensToHide = ['setupScreen', 'licenseScreen', 'licenseWarnScreen', 'pinLoginScreen', 'pinSetupScreen'];
+    screensToHide.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
     
     // ২. PIN set থাকলে PIN Login
     if (DB.security && DB.security.pin) {
@@ -11344,12 +11358,12 @@ async function proceedAfterLogin() {
           console.log("✅ Cows restored via UID:", DB.cows.length);
           if (typeof toast === 'function') toast('☁️ ক্লাউড থেকে ' + DB.cows.length + ' টি গরুর ডাটা ফিরে এসেছে!');
                     
-// 💡 ক্লাউডে গরুর সংখ্যা (totalCows) আপডেট করা
-if (window._db && DB.deviceId) {
-    const devId = DB.deviceId;
-    window._db.collection('devices').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e=>console.warn(e));
-    window._db.collection('trialUsers').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e=>console.warn(e));
-}
+          // 💡 ক্লাউডে গরুর সংখ্যা (totalCows) আপডেট করা
+          if (window._db && DB.deviceId) {
+              const devId = DB.deviceId;
+              window._db.collection('devices').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e=>console.warn(e));
+              window._db.collection('trialUsers').doc(devId).set({ totalCows: DB.cows.length }, { merge: true }).catch(e=>console.warn(e));
+          }
         }
       }
     }
@@ -11376,23 +11390,55 @@ if (window._db && DB.deviceId) {
 }
 
 
+
 function continueWithTrial() {
-  // If trial already active — just skip license screen
+  // 💡 ১. চেক করা: এই ডিভাইসে আগে ট্রায়াল ব্যবহার করা হয়েছে কিনা
+  if (localStorage.getItem('dm_trial_used') === 'true') {
+    let msg = "❌ Trial Expired: You have already used the trial. Please enter a license code.";
+    
+    // ভাষা অনুযায়ী মেসেজ পরিবর্তন
+    if (typeof DB !== 'undefined' && DB.settings && DB.settings.lang) {
+      if (DB.settings.lang === 'bn') {
+        msg = "❌ ট্রায়াল শেষ: আপনি ইতিমধ্যে ট্রায়াল ব্যবহার করেছেন। অনুগ্রহ করে লাইসেন্স কোড দিন।";
+      } else if (DB.settings.lang === 'hi') {
+        msg = "❌ ट्रायल समाप्त: आप पहले ही ट्रायल का उपयोग कर चुके हैं। कृपया लाइसेंस कोड दर्ज करें।";
+      }
+    }
+    
+    alert(msg);
+    return; // ফাংশন এখানেই থেমে যাবে
+  }
+
+  // 💡 ২. ভাষা সেভ করা (যদি আগে না করা থাকে)
+  if (!DB.settings.lang) {
+    DB.settings.lang = 'bn'; 
+  }
+
+  // ৩. নতুন ট্রায়াল চালু করা
   if (!DB.license.trial || !DB.license.expiry) {
     const now = new Date();
-    now.setDate(now.getDate() + 7);
+    now.setDate(now.getDate() + TRIAL_DAYS); 
     DB.license = { 
       code: '', 
       expiry: now.toISOString().split('T')[0], 
       trial: true 
     };
-    saveDB();
   }
   
-  toast('✅ Trial চালু হয়েছে');
+  // 💡 ৪. ডিভাইসে মনে রাখা যে ট্রায়াল ব্যবহার করা হয়ে গেছে
+  localStorage.setItem('dm_trial_used', 'true');
+
+  // ৫. ডেটাবেস সেভ করা
+  if (typeof saveDBAsync === 'function') {
+     saveDBAsync();
+  } else {
+     saveDB();
+  }
+  
+  if (typeof toast === 'function') toast('✅ Trial চালু হয়েছে');
   saveGuestTrialUser();
   
-  // নতুন flow — সরাসরি proceed
+  // ৬. সরাসরি অ্যাপে ঢোকানো
   proceedAfterLogin();
 }
   
@@ -11444,6 +11490,8 @@ async function checkLicenseOnLoad() {
   const devShow = document.getElementById('deviceIdShow');
   if (devShow) devShow.textContent = DB.deviceId;
 
+
+
   // ===== Step 1: Login করা User-এর UID License =====
   const user = window._auth && window._auth.currentUser;
   if (user && user.uid && window._db) {
@@ -11463,19 +11511,13 @@ async function checkLicenseOnLoad() {
               uid: user.uid
             };
             saveDB();
-            console.log('✅ UID License active:', data.expiry);
             proceedAfterLogin();
             return true;
           }
           
-          if (daysLeft <= -GRACE_DAYS) {
+          if (daysLeft <= 0) {
             document.getElementById('licenseScreen').style.display = 'flex';
             return false;
-          }
-          
-          if (daysLeft <= 0) {
-            showGraceScreen(daysLeft);
-            return true;
           }
         }
       }
@@ -11492,16 +11534,9 @@ async function checkLicenseOnLoad() {
     if (daysLeft > 0) {
       proceedAfterLogin();
       return true;
-    }
-
-    if (daysLeft <= -GRACE_DAYS) {
+    } else {
       document.getElementById('licenseScreen').style.display = 'flex';
       return false;
-    }
-    
-    if (daysLeft <= 0) {
-      showGraceScreen(daysLeft);
-      return true;
     }
   }
   
@@ -11513,16 +11548,9 @@ async function checkLicenseOnLoad() {
     if (daysLeft > 0) {
       proceedAfterLogin();
       return true;
-    }
-    
-    if (daysLeft <= -GRACE_DAYS) {
+    } else {
       document.getElementById('licenseScreen').style.display = 'flex';
       return false;
-    }
-    
-    if (daysLeft <= 0) {
-      showGraceScreen(daysLeft);
-      return true;
     }
   }
   
@@ -11539,6 +11567,27 @@ function showGraceScreen(daysLeft) {
   const remain = GRACE_DAYS + daysLeft;
   document.getElementById('warnDays').textContent = bn(Math.max(0, remain));
 }
+
+function requestLicenseViaWhatsApp() {
+  const phone = "919800696104";
+  const deviceId = (typeof DB !== 'undefined' && DB.deviceId) ? DB.deviceId : "Unknown";
+  let msg = "";
+
+  // ভাষা অনুযায়ী মেসেজ তৈরি
+  if (typeof DB !== 'undefined' && DB.settings && DB.settings.lang === 'bn') {
+    msg = `হ্যালো, আমি একটি Dairy Manager লাইসেন্স কোড কিনতে চাই।\nআমার ডিভাইস আইডি: ${deviceId}`;
+  } else if (typeof DB !== 'undefined' && DB.settings && DB.settings.lang === 'hi') {
+    msg = `नमस्ते, मैं एक Dairy Manager लाइसेंस कोड खरीदना चाहता हूं।\nमेरी डिवाइस आईडी: ${deviceId}`;
+  } else {
+    msg = `Hello, I want to buy a Dairy Manager license code.\nMy Device ID: ${deviceId}`;
+  }
+
+  // মেসেজ এনকোড করে হোয়াটসঅ্যাপে পাঠানো
+  const encodedMsg = encodeURIComponent(msg);
+  const url = `https://wa.me/${phone}?text=${encodedMsg}`;
+  window.open(url, '_blank');
+}
+
 
 function warnContinue() {
   document.getElementById('licenseWarnScreen').style.display = 'none';
@@ -11578,13 +11627,22 @@ toast('✅ License activated!');
   loadSettings();
 }
 
-function removeTrial() {
-  showConfirm('Remove Trial?', 'App will ask for license on next open.', function() {
+async function removeTrial() {
+  if (confirm('Remove Trial? This cannot be undone.')) {
+    // ১. ট্রায়াল ডেটা মুছে ফেলা
     DB.license = { code: '', expiry: '', trial: false };
-    saveDB();
-    toast('Trial removed');
-    loadSettings();
-  });
+    
+    // ২. IndexedDB-তে সেভ হওয়া পর্যন্ত অপেক্ষা করা
+    if (typeof saveDBAsync === 'function') {
+      await saveDBAsync();
+    } else {
+      saveDB();
+    }
+    
+    // ৩. সেভ হওয়ার পর পেজ রিলোড করা
+    if (typeof toast === 'function') toast('Trial removed');
+    location.reload();
+  }
 }
 // ========== PIN ==========
 let pinBuffer = '';
@@ -11831,10 +11889,10 @@ function choosePreset(p) {
   if (msg) {
     const l = setupData.lang;
     msg.textContent = l === 'bn'
-      ? `৭ দিনের ট্রায়াল — মেয়াদ: ${formatDate(trialExpiry)}`
+      ? `১৫ দিনের ট্রায়াল — মেয়াদ: ${formatDate(trialExpiry)}`
       : l === 'hi'
-      ? `७ दिन का ट्रायल — समाप्ति: ${formatDate(trialExpiry)}`
-      : `7-day trial — expires: ${formatDate(trialExpiry)}`;
+      ? `१५ दिन का ट्रायल — समाप्ति: ${formatDate(trialExpiry)}`
+      : `15-day trial — expires: ${formatDate(trialExpiry)}`;
   }
 }
 function applyPreset(name) {
@@ -12247,7 +12305,7 @@ function replaceWithBackup(d) {
     if (!DB.settings.features) DB.settings.features = features;
     if (!DB.settings.preset) DB.settings.preset = preset;
   }
-}
+} 
 
 function clearAllData() {
   showConfirm(t('confirm_all1'), t('confirm_all2'), function() {
